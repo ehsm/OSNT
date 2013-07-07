@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<!DOCTYPE doc SYSTEM "../../ipdialog.dtd" [
+        <!ENTITY C_M_AXIS_DATA_WIDTH '
+        <widget id="C_M_AXIS_DATA_WIDTH">
+                        <key>C_M_AXIS_DATA_WIDTH</key>
+                <label>Master Stream Data Width</label>
+        </widget>
+        '>
+        <!ENTITY C_S_AXIS_DATA_WIDTH '
+        <widget id="C_S_AXIS_DATA_WIDTH">
+                        <key>C_S_AXIS_DATA_WIDTH</key>
+                <label>Slave Stream Data Width</label>
+        </widget>
+        '>
+        <!ENTITY C_M_AXIS_TUSER_WIDTH '
+        <widget id="C_M_AXIS_TUSER_WIDTH">
+                        <key>C_M_AXIS_TUSER_WIDTH</key>
+                <label>TUSER Data Width</label>
+        </widget>
+        '>
+        <!ENTITY C_LEN_WIDTH '
+        <widget id="C_LEN_WIDTH">
+                        <key>C_LEN_WIDTH</key>
+                <label>Length Data Width</label>
+        </widget>
+        '>
+        <!ENTITY C_DPT_WIDTH '
+        <widget id="C_DPT_WIDTH">
+                        <key>C_DPT_WIDTH</key>
+                <label>Destination Port Data Width</label>
+        </widget>
+        '>
+        <!ENTITY C_SPT_WIDTH '
+        <widget id="C_SPT_WIDTH">
+                        <key>C_SPT_WIDTH</key>
+                <label>Source Port Data Width</label>
+        </widget>
+        '>
+        <!ENTITY C_DEFAULT_VALUE_ENABLE '
+        <widget id="C_DEFAULT_VALUE_ENABLE">
+                        <key>C_DEFAULT_VALUE_ENABLE</key>
+                <label>Enable default metadata value</label>
+                <tip>Enable default metadata value. Will override slave port metadata.</tip>
+        </widget>
+        '>
+        <!ENTITY C_DEFAULT_DST_PORT '
+        <widget id="C_DEFAULT_DST_PORT">
+                        <key>C_DEFAULT_DST_PORT</key>
+                <label>Default Destination port</label>
+        </widget>
+        '>
+        <!ENTITY C_DEFAULT_SRC_PORT '
+        <widget id="C_DEFAULT_SRC_PORT">
+                        <key>C_DEFAULT_SRC_PORT</key>
+                <label>Default source port</label>
+        </widget>
+        '>
+]>
+
+<doc>
+        <view id="System">
+                <display>System</display>
+                <group id="axi">
+                        <display>AXI</display>
+                        <item>&C_M_AXIS_DATA_WIDTH;</item>
+                        <item>&C_S_AXIS_DATA_WIDTH;</item>
+                        <item>&C_M_AXIS_TUSER_WIDTH;</item>
+                        <item>&C_LEN_WIDTH;</item>
+                        <item>&C_DPT_WIDTH;</item>
+                        <item>&C_SPT_WIDTH;</item>
+                </group>
+                <group id="metadata">
+                        <display>Metadata</display>
+                        <item>&C_DEFAULT_VALUE_ENABLE;</item>
+                        <item>&C_DEFAULT_SRC_PORT;</item>
+                        <item>&C_DEFAULT_DST_PORT;</item>
+                </group>
+	</view>
+</doc>

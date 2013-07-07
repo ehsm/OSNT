@@ -1,0 +1,24 @@
+#////////////////////////////////////////////////////////////////////////
+#//
+#//  NetFPGA-10G http://www.netfpga.org
+#//
+#//  Module:
+#//          nf10_mdio_v2_1_0.mdd
+#//
+#//  Description:
+#//          Microprocessor Driver Definition
+#//                 
+#//  Revision history:
+#//          2010/12/8 hyzeng: Initial check-in
+#//
+#////////////////////////////////////////////////////////////////////////
+OPTION psf_version = 2.1;
+
+BEGIN driver nf10_mdio
+
+  OPTION supported_peripherals = (nf10_mdio_v1_[0-9][0-9]_[a-z]);
+  OPTION driver_state = ACTIVE;
+  OPTION depends = (common_v1_00_a);
+  OPTION copyfiles = all;
+
+END driver
