@@ -116,6 +116,7 @@
  PORT pcie_top_0_pci_exp_7_rxp_pin = pcie_top_0_pci_exp_7_rxp, DIR = I
  PORT pcie_top_0_pci_exp_0_txn_pin = pcie_top_0_pci_exp_0_txn, DIR = O
 
+
 BEGIN nf10_switch_output_port_lookup
  PARAMETER INSTANCE = nf10_switch_output_port_lookup_0
  PARAMETER HW_VER = 1.00.a
@@ -516,3 +517,4 @@ BEGIN dma
  PORT pci_exp_7_rxp = pcie_top_0_pci_exp_7_rxp
  PORT pci_exp_0_txn = pcie_top_0_pci_exp_0_txn
 END
+

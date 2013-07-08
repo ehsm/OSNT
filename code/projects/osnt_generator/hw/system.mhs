@@ -116,6 +116,7 @@
  PORT pcie_top_0_pci_exp_7_rxp_pin = pcie_top_0_pci_exp_7_rxp, DIR = I
  PORT pcie_top_0_pci_exp_0_txn_pin = pcie_top_0_pci_exp_0_txn, DIR = O
 
+
 BEGIN nf10_switch_output_port_lookup
  PARAMETER INSTANCE = nf10_switch_output_port_lookup_0
  PARAMETER HW_VER = 1.00.a
@@ -469,10 +470,10 @@ END
 BEGIN dma
  PARAMETER INSTANCE = dma_0
  PARAMETER HW_VER = 1.10.a
- PARAMETER C_BASEADDR = 0x7d400000
- PARAMETER C_HIGHADDR = 0x7d40ffff
  PARAMETER C_M_AXIS_DATA_WIDTH = 256
  PARAMETER C_S_AXIS_DATA_WIDTH = 256
+ PARAMETER C_BASEADDR = 0x7d400000
+ PARAMETER C_HIGHADDR = 0x7d40ffff
  BUS_INTERFACE M_AXI = axi_interconnect_0
  BUS_INTERFACE M_AXIS = dma_0_M_AXIS
  BUS_INTERFACE S_AXIS = nf10_bram_output_queues_0_M_AXIS_4
@@ -516,3 +517,4 @@ BEGIN dma
  PORT pci_exp_7_rxp = pcie_top_0_pci_exp_7_rxp
  PORT pci_exp_0_txn = pcie_top_0_pci_exp_0_txn
 END
+
