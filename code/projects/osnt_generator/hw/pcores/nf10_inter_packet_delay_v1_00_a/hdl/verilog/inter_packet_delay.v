@@ -158,9 +158,9 @@ module inter_packet_delay
             m_axis_tvalid = 1;
 
             if (m_axis_tready) begin
-	      // Get the delay value for the next packet
-              delay_val_c = timer_ticks + (use_reg_val) ? delay_reg_val
-                                                        : in_fifo_tuser[63:32]; // @MS - check the offsets
+	            // Get the delay value for the next packet
+              delay_val_c = timer_ticks + ((use_reg_val) ? delay_reg_val
+                                                        : in_fifo_tuser[63:32]); // @MS - check the offsets
               in_fifo_rd_en = 1;
 
               if (!m_axis_tlast)
