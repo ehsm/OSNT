@@ -3,19 +3,19 @@
  *  NetFPGA-10G http://www.netfpga.org
  *
  *  File:
- *        nf10_inter_packet_delay.v
+ *        nf10_rate_limiter.v
  *
  *  Library:
- *        /pcores/nf10_inter_packet_delay_v1_00_a
+ *        /pcores/nf10_rate_limiter_v1_00_a
  *
  *  Module:
- *        nf10_inter_packet_delay
+ *        nf10_rate_limiter
  *
  *  Author:
  *        Muhammad Shahbaz
  *
  *  Description:
- *
+ *        Limits the rate at which packets pass through.
  *
  *  Copyright notice:
  *        Copyright (C) 2010, 2011 The Board of Trustees of The Leland Stanford
@@ -42,7 +42,7 @@
 `uselib lib=unisims_ver
 `uselib lib=proc_common_v3_00_a
 
-module nf10_inter_packet_delay
+module nf10_rate_limiter
 #(
   parameter C_S_AXI_DATA_WIDTH    = 32,
   parameter C_S_AXI_ADDR_WIDTH    = 32,
@@ -112,9 +112,8 @@ module nf10_inter_packet_delay
   wire     [NUM_RW_REGS*C_S_AXI_DATA_WIDTH-1 : 0] rw_regs;
 
   wire                                            sw_rst;
-  wire                                            ipd_en;
-  wire                                            use_reg_val;
-  wire     [C_S_AXI_DATA_WIDTH-1 : 0]             delay_reg_val;
+  wire                                            rate_lim_en;
+  wire     [C_S_AXI_DATA_WIDTH-1 : 0]             rate_in_bits;
 
   // -- AXILITE IPIF
   axi_lite_ipif_1bar #
@@ -187,20 +186,19 @@ module nf10_inter_packet_delay
   // -- Register assignments
 
   assign sw_rst        = rw_regs[(C_S_AXI_DATA_WIDTH*0)+0];
-  assign ipd_en        = rw_regs[(C_S_AXI_DATA_WIDTH*0)+1];
-  assign use_reg_val   = rw_regs[(C_S_AXI_DATA_WIDTH*0)+2];
+  assign rate_lim_en   = rw_regs[(C_S_AXI_DATA_WIDTH*0)+1];
 
-  assign delay_reg_val = rw_regs[(C_S_AXI_DATA_WIDTH*2)-1:(C_S_AXI_DATA_WIDTH*1)];
+  assign rate_in_bits  = rw_regs[(C_S_AXI_DATA_WIDTH*2)-1:(C_S_AXI_DATA_WIDTH*1)];
 
   // -- Inter Packet Delay
-  inter_packet_delay #
+  rate_limiter #
   (
     .C_M_AXIS_DATA_WIDTH  ( C_M_AXIS_DATA_WIDTH ),
     .C_S_AXIS_DATA_WIDTH  ( C_S_AXIS_DATA_WIDTH ),
     .C_M_AXIS_TUSER_WIDTH ( C_M_AXIS_TUSER_WIDTH ),
     .C_S_AXIS_TUSER_WIDTH ( C_S_AXIS_TUSER_WIDTH ),
     .C_S_AXI_DATA_WIDTH   ( C_S_AXI_DATA_WIDTH )
-   ) inter_packet_delay_inst
+   ) rate_limiter_inst
   (
     // Global Ports
     .axi_aclk             ( S_AXI_ACLK ),
@@ -223,9 +221,8 @@ module nf10_inter_packet_delay
     .s_axis_tlast         ( S_AXIS_TLAST ),
 
     .sw_rst               ( sw_rst ),
-    .ipd_en               ( ipd_en ),
-    .use_reg_val          ( use_reg_val ),
-    .delay_reg_val        ( delay_reg_val )
+    .rate_lim_en          ( rate_lim_en ),
+    .rate_in_bits         ( rate_in_bits )
   );
 
 endmodule

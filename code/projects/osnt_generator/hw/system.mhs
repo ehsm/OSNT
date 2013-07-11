@@ -518,3 +518,21 @@ BEGIN dma
  PORT pci_exp_0_txn = pcie_top_0_pci_exp_0_txn
 END
 
+BEGIN nf10_rate_limiter
+ PARAMETER INSTANCE = nf10_rate_limiter_0
+ PARAMETER HW_VER = 1.00.a
+ PARAMETER C_BASEADDR = 0x77e00000
+ PARAMETER C_HIGHADDR = 0x77e0ffff
+ BUS_INTERFACE S_AXI = axi_interconnect_0
+ PORT S_AXI_ACLK = control_clk
+END
+
+BEGIN nf10_inter_packet_delay
+ PARAMETER INSTANCE = nf10_inter_packet_delay_0
+ PARAMETER HW_VER = 1.00.a
+ PARAMETER C_BASEADDR = 0x76600000
+ PARAMETER C_HIGHADDR = 0x7660ffff
+ BUS_INTERFACE S_AXI = axi_interconnect_0
+ PORT S_AXI_ACLK = control_clk
+END
+
