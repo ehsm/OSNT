@@ -51,7 +51,7 @@ module inter_packet_delay
 (
     // Global Ports
     input                                      axi_aclk,
-    input                                      axi_resetn,
+    input                                      axi_aresetn,
 
     // Master Stream Ports (interface to data path)
     output reg [C_M_AXIS_DATA_WIDTH - 1:0]     m_axis_tdata,
@@ -122,7 +122,7 @@ module inter_packet_delay
         .prog_full   (),
         .nearly_full (in_fifo_nearly_full),
         .empty       (in_fifo_empty),
-        .reset       (~axi_resetn || sw_rst),
+        .reset       (~axi_aresetn || sw_rst),
         .clk         (axi_aclk)
       );
 
@@ -149,8 +149,8 @@ module inter_packet_delay
       m_axis_tlast = s_axis_tlast;
     end
     else begin
-      s_axis_tready = !in_fifo_nearly_full && s_axis_tvalid;
-      in_fifo_wr_en = s_axis_tready;
+      s_axis_tready = !in_fifo_nearly_full;
+      in_fifo_wr_en = s_axis_tready && s_axis_tvalid;
 
       case (state)
         IN_PKT_HEADER: begin
@@ -160,7 +160,7 @@ module inter_packet_delay
             if (m_axis_tready) begin
 	            // Get the delay value for the next packet
               delay_val_c = timer_ticks + ((use_reg_val) ? delay_reg_val
-                                                        : in_fifo_tuser[63:32]); // @MS - check the offsets
+                                                         : in_fifo_tuser[63:32]); // Check the offsets --- MS
               in_fifo_rd_en = 1;
 
               if (!m_axis_tlast)
@@ -186,7 +186,7 @@ module inter_packet_delay
 
   // ---- Primary State Machine [Sequential]
   always @ (posedge axi_aclk) begin
-    if(~axi_resetn || sw_rst) begin
+    if(!axi_aresetn || sw_rst) begin
       state <= IN_PKT_HEADER;
       timer_ticks <= {64{1'b0}};
       delay_val <= {64{1'b0}};
