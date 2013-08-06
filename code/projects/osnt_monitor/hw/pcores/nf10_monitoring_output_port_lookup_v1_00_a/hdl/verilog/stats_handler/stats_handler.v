@@ -133,6 +133,17 @@
 	reg [C_S_AXI_DATA_WIDTH-1:0] time_high_tmp;
         reg [C_S_AXI_DATA_WIDTH-1:0] time_low_tmp;
  
+        reg [C_S_AXI_DATA_WIDTH-1:0] pkt_cnt_tmp_next [NUM_PHY-1:0];
+        reg [C_S_AXI_DATA_WIDTH-1:0] bytes_cnt_tmp_next [NUM_PHY-1:0];
+        reg [C_S_AXI_DATA_WIDTH-1:0] vlan_cnt_tmp_next [NUM_PHY-1:0];
+        reg [C_S_AXI_DATA_WIDTH-1:0] ip_cnt_tmp_next [NUM_PHY-1:0];
+        reg [C_S_AXI_DATA_WIDTH-1:0] tcp_cnt_tmp_next [NUM_PHY-1:0];
+        reg [C_S_AXI_DATA_WIDTH-1:0] udp_cnt_tmp_next [NUM_PHY-1:0];
+
+        reg [C_S_AXI_DATA_WIDTH-1:0] time_high_tmp_next;
+        reg [C_S_AXI_DATA_WIDTH-1:0] time_low_tmp_next;
+
+
 	wire [NUM_INPUT_QUEUES-1:0]  pkt_src;
 	wire [BYTES_COUNT_WIDTH-1:0] bytes;
 	wire	                     is_ip;
@@ -140,7 +151,7 @@
 	wire			     is_udp;
 	wire			     is_tcp;
 
-	reg [1:0] index_phy;
+	reg [NUM_PHY-1:0] 	     valid_phy;
 
 	integer	i;
 
@@ -148,14 +159,14 @@
 
 
   	always @ (*) begin
-        	index_phy = 2'd0;
+        	valid_phy = 2'd0;
         	if(pkt_valid) begin
                 	case(pkt_src)
-                        	8'b00000001: index_phy = 2'd0;
-                        	8'b00000100: index_phy = 2'd1;
-                        	8'b00010000: index_phy = 2'd2;
-                        	8'b01000000: index_phy = 2'd3;
-                        	default    : index_phy = 2'd0;
+                        	8'b00000001: valid_phy = 'h1;
+                        	8'b00000100: valid_phy = 'h2;
+                        	8'b00010000: valid_phy = 'h4;
+                        	8'b01000000: valid_phy = 'h8;
+                        	default    : valid_phy = 'h0;
                 	endcase
         	end
    	end
@@ -167,6 +178,43 @@
 	assign is_udp  = (pkt_attributes[FLAG_UDP]);
 	assign is_vlan = (pkt_attributes[FLAG_VLAN_Q] | pkt_attributes[FLAG_VLAN_AD]);
 
+
+
+	generate
+	genvar k;
+	for(k=0;k<NUM_PHY;k=k+1) begin: statistics_freeze
+		always@(pkt_cnt[k],bytes_cnt[k],vlan_cnt[k],ip_cnt[k],tcp_cnt[k],udp_cnt[k],stats_freeze,pkt_cnt_tmp[k],bytes_cnt_tmp[k],vlan_cnt_tmp[k],ip_cnt_tmp[k],tcp_cnt_tmp[k],udp_cnt_tmp[k])begin
+	//	always@(*)begin
+			if(!stats_freeze) begin
+				pkt_cnt_tmp_next[k] = pkt_cnt[k];
+                        	bytes_cnt_tmp_next[k] = bytes_cnt[k];
+                        	vlan_cnt_tmp_next[k] = vlan_cnt[k];
+                        	ip_cnt_tmp_next[k] = ip_cnt[k];
+                        	tcp_cnt_tmp_next[k] = tcp_cnt[k];
+                        	udp_cnt_tmp_next[k] = udp_cnt[k];
+			end
+			else begin
+                                pkt_cnt_tmp_next[k] = pkt_cnt_tmp[k];
+                                bytes_cnt_tmp_next[k] = bytes_cnt_tmp[k];
+                                vlan_cnt_tmp_next[k] = vlan_cnt_tmp[k];
+                                ip_cnt_tmp_next[k] = ip_cnt_tmp[k];
+                                tcp_cnt_tmp_next[k] = tcp_cnt_tmp[k];
+                                udp_cnt_tmp_next[k] = udp_cnt_tmp[k];
+                        end			
+		 end
+	end
+	endgenerate
+
+	always@(*) begin
+		if(!stats_freeze) begin
+			time_high_tmp_next = stamp_counter[TIMESTAMP_WIDTH-1:32];
+                        time_low_tmp_next = stamp_counter[31:0];
+		end
+		else begin
+			time_high_tmp_next = time_high_tmp;
+                        time_low_tmp_next = time_low_tmp;
+		end
+	end
 
   	always @ (posedge clk) begin
     		if (reset) begin
@@ -200,27 +248,24 @@
                         end
 		end
     		else begin
-			if(pkt_valid) begin
-                                pkt_cnt[index_phy] <= pkt_cnt[index_phy]+1;
-                                bytes_cnt[index_phy] <= bytes_cnt[index_phy]+bytes;
-                                vlan_cnt[index_phy] <= vlan_cnt[index_phy]+is_vlan;
-                                ip_cnt[index_phy] <= ip_cnt[index_phy]+is_ip;
-                                tcp_cnt[index_phy] <= tcp_cnt[index_phy]+is_tcp;
-                                udp_cnt[index_phy] <= udp_cnt[index_phy]+is_udp;
-			end
-
-			if(!stats_freeze) begin
-                        	for(i=0;i<NUM_PHY;i=i+1) begin
-					pkt_cnt_tmp[i] <= pkt_cnt[i];
-                                	bytes_cnt_tmp[i] <= bytes_cnt[i];
-                                	vlan_cnt_tmp[i] <= vlan_cnt[i];
-                                	ip_cnt_tmp[i] <= ip_cnt[i];
-                                	tcp_cnt_tmp[i] <= tcp_cnt[i];
-                                	udp_cnt_tmp[i] <= udp_cnt[i];
+			for(i=0;i<NUM_PHY;i=i+1) begin
+				if(valid_phy[i]) begin
+                                	pkt_cnt[i] <= pkt_cnt[i]+1;
+                                	bytes_cnt[i] <= bytes_cnt[i]+bytes;
+                                	vlan_cnt[i] <= vlan_cnt[i]+is_vlan;
+                                	ip_cnt[i] <= ip_cnt[i]+is_ip;
+                                	tcp_cnt[i] <= tcp_cnt[i]+is_tcp;
+                                	udp_cnt[i] <= udp_cnt[i]+is_udp;
 				end
-				time_high_tmp <= stamp_counter[TIMESTAMP_WIDTH-1:32];
-				time_low_tmp  <= stamp_counter[31:0];
+                                pkt_cnt_tmp[i] <= pkt_cnt_tmp_next[i];
+                                bytes_cnt_tmp[i] <= bytes_cnt_tmp_next[i];
+                                vlan_cnt_tmp[i] <= vlan_cnt_tmp_next[i];
+                                ip_cnt_tmp[i] <= ip_cnt_tmp_next[i];
+                                tcp_cnt_tmp[i] <= tcp_cnt_tmp_next[i];
+                                udp_cnt_tmp[i] <= udp_cnt_tmp_next[i];
 			end
+			time_high_tmp <= time_high_tmp_next;
+			time_low_tmp <= time_low_tmp_next;
 		end
 	end
 

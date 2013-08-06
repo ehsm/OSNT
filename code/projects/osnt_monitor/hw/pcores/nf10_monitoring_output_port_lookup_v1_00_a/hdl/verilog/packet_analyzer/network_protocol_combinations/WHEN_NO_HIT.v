@@ -54,11 +54,10 @@
 
 	//------------------ Internal Parameter ---------------------------
 
-        localparam NUM_STATES   = 4;
+        localparam NUM_STATES   = 3;
         localparam WAIT_PKT     = 1;
-        localparam PKT_WORD1    = 2;
-        localparam PKT_WAIT_HDR = 4;
-        localparam PKT_WAIT_EOP = 8;
+        localparam PKT_WAIT_HDR = 2;
+        localparam PKT_WAIT_EOP = 4;
 
         localparam IP_WIDTH     = 32;
         localparam PORT_WIDTH   = 16;
@@ -129,7 +128,7 @@
 			if(in_valid_d0) begin
 				pkt_input_if_w = in_tuser_d0[SRC_PORT_POS+NUM_INPUT_QUEUES-1:SRC_PORT_POS];
 				pkt_bytes_w = in_tuser_d0[15:0];
-				nxt_state = PKT_WORD1;
+				nxt_state = PKT_WAIT_HDR;
 
 	 		end
 	 	end
