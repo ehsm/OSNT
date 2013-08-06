@@ -71,8 +71,7 @@ module per_port_arbiter
     input      [C_S_NUM_INPUT_IF-1:0]                              s_axis_tlast_grp,
 
 	  // Misc
-    input                                           sw_rst,
-    input      [31:0]                               timer_ticks
+    input                                           sw_rst
 );
 
   // -- Local Functions
@@ -105,7 +104,8 @@ module per_port_arbiter
   wire                                       s_axis_tready [0:C_S_NUM_INPUT_IF-1];
   wire                                       s_axis_tlast [0:C_S_NUM_INPUT_IF-1];
 
-  wire  [32:0]                               cmp_result;
+  wire  [+1:]                                arrival_time [0:C_S_NUM_INPUT_IF-1];
+
   wire  [log2(C_S_NUM_INPUT_IF)-1:0]         cmp_if;
 
   // -- Unpack AXI Slave Interface
@@ -140,35 +140,38 @@ module per_port_arbiter
 
       assign s_axis_tready[i] = !in_fifo_nearly_full[i];
       assign in_fifo_wr_en[i] = s_axis_tvalid[i] && s_axis_tready[i];
+
+      assign arrival_time[i] = {in_fifo_empty[i], in_fifo_tuser[i][:]}; // Concatenating with fifo_empty signal to make the arrival time
+                                                                        // large incase the given fifo is empty, to avoid garbage comparison.
     end
   endgenerate
 
   // --- Priority Arbiter
   generate
     for (i=1; i<C_S_NUM_INPUT_IF; i=i+1) begin: _arbiter
-      reg [32:0] cmp_result = 33'b0;
+      reg [32:0] cmp_arrival_time = 33'b0;
       reg [log2(C_S_NUM_INPUT_IF)-1:0] cmp_if = 0;
 
       if (i==1) begin : _1
         always @ * begin
-          if ({!in_fifo_empty[i-1], in_fifo_tuser[i-1][:]} <= {!in_fifo_empty[i], in_fifo_tuser[i][:]}) begin
-            cmp_result = {!in_fifo_empty[i-1], in_fifo_tuser[i-1][:]};
+          if (arrival_time[i-1] < arrival_time[i]) begin
+            cmp_arrival_time = arrival_time[i-1];
             cmp_if = i-1;
           end
           else begin
-            cmp_result = {!in_fifo_empty[i, in_fifo_tuser[i][:]};
+            cmp_arrival_time = arrival_time[i];
             cmp_if = i;
           end
         end
       end
       else begin : _n
         always @ * begin
-          if (_arbiter[i-1].cmp_result <= {!in_fifo_empty[i], in_fifo_tuser[i][:]}) begin
-            cmp_result = _arbiter[i-1].cmp_result;
+          if (_arbiter[i-1].cmp_arrival_time < arrival_time[i]) begin
+            cmp_arrival_time = _arbiter[i-1].cmp_arrival_time;
             cmp_if = _arbiter[i-1].cmp_if;
           end
           else begin
-            cmp_result = {!in_fifo_empty[i, in_fifo_tuser[i][:]};
+            cmp_arrival_time = arrival_time[i];
             cmp_if = i;
           end
         end
@@ -176,7 +179,6 @@ module per_port_arbiter
     end
   endgenerate
 
-  assign cmp_result = _arbiter[C_S_NUM_INPUT_IF-1].cmp_result;
   assign cmp_if = _arbiter[C_S_NUM_INPUT_IF-1].cmp_if;
 
   // ---- Primary State Machine [Combinational]

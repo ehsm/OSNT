@@ -121,10 +121,7 @@ module nf10_rate_limiter
   input      [C_S_AXIS_TUSER_WIDTH-1:0]           s_axis_tuser_4,
   input                                           s_axis_tvalid_4,
   output                                          s_axis_tready_4,
-  input                                           s_axis_tlast_4,
-
-  // Misc
-  input      [31:0]                               timer_ticks
+  input                                           s_axis_tlast_4
 );
 
   // -- Internal Parameters
@@ -231,8 +228,7 @@ module nf10_rate_limiter
                            s_axis_tlast_1,
                            s_axis_tlast_0} ),
 
-    .sw_rst               ( sw_rst ),
-    .timer_ticks          ( timer_ticks )
+    .sw_rst               ( sw_rst )
   );
 
   assign {s_axis_tready_4,
