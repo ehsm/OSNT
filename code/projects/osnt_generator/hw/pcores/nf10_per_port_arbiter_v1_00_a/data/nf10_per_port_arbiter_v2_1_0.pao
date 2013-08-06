@@ -1,0 +1,9 @@
+##############################################################################
+## Filename:          /media/sf_Repository/osnt/code/projects/osnt_generator/hw/pcores/nf10_per_port_arbiter_v1_00_a/data/nf10_per_port_arbiter_v2_1_0.pao
+## Description:       Peripheral Analysis Order
+## Date:              Wed Jul 10 20:53:23 2013 (by Create and Import Peripheral Wizard)
+##############################################################################
+
+lib nf10_proc_common_v1_00_a all
+lib nf10_per_port_arbiter_v1_00_a nf10_per_port_arbiter verilog
+lib nf10_per_port_arbiter_v1_00_a per_port_arbiter verilog
