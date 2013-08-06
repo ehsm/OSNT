@@ -60,35 +60,35 @@ module nf10_inter_packet_delay
   // Slave AXI Ports
   input                                           s_axi_aclk,
   input                                           s_axi_aresetn,
-  input      [C_S_AXI_ADDR_WIDTH-1 : 0]           s_axi_awaddr,
+  input      [C_S_AXI_ADDR_WIDTH-1:0]             s_axi_awaddr,
   input                                           s_axi_awvalid,
-  input      [C_S_AXI_DATA_WIDTH-1 : 0]           s_axi_wdata,
-  input      [C_S_AXI_DATA_WIDTH/8-1 : 0]         s_axi_wstrb,
+  input      [C_S_AXI_DATA_WIDTH-1:0]             s_axi_wdata,
+  input      [C_S_AXI_DATA_WIDTH/8-1:0]           s_axi_wstrb,
   input                                           s_axi_wvalid,
   input                                           s_axi_bready,
-  input      [C_S_AXI_ADDR_WIDTH-1 : 0]           s_axi_araddr,
+  input      [C_S_AXI_ADDR_WIDTH-1:0]             s_axi_araddr,
   input                                           s_axi_arvalid,
   input                                           s_axi_rready,
   output                                          s_axi_arready,
-  output     [C_S_AXI_DATA_WIDTH-1 : 0]           s_axi_rdata,
-  output     [1 : 0]                              s_axi_rresp,
+  output     [C_S_AXI_DATA_WIDTH-1:0]             s_axi_rdata,
+  output     [1:0]                                s_axi_rresp,
   output                                          s_axi_rvalid,
   output                                          s_axi_wready,
-  output     [1 :0]                               s_axi_bresp,
+  output     [1:0]                                s_axi_bresp,
   output                                          s_axi_bvalid,
   output                                          s_axi_awready,
 
   // Master Stream Ports (interface to data path)
-  output     [C_M_AXIS_DATA_WIDTH - 1:0]          m_axis_tdata,
-  output     [((C_M_AXIS_DATA_WIDTH / 8)) - 1:0]  m_axis_tstrb,
+  output     [C_M_AXIS_DATA_WIDTH-1:0]            m_axis_tdata,
+  output     [((C_M_AXIS_DATA_WIDTH/8))-1:0]      m_axis_tstrb,
   output     [C_M_AXIS_TUSER_WIDTH-1:0]           m_axis_tuser,
   output                                          m_axis_tvalid,
   input                                           m_axis_tready,
   output                                          m_axis_tlast,
 
   // Slave Stream Ports (interface to RX queues)
-  input      [C_S_AXIS_DATA_WIDTH - 1:0]          s_axis_tdata,
-  input      [((C_S_AXIS_DATA_WIDTH / 8)) - 1:0]  s_axis_tstrb,
+  input      [C_S_AXIS_DATA_WIDTH-1:0]            s_axis_tdata,
+  input      [((C_S_AXIS_DATA_WIDTH/8))-1:0]      s_axis_tstrb,
   input      [C_S_AXIS_TUSER_WIDTH-1:0]           s_axis_tuser,
   input                                           s_axis_tvalid,
   output                                          s_axis_tready,
@@ -99,12 +99,12 @@ module nf10_inter_packet_delay
   localparam NUM_RW_REGS       = 2;
 
   // -- Signals
-  wire     [NUM_RW_REGS*C_S_AXI_DATA_WIDTH-1 : 0] rw_regs;
+  wire     [NUM_RW_REGS*C_S_AXI_DATA_WIDTH-1:0]   rw_regs;
 
   wire                                            sw_rst;
   wire                                            ipd_en;
   wire                                            use_reg_val;
-  wire     [C_S_AXI_DATA_WIDTH-1 : 0]             delay_reg_val;
+  wire     [C_S_AXI_DATA_WIDTH-1:0]               delay_reg_val;
 
   // -- AXILITE Registers
   axi_lite_regs_1bar

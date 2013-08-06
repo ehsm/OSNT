@@ -54,16 +54,16 @@ module inter_packet_delay
     input                                      axi_aresetn,
 
     // Master Stream Ports (interface to data path)
-    output reg [C_M_AXIS_DATA_WIDTH - 1:0]     m_axis_tdata,
-    output reg [((C_M_AXIS_DATA_WIDTH / 8)) - 1:0] m_axis_tstrb,
+    output reg [C_M_AXIS_DATA_WIDTH-1:0]       m_axis_tdata,
+    output reg [((C_M_AXIS_DATA_WIDTH/8))-1:0] m_axis_tstrb,
     output reg [C_M_AXIS_TUSER_WIDTH-1:0]      m_axis_tuser,
     output reg                                 m_axis_tvalid,
     input                                      m_axis_tready,
     output reg                                 m_axis_tlast,
 
     // Slave Stream Ports (interface to RX queues)
-    input [C_S_AXIS_DATA_WIDTH - 1:0]          s_axis_tdata,
-    input [((C_S_AXIS_DATA_WIDTH / 8)) - 1:0]  s_axis_tstrb,
+    input [C_S_AXIS_DATA_WIDTH-1:0]            s_axis_tdata,
+    input [((C_S_AXIS_DATA_WIDTH/8))-1:0]      s_axis_tstrb,
     input [C_S_AXIS_TUSER_WIDTH-1:0]           s_axis_tuser,
     input                                      s_axis_tvalid,
     output reg                                 s_axis_tready,
@@ -122,7 +122,7 @@ module inter_packet_delay
         .prog_full   (),
         .nearly_full (in_fifo_nearly_full),
         .empty       (in_fifo_empty),
-        .reset       (~axi_aresetn || sw_rst),
+        .reset       (!axi_aresetn || sw_rst),
         .clk         (axi_aclk)
       );
 
@@ -160,7 +160,7 @@ module inter_packet_delay
             if (m_axis_tready) begin
 	            // Get the delay value for the next packet
               delay_val_c = timer_ticks + ((use_reg_val) ? delay_reg_val
-                                                         : in_fifo_tuser[63:32]); // Check the offsets --- MS
+                                                         : in_fifo_tuser[63:32]); // check the offsets --- MS
               in_fifo_rd_en = 1;
 
               if (!m_axis_tlast)
