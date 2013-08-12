@@ -150,7 +150,7 @@
     		.in_tlast 	(pkt_tlast),
     		.in_eoh 	(pkt_eoh),
 		.in_tuser	(pkt_tuser),
-    																							 
+ 
     		.pkt_valid 	(DECLARATIONS_W[`PRIORITY_WHEN_NO_HIT].pkt_valid_int),
     		.pkt_attributes (DECLARATIONS_W[`PRIORITY_WHEN_NO_HIT].pkt_attributes_int),
 
