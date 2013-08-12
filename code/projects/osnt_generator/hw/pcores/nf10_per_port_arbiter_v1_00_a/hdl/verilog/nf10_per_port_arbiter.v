@@ -55,7 +55,7 @@ module nf10_rate_limiter
   parameter C_S_AXIS_DATA_WIDTH	  = 256,
   parameter C_M_AXIS_TUSER_WIDTH  = 128,
   parameter C_M_AXIS_TUSER_WIDTH  = 128,
-  parameter C_S_NUM_INPUT_IF      = 5
+  parameter C_S_NUM_QUEUES      = 5
 )
 (
   // Clock and Reset
@@ -133,7 +133,7 @@ module nf10_rate_limiter
   wire     [NUM_RW_REGS*C_S_AXI_DATA_WIDTH-1 : 0] rw_regs;
   wire                                            sw_rst;
 
-  wire     [C_S_NUM_INPUT_IF-1:0]                 s_axis_tready_c;
+  wire     [C_S_NUM_QUEUES-1:0]                 s_axis_tready_c;
 
   // -- AXILITE REGs
   axi_lite_regs_1bar
@@ -186,7 +186,7 @@ module nf10_rate_limiter
     .C_m_axis_tuser_WIDTH ( C_M_AXIS_TUSER_WIDTH ),
     .C_m_axis_tuser_WIDTH ( C_M_AXIS_TUSER_WIDTH ),
     .C_S_AXI_DATA_WIDTH   ( C_S_AXI_DATA_WIDTH ),
-    .C_S_NUM_INPUT_IF     ( C_S_NUM_INPUT_IF )
+    .C_S_NUM_QUEUES       ( C_S_NUM_QUEUES )
   )
     per_port_arbiter
   (

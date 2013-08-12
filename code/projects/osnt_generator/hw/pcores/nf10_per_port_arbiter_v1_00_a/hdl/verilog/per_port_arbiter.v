@@ -47,7 +47,7 @@ module per_port_arbiter
     parameter C_M_AXIS_TUSER_WIDTH = 128,
     parameter C_S_AXIS_TUSER_WIDTH = 128,
     parameter C_S_AXI_DATA_WIDTH   = 32,
-    parameter C_S_NUM_INPUT_IF     = 5
+    parameter C_S_NUM_QUEUES     = 5
 )
 (
     // Global Ports
@@ -63,12 +63,12 @@ module per_port_arbiter
     output reg                                      m_axis_tlast,
 
     // Slave Stream Ports (interface to RX queues)
-    input      [C_S_NUM_INPUT_IF*C_S_AXIS_DATA_WIDTH-1:0]          s_axis_tdata_grp,
-    input      [(C_S_NUM_INPUT_IF*(C_S_AXIS_DATA_WIDTH/8))-1:0]    s_axis_tstrb_grp,
-    input      [C_S_NUM_INPUT_IF*C_S_AXIS_TUSER_WIDTH-1:0]         s_axis_tuser_grp,
-    input      [C_S_NUM_INPUT_IF-1:0]                              s_axis_tvalid_grp,
-    output     [C_S_NUM_INPUT_IF-1:0]                              s_axis_tready_grp,
-    input      [C_S_NUM_INPUT_IF-1:0]                              s_axis_tlast_grp,
+    input      [C_S_NUM_QUEUES*C_S_AXIS_DATA_WIDTH-1:0]          s_axis_tdata_grp,
+    input      [(C_S_NUM_QUEUES*(C_S_AXIS_DATA_WIDTH/8))-1:0]    s_axis_tstrb_grp,
+    input      [C_S_NUM_QUEUES*C_S_AXIS_TUSER_WIDTH-1:0]         s_axis_tuser_grp,
+    input      [C_S_NUM_QUEUES-1:0]                              s_axis_tvalid_grp,
+    output     [C_S_NUM_QUEUES-1:0]                              s_axis_tready_grp,
+    input      [C_S_NUM_QUEUES-1:0]                              s_axis_tlast_grp,
 
 	  // Misc
     input                                           sw_rst
@@ -88,29 +88,29 @@ module per_port_arbiter
   // -- Signals
   genvar                                     i;
 
-  reg                                        in_fifo_rd_en [0:C_S_NUM_INPUT_IF-1];
-  reg                                        in_fifo_wr_en [0:C_S_NUM_INPUT_IF-1];
-  wire                                       in_fifo_nearly_full [0:C_S_NUM_INPUT_IF-1];
-  wire                                       in_fifo_empty [0:C_S_NUM_INPUT_IF-1];
-  wire  [C_M_AXIS_DATA_WIDTH-1:0]            in_fifo_tdata [0:C_S_NUM_INPUT_IF-1];
-  wire  [C_M_AXIS_TUSER_WIDTH-1:0]           in_fifo_tuser [0:C_S_NUM_INPUT_IF-1];
-  wire  [C_M_AXIS_DATA_WIDTH/8-1:0]          in_fifo_tstrb [0:C_S_NUM_INPUT_IF-1];
-  wire                                       in_fifo_tlast [0:C_S_NUM_INPUT_IF-1];
+  reg                                        in_fifo_rd_en [0:C_S_NUM_QUEUES-1];
+  reg                                        in_fifo_wr_en [0:C_S_NUM_QUEUES-1];
+  wire                                       in_fifo_nearly_full [0:C_S_NUM_QUEUES-1];
+  wire                                       in_fifo_empty [0:C_S_NUM_QUEUES-1];
+  wire  [C_M_AXIS_DATA_WIDTH-1:0]            in_fifo_tdata [0:C_S_NUM_QUEUES-1];
+  wire  [C_M_AXIS_TUSER_WIDTH-1:0]           in_fifo_tuser [0:C_S_NUM_QUEUES-1];
+  wire  [C_M_AXIS_DATA_WIDTH/8-1:0]          in_fifo_tstrb [0:C_S_NUM_QUEUES-1];
+  wire                                       in_fifo_tlast [0:C_S_NUM_QUEUES-1];
 
-  wire  [C_S_AXIS_DATA_WIDTH-1:0]            s_axis_tdata [0:C_S_NUM_INPUT_IF-1];
-  wire  [((C_S_AXIS_DATA_WIDTH/8))-1:0]      s_axis_tstrb [0:C_S_NUM_INPUT_IF-1];
-  wire  [C_S_AXIS_TUSER_WIDTH-1:0]           s_axis_tuser [0:C_S_NUM_INPUT_IF-1];
-  wire                                       s_axis_tvalid [0:C_S_NUM_INPUT_IF-1];
-  wire                                       s_axis_tready [0:C_S_NUM_INPUT_IF-1];
-  wire                                       s_axis_tlast [0:C_S_NUM_INPUT_IF-1];
+  wire  [C_S_AXIS_DATA_WIDTH-1:0]            s_axis_tdata [0:C_S_NUM_QUEUES-1];
+  wire  [((C_S_AXIS_DATA_WIDTH/8))-1:0]      s_axis_tstrb [0:C_S_NUM_QUEUES-1];
+  wire  [C_S_AXIS_TUSER_WIDTH-1:0]           s_axis_tuser [0:C_S_NUM_QUEUES-1];
+  wire                                       s_axis_tvalid [0:C_S_NUM_QUEUES-1];
+  wire                                       s_axis_tready [0:C_S_NUM_QUEUES-1];
+  wire                                       s_axis_tlast [0:C_S_NUM_QUEUES-1];
 
-  wire  [+1:]                                arrival_time [0:C_S_NUM_INPUT_IF-1];
+  wire  [+1:]                                arrival_time [0:C_S_NUM_QUEUES-1];
 
-  wire  [log2(C_S_NUM_INPUT_IF)-1:0]         cmp_if;
+  wire  [log2(C_S_NUM_QUEUES)-1:0]         cmp_if;
 
   // -- Unpack AXI Slave Interface
   generate
-    for (i=0; i<C_S_NUM_INPUT_IF; i=i+1) begin: unpack_s_axis
+    for (i=0; i<C_S_NUM_QUEUES; i=i+1) begin: unpack_s_axis
       s_axis_tdata[i] = s_axis_tdata_grp[C_S_AXIS_DATA_WIDTH*(i+1)-1:C_S_AXIS_DATA_WIDTH*i];
       s_axis_tstrb[i] = s_axis_tstrb_grp[(C_S_AXIS_DATA_WIDTH/8)*(i+1)-1:(C_S_AXIS_DATA_WIDTH/8)*i];
       s_axis_tuser[i] = s_axis_tuser_grp[C_S_AXIS_TUSER_WIDTH*(i+1)-1:C_S_AXIS_TUSER_WIDTH*i];
@@ -123,8 +123,8 @@ module per_port_arbiter
 
   // -- Modules and Logic
   generate
-    for (i=0; i<C_S_NUM_INPUT_IF; i=i+1) begin : input_fifo_grp
-      fallthrough_small_fifo #(.WIDTH(C_M_AXIS_DATA_WIDTH+C_M_AXIS_TUSER_WIDTH+C_M_AXIS_DATA_WIDTH/8+1), .MAX_DEPTH_BITS(2))
+    for (i=0; i<C_S_NUM_QUEUES; i=i+1) begin : input_fifo_grp
+      fallthrough_small_fifo #(.WIDTH(C_S_AXIS_DATA_WIDTH+C_S_AXIS_TUSER_WIDTH+C_S_AXIS_DATA_WIDTH/8+1), .MAX_DEPTH_BITS(2))
         _inst
           ( .din         ({s_axis_tlast[i], s_axis_tuser[i], s_axis_tstrb[i], s_axis_tdata[i]}),
             .wr_en       (in_fifo_wr_en[i]),
@@ -148,9 +148,9 @@ module per_port_arbiter
 
   // --- Priority Arbiter
   generate
-    for (i=0; i<C_S_NUM_INPUT_IF; i=i+1) begin: _arbiter
+    for (i=0; i<C_S_NUM_QUEUES; i=i+1) begin: _arbiter
       reg [32:0] cmp_arrival_time = 33'b0;
-      reg [log2(C_S_NUM_INPUT_IF)-1:0] cmp_if = 0;
+      reg [log2(C_S_NUM_QUEUES)-1:0] cmp_if = 0;
 
       if (i==0) begin : _0
         always @ * begin
@@ -173,11 +173,11 @@ module per_port_arbiter
     end
   endgenerate
 
-  assign cmp_if = _arbiter[C_S_NUM_INPUT_IF-1].cmp_if;
+  assign cmp_if = _arbiter[C_S_NUM_QUEUES-1].cmp_if;
 
   // ---- Primary State Machine [Combinational]
   always @ * begin
-    in_fifo_rd_en = {C_S_NUM_INPUT_IF{1'b0}};
+    in_fifo_rd_en = {C_S_NUM_QUEUES{1'b0}};
     in_fifo_rd_en[cmp_if] = m_axis_tvalid && m_axis_tready;
 
     m_axis_tdata = in_fifo_tdata[cmp_if];
