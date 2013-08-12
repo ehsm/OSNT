@@ -36,8 +36,9 @@ PARAMETER C_M_AXIS_TUSER_WIDTH = 128
 PARAMETER C_S_AXIS_TUSER_WIDTH = 128, BUS = S_AXI
 
 ## Ports
-PORT s_axi_aclk = "", DIR = I, SIGIS = CLK, BUS = M_AXIS:S_AXIS:S_AXI
-PORT s_axi_aresetn = "", DIR = I, SIGIS = RST
+PORT axi_aclk = "", DIR = I, SIGIS = CLK, BUS = M_AXIS:S_AXIS:S_AXI
+PORT axi_aresetn = "", DIR = I, SIGIS = RST
+
 PORT s_axi_awaddr = AWADDR, DIR = I, VEC = [(C_S_AXI_ADDR_WIDTH-1):0], ENDIAN = LITTLE, BUS = S_AXI
 PORT s_axi_awvalid = AWVALID, DIR = I, BUS = S_AXI
 PORT s_axi_wdata = WDATA, DIR = I, VEC = [(C_S_AXI_DATA_WIDTH-1):0], ENDIAN = LITTLE, BUS = S_AXI

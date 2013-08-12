@@ -148,20 +148,14 @@ module per_port_arbiter
 
   // --- Priority Arbiter
   generate
-    for (i=1; i<C_S_NUM_INPUT_IF; i=i+1) begin: _arbiter
+    for (i=0; i<C_S_NUM_INPUT_IF; i=i+1) begin: _arbiter
       reg [32:0] cmp_arrival_time = 33'b0;
       reg [log2(C_S_NUM_INPUT_IF)-1:0] cmp_if = 0;
 
-      if (i==1) begin : _1
+      if (i==0) begin : _0
         always @ * begin
-          if (arrival_time[i-1] < arrival_time[i]) begin
-            cmp_arrival_time = arrival_time[i-1];
-            cmp_if = i-1;
-          end
-          else begin
-            cmp_arrival_time = arrival_time[i];
-            cmp_if = i;
-          end
+          cmp_arrival_time = arrival_time[i];
+          cmp_if = i-1;
         end
       end
       else begin : _n

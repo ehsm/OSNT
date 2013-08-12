@@ -59,9 +59,11 @@ module nf10_rate_limiter
                                       // 1 - Leaky Bucket (not supported)}
 )
 (
+  // Clock and Reset
+  input                                           axi_aclk,
+  input                                           axi_aresetn,
+
   // Slave AXI Ports
-  input                                           s_axi_aclk,
-  input                                           s_axi_aresetn,
   input      [C_S_AXI_ADDR_WIDTH-1:0]             s_axi_awaddr,
   input                                           s_axi_awvalid,
   input      [C_S_AXI_DATA_WIDTH-1:0]             s_axi_wdata,
@@ -120,8 +122,8 @@ module nf10_rate_limiter
   )
     axi_lite_regs_1bar_inst
   (
-    .s_axi_aclk      (s_axi_aclk),
-    .s_axi_aresetn   (s_axi_aresetn),
+    .s_axi_aclk      (axi_aclk),
+    .s_axi_aresetn   (axi_aresetn),
     .s_axi_awaddr    (s_axi_awaddr),
     .s_axi_awvalid   (s_axi_awvalid),
     .s_axi_wdata     (s_axi_wdata),
@@ -166,8 +168,8 @@ generate
       _inst
     (
       // Global Ports
-      .axi_aclk             ( s_axi_aclk ),
-      .axi_aresetn          ( s_axi_aresetn ),
+      .axi_aclk             ( axi_aclk ),
+      .axi_aresetn          ( axi_aresetn ),
 
       // Master Stream Ports (interface to data path)
       .m_axis_tdata         ( m_axis_tdata ),
