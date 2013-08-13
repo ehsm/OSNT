@@ -61,7 +61,7 @@ module nf10_pcap_replay_uengine
   parameter QDR_BW_WIDTH          = 4,
   parameter QDR_CQ_WIDTH          = 1,
   parameter QDR_CLK_WIDTH         = 1,
-  parameter QDR_MB_WIDTH          = 3
+  parameter QDR_MASTERBANK_WIDTH  = 3
 )
 (
   // Clock and Reset
@@ -153,7 +153,7 @@ module nf10_pcap_replay_uengine
   output                                          qdr_r_n_2,
 
   (* S = "TRUE" *)
-  input      [QDR_MB_WIDTH-1:0]                   qdr_mb_sel
+  input      [QDR_MASTERBANK_WIDTH-1:0]           qdr_masterbank_sel
 );
 
   // -- Internal Parameters
@@ -221,7 +221,7 @@ module nf10_pcap_replay_uengine
     .QDR_BW_WIDTH         ( QDR_BW_WIDTH ),
     .QDR_CLK_WIDTH        ( QDR_CLK_WIDTH ),
     .QDR_CQ_WIDTH         ( QDR_CQ_WIDTH ),
-    .QDR_MB_WIDTH         ( QDR_MB_WIDTH )
+    .QDR_MASTERBANK_WIDTH ( QDR_MASTERBANK_WIDTH )
    )
      pcap_replay_uengine_inst
   (
@@ -288,7 +288,7 @@ module nf10_pcap_replay_uengine
     .qdr_d_2              ( qdr_d_2 ),
     .qdr_r_n_2            ( qdr_r_n_2 ),
 
-    .qdr_mb_sel           ( qdr_mb_sel ),
+    .qdr_masterbank_sel   ( qdr_masterbank_sel ),
 
     // Misc
     .sw_rst               ( sw_rst )

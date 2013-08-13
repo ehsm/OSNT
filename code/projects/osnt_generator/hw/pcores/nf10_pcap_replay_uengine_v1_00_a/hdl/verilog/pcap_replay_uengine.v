@@ -53,7 +53,7 @@ module pcap_replay_uengine
     parameter QDR_BW_WIDTH         = 4,
     parameter QDR_CQ_WIDTH         = 1,
     parameter QDR_CLK_WIDTH        = 1,
-    parameter QDR_MB_WIDTH         = 3
+    parameter QDR_MASTERBANK_WIDTH = 3
 )
 (
     // Global Ports
@@ -123,7 +123,7 @@ module pcap_replay_uengine
     output [(QDR_DATA_WIDTH)-1:0]              qdr_d_2,
     output                                     qdr_r_n_2,
 
-    input [QDR_MB_WIDTH-1:0]                   qdr_mb_sel,
+    input [QDR_MB_WIDTH-1:0]                   qdr_masterbank_sel,
 
 	  // Misc
     input                                      sw_rst
@@ -144,73 +144,34 @@ module pcap_replay_uengine
 
   // -- Signals
 
-  wire                      qdr_reset;
-
   // -- Modules and Logic
 
-  AxiToFifo #(
-    .TDATA_WIDTH         (TDATA_WIDTH),
-    .CROPPED_TDATA_WIDTH (CROPPED_TDATA_WIDTH),
-    .TUSER_WIDTH         (TUSER_WIDTH),
-    .TID_WIDTH           (TID_WIDTH),
-    .TDEST_WIDTH         (TDEST_WIDTH),
-    .NUM_QUEUES          (NUM_QUEUES),
-    .QUEUE_ID_WIDTH      (QUEUE_ID_WIDTH)
-  )
-    axi2fifo_inst
+  axis_to_fifo #
   (
-    .clk                 (axi_aclk),
-    .reset               (!axi_aresetn),
-    .tvalid              (s_axis_tvalid),
-    .tready              (s_axis_tready),
-    .tdata               (s_axis_tdata),
-    .tstrb               (s_axis_tstrb),
-    .tlast               (s_axis_tlast),
-    .tuser               (s_axis_tuser),
-    .tid                 (),
-    .tdest               (),
-    .memclk              (qdr_clk),
-    .memreset            (qdr_reset),
-    .r_inc               (r_inc_in),
-    .r_empty             (r_empty_in),
-    .r_almost_empty      (r_almost_empty_in),
-    .dout_valid          (dout_valid_in),
-    .dout                (dout_in[(8*CROPPED_TDATA_WIDTH+9)-1:0]),
-    .cal_done            (&cal_done),
-    .output_inc          (output_inc),
-    .input_fifo_cnt      (input_fifo_cnt[31:0])
-  );
+    .C_S_AXIS_DATA_WIDTH  (C_S_AXIS_DATA_WIDTH),
+    .C_S_AXIS_TUSER_WIDTH (C_S_AXIS_TUSER_WIDTH),
+    .FIFO_DATA_WIDTH      ((QDR_DATA_WIDTH == 36) ? QDR_NUM_CHIPS*32 : QDR_NUM_CHIPS*64)
+  )
+     axis_to_fifo_inst
+  (
+    .axi_aclk             (axi_aclk),
+    .axi_aresetn          (axi_aresetn),
+    .fifo_clk             (qdr_clk),
 
-  FifoToAxi #(
-    .TDATA_WIDTH         (TDATA_WIDTH),
-    .CROPPED_TDATA_WIDTH (CROPPED_TDATA_WIDTH),
-    .TUSER_WIDTH         (TUSER_WIDTH),
-    .TID_WIDTH           (TID_WIDTH),
-    .TDEST_WIDTH         (TDEST_WIDTH),
-    .NUM_QUEUES          (NUM_QUEUES),
-    .QUEUE_ID_WIDTH      (QUEUE_ID_WIDTH)
-  )
-    fifo2axi_inst
-  (
-    .clk                 (axi_aclk),
-    .reset               (!axi_aresetn),
-    .tvalid              (m_axis_tvalid),
-    .tready              (m_axis_tready),
-    .tdata               (m_axis_tdata),
-    .tstrb               (m_axis_tstrb),
-    .tlast               (m_axis_tlast),
-    .tuser               (m_axis_tuser),
-    .tid                 (),
-    .tdest               (),
-    .memclk              (qdr_clk),
-    .memreset            (qdr_reset),
-    .r_inc               (r_inc_out),
-    .w_full              (w_full_out),
-    .w_almost_full       (w_almost_full_out),
-    .din_valid           (din_valid_out),
-    .din                 (din_out[(8*CROPPED_TDATA_WIDTH+9)-1:0]),
-    .cal_done            (&cal_done),
-    .output_fifo_cnt     (output_fifo_cnt[31:0])
+    .s_axis_tdata         (s_axis_tdata),
+    .s_axis_tstrb         (s_axis_tstrb),
+    .s_axis_tuser         (s_axis_tuser),
+    .s_axis_tvalid        (s_axis_tvalid),
+    .s_axis_tready        (s_axis_tready),
+    .s_axis_tlast         (s_axis_tlast),
+
+    .fifo_rd_en           (),
+    .fifo_dout            (),
+    .fifo_dout_strb       (),
+    .fifo_empty           (),
+    .fifo_almost_empty    (),
+
+    .sw_rst               (sw_rst)
   );
 
 

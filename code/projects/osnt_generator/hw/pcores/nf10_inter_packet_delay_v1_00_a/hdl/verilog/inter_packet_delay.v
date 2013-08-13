@@ -176,7 +176,7 @@ module inter_packet_delay
               in_fifo_rd_en = 1;
 
               if (m_axis_tlast)
-                next_state = IN_PKT_BODY;
+                next_state = IN_PKT_HEADER;
             end
           end
         end
