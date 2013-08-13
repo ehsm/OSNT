@@ -65,19 +65,19 @@ module pcap_replay_uengine
     input                                      qdr_clk_270,
 
     // Master Stream Ports (interface to data path)
-    output reg [C_M_AXIS_DATA_WIDTH-1:0]       m_axis_tdata,
-    output reg [((C_M_AXIS_DATA_WIDTH/8))-1:0] m_axis_tstrb,
-    output reg [C_M_AXIS_TUSER_WIDTH-1:0]      m_axis_tuser,
-    output reg                                 m_axis_tvalid,
+    output  [C_M_AXIS_DATA_WIDTH-1:0]          m_axis_tdata,
+    output  [((C_M_AXIS_DATA_WIDTH/8))-1:0]    m_axis_tstrb,
+    output  [C_M_AXIS_TUSER_WIDTH-1:0]         m_axis_tuser,
+    output                                     m_axis_tvalid,
     input                                      m_axis_tready,
-    output reg                                 m_axis_tlast,
+    output                                     m_axis_tlast,
 
     // Slave Stream Ports (interface to RX queues)
     input [C_S_AXIS_DATA_WIDTH-1:0]            s_axis_tdata,
     input [((C_S_AXIS_DATA_WIDTH/8))-1:0]      s_axis_tstrb,
     input [C_S_AXIS_TUSER_WIDTH-1:0]           s_axis_tuser,
     input                                      s_axis_tvalid,
-    output reg                                 s_axis_tready,
+    output                                     s_axis_tready,
     input                                      s_axis_tlast,
 
     // QDR Memory Interface
@@ -174,8 +174,35 @@ module pcap_replay_uengine
     .sw_rst               (sw_rst)
   );
 
+  fifo_to_axis #
+  (
+    .C_M_AXIS_DATA_WIDTH  (C_M_AXIS_DATA_WIDTH),
+    .C_M_AXIS_TUSER_WIDTH (C_M_AXIS_TUSER_WIDTH),
+    .FIFO_DATA_WIDTH      ((QDR_DATA_WIDTH == 36) ? QDR_NUM_CHIPS*32 : QDR_NUM_CHIPS*64)
+  )
+    fifo_to_axis_inst
+  (
+
+    .axi_aclk             (axi_aclk),
+    .axi_aresetn          (axi_aresetn),
+    .fifo_clk             (fifo_clk),
+
+    .fifo_wr_en           (),
+    .fifo_din             (),
+    .fifo_din_strb        (),
+    .fifo_full            (),
+    .fifo_almost_full     (),
 
 
+    .m_axis_tdata         (m_axis_tdata),
+    .m_axis_tstrb         (m_axis_tstrb),
+    .m_axis_tuser         (m_axis_tuser),
+    .m_axis_tvalid        (m_axis_tvalid),
+    .m_axis_tready        (m_axis_tready),
+    .m_axis_tlast         (m_axis_tlast),
+
+    .sw_rst               (sw_rst)
+  );
 
   // ---- Primary State Machine [Combinational]
 

@@ -141,6 +141,7 @@ module axis_to_fifo
 
           next_state = WR_PKT_BITS;
         end
+      end
       WR_PKT_BITS: begin
         if (!ififo_empty && !fifo_full) begin
           fifo_wr_en = 1;
