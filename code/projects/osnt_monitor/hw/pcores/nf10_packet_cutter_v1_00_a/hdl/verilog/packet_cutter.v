@@ -173,7 +173,9 @@
 	assign counter = (cut_en) ? cut_words : MAX_WORDS_PKT;
 	 
 	assign first_word_hash = (({C_S_AXIS_DATA_WIDTH{1'b1}}<<bits_free)&tdata_fifo);
-        assign last_word_hash  = (({C_S_AXIS_DATA_WIDTH{1'b1}}<<pkt_boundaries_bit_free)&tdata_fifo);
+        assign last_word_hash  = (({C_S_AXIS_DATA_WIDTH{1'b1}}<<pkt_boundaries_bits_free)&tdata_fifo);
+
+
 	assign one_word_hash   = (({C_S_AXIS_DATA_WIDTH{1'b1}}<<bits_free)&({C_S_AXIS_DATA_WIDTH{1'b1}}<<bits_free)&tdata_fifo);
         assign final_hash      = hash[HASH_WIDTH-1:0]^hash[(2*HASH_WIDTH)-1:HASH_WIDTH];
 
@@ -181,39 +183,39 @@
         always @(*) begin
                 pkt_boundaries_bits_free = 0;
                 case(tstrb_fifo)
-                        32'b10000000_00000000_00000000_00000000:   pkt_boundaries_bits_free = 8'h248;
-                        32'b11000000_00000000_00000000_00000000:   pkt_boundaries_bits_free = 8'h240;
-                        32'b11100000_00000000_00000000_00000000:   pkt_boundaries_bits_free = 8'h232;
-                        32'b11110000_00000000_00000000_00000000:   pkt_boundaries_bits_free = 8'h224;
-                        32'b11111000_00000000_00000000_00000000:   pkt_boundaries_bits_free = 8'h216;
-                        32'b11111100_00000000_00000000_00000000:   pkt_boundaries_bits_free = 8'h208;
-                        32'b11111110_00000000_00000000_00000000:   pkt_boundaries_bits_free = 8'h200;
-                        32'b11111111_00000000_00000000_00000000:   pkt_boundaries_bits_free = 8'h192;
-                        32'b11111111_10000000_00000000_00000000:   pkt_boundaries_bits_free = 8'h184;
-                        32'b11111111_11000000_00000000_00000000:   pkt_boundaries_bits_free = 8'h176;
-                        32'b11111111_11100000_00000000_00000000:   pkt_boundaries_bits_free = 8'h168;
-                        32'b11111111_11110000_00000000_00000000:   pkt_boundaries_bits_free = 8'h160;
-                        32'b11111111_11111000_00000000_00000000:   pkt_boundaries_bits_free = 8'h152;
-                        32'b11111111_11111100_00000000_00000000:   pkt_boundaries_bits_free = 8'h144;
-                        32'b11111111_11111110_00000000_00000000:   pkt_boundaries_bits_free = 8'h136;
-                        32'b11111111_11111111_00000000_00000000:   pkt_boundaries_bits_free = 8'h128;
-                        32'b11111111_11111111_10000000_00000000:   pkt_boundaries_bits_free = 8'h120;
-                        32'b11111111_11111111_11000000_00000000:   pkt_boundaries_bits_free = 8'h112;
-                        32'b11111111_11111111_11100000_00000000:   pkt_boundaries_bits_free = 8'h104;
-                        32'b11111111_11111111_11110000_00000000:   pkt_boundaries_bits_free = 8'h96;
-                        32'b11111111_11111111_11111000_00000000:   pkt_boundaries_bits_free = 8'h88;
-                        32'b11111111_11111111_11111100_00000000:   pkt_boundaries_bits_free = 8'h80;
-                        32'b11111111_11111111_11111110_00000000:   pkt_boundaries_bits_free = 8'h72;
-                        32'b11111111_11111111_11111111_00000000:   pkt_boundaries_bits_free = 8'h64;
-                        32'b11111111_11111111_11111111_10000000:   pkt_boundaries_bits_free = 8'h56;
-                        32'b11111111_11111111_11111111_11000000:   pkt_boundaries_bits_free = 8'h48;
-                        32'b11111111_11111111_11111111_11100000:   pkt_boundaries_bits_free = 8'h40;
-                        32'b11111111_11111111_11111111_11110000:   pkt_boundaries_bits_free = 8'h32;
-                        32'b11111111_11111111_11111111_11111000:   pkt_boundaries_bits_free = 8'h24;
-                        32'b11111111_11111111_11111111_11111100:   pkt_boundaries_bits_free = 8'h16;
-                        32'b11111111_11111111_11111111_11111110:   pkt_boundaries_bits_free = 8'h8;
-                        32'b11111111_11111111_11111111_11111111:   pkt_boundaries_bits_free = 8'h0;
-                        default                                :   pkt_boundaries_bits_free = 8'h0;
+                        32'b10000000_00000000_00000000_00000000:   pkt_boundaries_bits_free = 8'd248;
+                        32'b11000000_00000000_00000000_00000000:   pkt_boundaries_bits_free = 8'd240;
+                        32'b11100000_00000000_00000000_00000000:   pkt_boundaries_bits_free = 8'd232;
+                        32'b11110000_00000000_00000000_00000000:   pkt_boundaries_bits_free = 8'd224;
+                        32'b11111000_00000000_00000000_00000000:   pkt_boundaries_bits_free = 8'd216;
+                        32'b11111100_00000000_00000000_00000000:   pkt_boundaries_bits_free = 8'd208;
+                        32'b11111110_00000000_00000000_00000000:   pkt_boundaries_bits_free = 8'd200;
+                        32'b11111111_00000000_00000000_00000000:   pkt_boundaries_bits_free = 8'd192;
+                        32'b11111111_10000000_00000000_00000000:   pkt_boundaries_bits_free = 8'd184;
+                        32'b11111111_11000000_00000000_00000000:   pkt_boundaries_bits_free = 8'd176;
+                        32'b11111111_11100000_00000000_00000000:   pkt_boundaries_bits_free = 8'd168;
+                        32'b11111111_11110000_00000000_00000000:   pkt_boundaries_bits_free = 8'd160;
+                        32'b11111111_11111000_00000000_00000000:   pkt_boundaries_bits_free = 8'd152;
+                        32'b11111111_11111100_00000000_00000000:   pkt_boundaries_bits_free = 8'd144;
+                        32'b11111111_11111110_00000000_00000000:   pkt_boundaries_bits_free = 8'd136;
+                        32'b11111111_11111111_00000000_00000000:   pkt_boundaries_bits_free = 8'd128;
+                        32'b11111111_11111111_10000000_00000000:   pkt_boundaries_bits_free = 8'd120;
+                        32'b11111111_11111111_11000000_00000000:   pkt_boundaries_bits_free = 8'd112;
+                        32'b11111111_11111111_11100000_00000000:   pkt_boundaries_bits_free = 8'd104;
+                        32'b11111111_11111111_11110000_00000000:   pkt_boundaries_bits_free = 8'd96;
+                        32'b11111111_11111111_11111000_00000000:   pkt_boundaries_bits_free = 8'd88;
+                        32'b11111111_11111111_11111100_00000000:   pkt_boundaries_bits_free = 8'd80;
+                        32'b11111111_11111111_11111110_00000000:   pkt_boundaries_bits_free = 8'd72;
+                        32'b11111111_11111111_11111111_00000000:   pkt_boundaries_bits_free = 8'd64;
+                        32'b11111111_11111111_11111111_10000000:   pkt_boundaries_bits_free = 8'd56;
+                        32'b11111111_11111111_11111111_11000000:   pkt_boundaries_bits_free = 8'd48;
+                        32'b11111111_11111111_11111111_11100000:   pkt_boundaries_bits_free = 8'd40;
+                        32'b11111111_11111111_11111111_11110000:   pkt_boundaries_bits_free = 8'd32;
+                        32'b11111111_11111111_11111111_11111000:   pkt_boundaries_bits_free = 8'd24;
+                        32'b11111111_11111111_11111111_11111100:   pkt_boundaries_bits_free = 8'd16;
+                        32'b11111111_11111111_11111111_11111110:   pkt_boundaries_bits_free = 8'd8;
+                        32'b11111111_11111111_11111111_11111111:   pkt_boundaries_bits_free = 8'd0;
+                        default                                :   pkt_boundaries_bits_free = 8'd0;
                 endcase
         end
 
@@ -224,39 +226,39 @@
         always @(*) begin
         	last_word_bytes_free = 0;
         	case(cut_offset)
-                	32'b10000000_00000000_00000000_00000000:   last_word_bytes_free = 8'h31;
-                        32'b11000000_00000000_00000000_00000000:   last_word_bytes_free = 8'h30;
-                        32'b11100000_00000000_00000000_00000000:   last_word_bytes_free = 8'h29;
-                        32'b11110000_00000000_00000000_00000000:   last_word_bytes_free = 8'h28;
-                        32'b11111000_00000000_00000000_00000000:   last_word_bytes_free = 8'h27;
-                        32'b11111100_00000000_00000000_00000000:   last_word_bytes_free = 8'h26;
-                        32'b11111110_00000000_00000000_00000000:   last_word_bytes_free = 8'h25;
-                        32'b11111111_00000000_00000000_00000000:   last_word_bytes_free = 8'h24;
-                        32'b11111111_10000000_00000000_00000000:   last_word_bytes_free = 8'h23;
-                        32'b11111111_11000000_00000000_00000000:   last_word_bytes_free = 8'h22;
-                        32'b11111111_11100000_00000000_00000000:   last_word_bytes_free = 8'h21;
-                        32'b11111111_11110000_00000000_00000000:   last_word_bytes_free = 8'h20;
-                        32'b11111111_11111000_00000000_00000000:   last_word_bytes_free = 8'h19;
-                        32'b11111111_11111100_00000000_00000000:   last_word_bytes_free = 8'h18;
-                        32'b11111111_11111110_00000000_00000000:   last_word_bytes_free = 8'h17;
-                        32'b11111111_11111111_00000000_00000000:   last_word_bytes_free = 8'h16;
-                        32'b11111111_11111111_10000000_00000000:   last_word_bytes_free = 8'h15;
-                        32'b11111111_11111111_11000000_00000000:   last_word_bytes_free = 8'h14;
-                        32'b11111111_11111111_11100000_00000000:   last_word_bytes_free = 8'h13;
-                        32'b11111111_11111111_11110000_00000000:   last_word_bytes_free = 8'h12;
-                        32'b11111111_11111111_11111000_00000000:   last_word_bytes_free = 8'h11;
-                        32'b11111111_11111111_11111100_00000000:   last_word_bytes_free = 8'h10;
-                        32'b11111111_11111111_11111110_00000000:   last_word_bytes_free = 8'h9;
-                        32'b11111111_11111111_11111111_00000000:   last_word_bytes_free = 8'h8;
-                        32'b11111111_11111111_11111111_10000000:   last_word_bytes_free = 8'h7;
-                        32'b11111111_11111111_11111111_11000000:   last_word_bytes_free = 8'h6;
-                        32'b11111111_11111111_11111111_11100000:   last_word_bytes_free = 8'h5;
-                        32'b11111111_11111111_11111111_11110000:   last_word_bytes_free = 8'h4;
-                        32'b11111111_11111111_11111111_11111000:   last_word_bytes_free = 8'h3;
-                        32'b11111111_11111111_11111111_11111100:   last_word_bytes_free = 8'h2;
-                        32'b11111111_11111111_11111111_11111110:   last_word_bytes_free = 8'h1;
-                        32'b11111111_11111111_11111111_11111111:   last_word_bytes_free = 8'h0;
-                	default				       :   last_word_bytes_free = 8'h0;
+                	32'b10000000_00000000_00000000_00000000:   last_word_bytes_free = 8'd31;
+                        32'b11000000_00000000_00000000_00000000:   last_word_bytes_free = 8'd30;
+                        32'b11100000_00000000_00000000_00000000:   last_word_bytes_free = 8'd29;
+                        32'b11110000_00000000_00000000_00000000:   last_word_bytes_free = 8'd28;
+                        32'b11111000_00000000_00000000_00000000:   last_word_bytes_free = 8'd27;
+                        32'b11111100_00000000_00000000_00000000:   last_word_bytes_free = 8'd26;
+                        32'b11111110_00000000_00000000_00000000:   last_word_bytes_free = 8'd25;
+                        32'b11111111_00000000_00000000_00000000:   last_word_bytes_free = 8'd24;
+                        32'b11111111_10000000_00000000_00000000:   last_word_bytes_free = 8'd23;
+                        32'b11111111_11000000_00000000_00000000:   last_word_bytes_free = 8'd22;
+                        32'b11111111_11100000_00000000_00000000:   last_word_bytes_free = 8'd21;
+                        32'b11111111_11110000_00000000_00000000:   last_word_bytes_free = 8'd20;
+                        32'b11111111_11111000_00000000_00000000:   last_word_bytes_free = 8'd19;
+                        32'b11111111_11111100_00000000_00000000:   last_word_bytes_free = 8'd18;
+                        32'b11111111_11111110_00000000_00000000:   last_word_bytes_free = 8'd17;
+                        32'b11111111_11111111_00000000_00000000:   last_word_bytes_free = 8'd16;
+                        32'b11111111_11111111_10000000_00000000:   last_word_bytes_free = 8'd15;
+                        32'b11111111_11111111_11000000_00000000:   last_word_bytes_free = 8'd14;
+                        32'b11111111_11111111_11100000_00000000:   last_word_bytes_free = 8'd13;
+                        32'b11111111_11111111_11110000_00000000:   last_word_bytes_free = 8'd12;
+                        32'b11111111_11111111_11111000_00000000:   last_word_bytes_free = 8'd11;
+                        32'b11111111_11111111_11111100_00000000:   last_word_bytes_free = 8'd10;
+                        32'b11111111_11111111_11111110_00000000:   last_word_bytes_free = 8'd9;
+                        32'b11111111_11111111_11111111_00000000:   last_word_bytes_free = 8'd8;
+                        32'b11111111_11111111_11111111_10000000:   last_word_bytes_free = 8'd7;
+                        32'b11111111_11111111_11111111_11000000:   last_word_bytes_free = 8'd6;
+                        32'b11111111_11111111_11111111_11100000:   last_word_bytes_free = 8'd5;
+                        32'b11111111_11111111_11111111_11110000:   last_word_bytes_free = 8'd4;
+                        32'b11111111_11111111_11111111_11111000:   last_word_bytes_free = 8'd3;
+                        32'b11111111_11111111_11111111_11111100:   last_word_bytes_free = 8'd2;
+                        32'b11111111_11111111_11111111_11111110:   last_word_bytes_free = 8'd1;
+                        32'b11111111_11111111_11111111_11111111:   last_word_bytes_free = 8'd0;
+                	default				       :   last_word_bytes_free = 8'd0;
         	endcase
    	end
 
@@ -367,18 +369,22 @@
 		if(m_axis_tready) begin
 			in_fifo_rd_en = 1;
 			if(bytes_free < HASH_BYTES) begin
-				m_axis_tlast_next = 0;
-				//m_axis_tdata_next[bits_free-1:0] = final_hash[HASH_WIDTH-1:HASH_WIDTH-bits_free];
-				m_axis_tdata_next = (tdata_fifo & tstrb_cut) | (final_hash >> (HASH_WIDTH-bits_free));
-				m_axis_tstrb_next = ALL_VALID;
-				hash_carry_bytes_next = HASH_BYTES - bytes_free;
-				hash_carry_bits_next = (HASH_BYTES - bytes_free)<<3;
-				state_next = SEND_LAST_WORD;
+				if(!bytes_free) begin
+					m_axis_tlast_next = 0;
+					state_next = SEND_LAST_WORD;
+				end
+				else begin
+					m_axis_tlast_next = 0;				
+					m_axis_tdata_next = (last_word_hash | (final_hash >> (HASH_WIDTH-bits_free)));
+					m_axis_tstrb_next = ALL_VALID;
+					hash_carry_bytes_next = HASH_BYTES - bytes_free;
+					hash_carry_bits_next = (HASH_BYTES - bytes_free)<<3;
+					state_next = SEND_LAST_WORD;
+				end
 			end
 			else begin
 				m_axis_tlast_next = 1;
-				//m_axis_tdata_next[bits_free-1:bits_free-HASH_WIDTH] = final_hash;
-				m_axis_tdata_next = (tdata_fifo & tstrb_cut) | (final_hash << (bits_free-HASH_WIDTH));
+				m_axis_tdata_next = (last_word_hash | (final_hash << (bits_free-HASH_WIDTH)));
 				m_axis_tstrb = (ALL_VALID<<(bytes_free-HASH_BYTES));
 				state_next = WAIT_PKT;
 			end
