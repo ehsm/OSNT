@@ -114,6 +114,7 @@ module nf10_packet_cutter
   wire                                      IP2Bus_Error;
   
   wire [NUM_RW_REGS*C_S_AXI_DATA_WIDTH-1:0] rw_regs;
+  wire [NUM_RW_REGS*C_S_AXI_DATA_WIDTH-1:0] rw_defaults;
  
   wire                                      cut_en;
   wire [C_S_AXI_ADDR_WIDTH-1:0]             cut_words;
@@ -174,23 +175,25 @@ module nf10_packet_cutter
     .NUM_RW_REGS        (NUM_RW_REGS)
   ) ipif_regs_inst
   (   
-    .Bus2IP_Clk     ( Bus2IP_Clk     ),
-    .Bus2IP_Resetn  ( Bus2IP_Resetn  ), 
-    .Bus2IP_Addr    ( Bus2IP_Addr    ),
-    .Bus2IP_CS      ( Bus2IP_CS[0]   ),
-    .Bus2IP_RNW     ( Bus2IP_RNW     ),
-    .Bus2IP_Data    ( Bus2IP_Data    ),
-    .Bus2IP_BE      ( Bus2IP_BE      ),
-    .IP2Bus_Data    ( IP2Bus_Data    ),
-    .IP2Bus_RdAck   ( IP2Bus_RdAck   ),
-    .IP2Bus_WrAck   ( IP2Bus_WrAck   ),
-    .IP2Bus_Error   ( IP2Bus_Error   ),
+    .bus2ip_clk     ( Bus2IP_Clk     ),
+    .bus2ip_resetn  ( Bus2IP_Resetn  ), 
+    .bus2ip_addr    ( Bus2IP_Addr    ),
+    .bus2ip_cs      ( Bus2IP_CS[0]   ),
+    .bus2ip_rnw     ( Bus2IP_RNW     ),
+    .bus2ip_data    ( Bus2IP_Data    ),
+    .bus2ip_be      ( Bus2IP_BE      ),
+    .ip2bus_data    ( IP2Bus_Data    ),
+    .ip2bus_rdack   ( IP2Bus_RdAck   ),
+    .ip2bus_wrack   ( IP2Bus_WrAck   ),
+    .ip2bus_error   ( IP2Bus_Error   ),
     
-    .rw_regs        ( rw_regs )
+    .rw_regs        ( rw_regs ),
+    .rw_defaults    ( rw_defaults )
   );
   
   // -- Register assignments
   
+  assign rw_defaults = 0;
   assign cut_en = rw_regs[C_S_AXI_DATA_WIDTH*0];
   assign cut_words = rw_regs[31+C_S_AXI_DATA_WIDTH*1:C_S_AXI_DATA_WIDTH*1];
   assign cut_offset = rw_regs[31+C_S_AXI_DATA_WIDTH*2:C_S_AXI_DATA_WIDTH*2];

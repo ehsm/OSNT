@@ -159,6 +159,7 @@
   	wire [1:0] l_IP2Bus_Error;
   
   	wire [(NUM_RW_REGS*C_S_AXI_DATA_WIDTH)-1:0] rw_regs;
+	wire [(NUM_RW_REGS*C_S_AXI_DATA_WIDTH)-1:0] rw_defaults;
   	wire [(NUM_RO_REGS*C_S_AXI_DATA_WIDTH)-1:0] ro_regs;
 
   	wire rst_stats;
@@ -295,24 +296,26 @@
     		.NUM_RO_REGS (NUM_RO_REGS)
   	) ipif_regs_inst
   	(
-    		.Bus2IP_Clk ( Bus2IP_Clk ),
-    		.Bus2IP_Resetn ( Bus2IP_Resetn ),
-    		.Bus2IP_Addr ( Bus2IP_Addr ),
-    		.Bus2IP_CS ( Bus2IP_CS[1] ), // CS[1] = BAR0
-    		.Bus2IP_RNW ( Bus2IP_RNW ),
-    		.Bus2IP_Data ( Bus2IP_Data ),
-    		.Bus2IP_BE ( Bus2IP_BE ),
-    		.IP2Bus_Data ( l_IP2Bus_Data[0] ),
-    		.IP2Bus_RdAck ( l_IP2Bus_RdAck[0] ),
-    		.IP2Bus_WrAck ( l_IP2Bus_WrAck[0] ),
-    		.IP2Bus_Error ( l_IP2Bus_Error[0] ),
+    		.bus2ip_clk ( Bus2IP_Clk ),
+    		.bus2ip_resetn ( Bus2IP_Resetn ),
+    		.bus2ip_addr ( Bus2IP_Addr ),
+    		.bus2ip_cs ( Bus2IP_CS[1] ), // CS[1] = BAR0
+    		.bus2ip_rnw ( Bus2IP_RNW ),
+    		.bus2ip_data ( Bus2IP_Data ),
+    		.bus2ip_be ( Bus2IP_BE ),
+    		.ip2bus_data ( l_IP2Bus_Data[0] ),
+    		.ip2bus_rdack ( l_IP2Bus_RdAck[0] ),
+    		.ip2bus_wrack ( l_IP2Bus_WrAck[0] ),
+    		.ip2bus_error ( l_IP2Bus_Error[0] ),
 
     		.rw_regs ( rw_regs ),
+		.rw_defaults ( rw_defaults ),
     		.ro_regs ( ro_regs )
   	);
   
   	// -- Register assignments
   
+	assign rw_defaults = 0;
 	assign rst_stats = rw_regs[32*0];
 	assign stats_freeze = rw_regs[32*1];
 

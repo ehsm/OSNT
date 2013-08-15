@@ -46,5 +46,6 @@ cd $(dirname $0)
 rm -rf unittest_build
 mkdir  unittest_build
 cd     unittest_build
-fuse -incremental work.glbl -prj ../nf10_packet_cutter_tb.prj -L unisims_ver -L unimacro_ver -L xilinxcorelib_ver -L ieee -o nf10_packet_cutter_tb.exe testbench
+#fuse -incremental work.glbl -prj ../nf10_packet_cutter_tb.prj -L unisims_ver -L unimacro_ver -L xilinxcorelib_ver -L ieee -o nf10_packet_cutter_tb.exe testbench
+fuse -incremental -prj ../nf10_packet_cutter_tb.prj -L unisims_ver -L unimacro_ver -L xilinxcorelib_ver -L ieee -o nf10_packet_cutter_tb.exe testbench
 ./nf10_packet_cutter_tb.exe -gui -tclbatch ../nf10_packet_cutter_tb.tcl

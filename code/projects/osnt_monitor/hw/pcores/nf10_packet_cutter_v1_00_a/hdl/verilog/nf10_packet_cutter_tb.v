@@ -77,12 +77,12 @@ module testbench();
     localparam WAIT_CUT = 13;
     localparam END = 14;
 
-    wire [255:0] tdata_m_cut;
+/*  wire [255:0] tdata_m_cut;
     wire         tvalid_m_cut;
     wire         tlast_m_cut;
     wire [31:0]  tstrb_m_cut;
     wire [127:0] tuser_m_cut;
-
+*/
     reg       request_read = 0;
     reg       request_read_next = 0;
     reg       request_write=0;
@@ -222,8 +222,8 @@ module testbench();
             WORD_SET: begin
                 request_write_next = 1;
                 address_to_write_next = 32'h77800004;
-                value_to_write_next = 32'h2;
-                state_reg_next = WAIT_CUT;
+                value_to_write_next = 32'h1;
+                state_reg_next = WAIT_WORD;
             end
 
             WAIT_WORD: begin
@@ -326,18 +326,18 @@ module testbench();
     // data path
 
     .S_AXIS_TDATA(tdata[0]),
-    .S_AXIS_TSTRB(128'h0201AAAA),
-    .S_AXIS_TUSER(32'hFFFFFFFF),
+    .S_AXIS_TSTRB(32'hFFFFFFFF),
+    .S_AXIS_TUSER(128'h0201AAAA),
     .S_AXIS_TVALID(tvalid_0),
     .S_AXIS_TREADY(tready[0]),
     .S_AXIS_TLAST(tlast[0]),
 
-    .M_AXIS_TDATA(tdata_m_cut),
-    .M_AXIS_TSTRB(tstrb_m_cut),
-    .M_AXIS_TUSER(tuser_m_cut),
-    .M_AXIS_TVALID(tvalid_m_cut),
+    .M_AXIS_TDATA(),
+    .M_AXIS_TSTRB(),
+    .M_AXIS_TUSER(),
+    .M_AXIS_TVALID(),
     .M_AXIS_TREADY(1'b1),
-    .M_AXIS_TLAST(tlast_m_cut),
+    .M_AXIS_TLAST()
 
    );
 
