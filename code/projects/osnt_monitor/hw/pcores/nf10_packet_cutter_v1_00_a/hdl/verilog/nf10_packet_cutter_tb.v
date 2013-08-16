@@ -235,7 +235,7 @@ module testbench();
             OFFSET: begin 
                 request_write_next = 1;
                 address_to_write_next = 32'h77800008;
-                value_to_write_next = 32'hffffffff;
+                value_to_write_next = 32'hffe00000;
                 state_reg_next = WAIT_OFF;
             end
 
@@ -248,7 +248,7 @@ module testbench();
             BYTES_SET: begin 
                 request_write_next = 1;
                 address_to_write_next = 32'h7780000c;
-                value_to_write_next = 32'h64;
+                value_to_write_next = 32'h4b; //75 Bytes
                 state_reg_next = WAIT_BYTES;
             end
 
