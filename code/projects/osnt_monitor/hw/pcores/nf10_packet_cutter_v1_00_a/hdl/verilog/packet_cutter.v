@@ -133,7 +133,7 @@
 	wire[C_S_AXIS_DATA_WIDTH-1:0]		first_word_hash;
 	wire[C_S_AXIS_DATA_WIDTH-1:0]		last_word_hash;
 	wire[C_S_AXIS_DATA_WIDTH-1:0]           one_word_hash;
-	wire[HASH_WIDTH-1:0]			final_hash;
+	wire[C_S_AXIS_DATA_WIDTH-1:0]		final_hash;
 	
 	reg[4:0]				last_word_bytes_free;
 	reg[7:0]				pkt_boundaries_bits_free;			
@@ -180,8 +180,8 @@
 	assign last_word_pkt_temp_cleaned = (({C_S_AXIS_DATA_WIDTH{1'b1}}<<bits_free)&last_word_pkt_temp);
 
 	assign one_word_hash   = (({C_S_AXIS_DATA_WIDTH{1'b1}}<<bits_free)&({C_S_AXIS_DATA_WIDTH{1'b1}}<<bits_free)&tdata_fifo);
-        assign final_hash      = hash[HASH_WIDTH-1:0]^hash[(2*HASH_WIDTH)-1:HASH_WIDTH];
-
+        assign final_hash      = {{HASH_WIDTH{1'b0}},hash[HASH_WIDTH-1:0]^hash[(2*HASH_WIDTH)-1:HASH_WIDTH]};
+	//assign final_hash      =128'hdeadbeefaccafeafddddeaeaccffadad; //DEBUG fixed value
 
         always @(*) begin
                 pkt_boundaries_bits_free = 0;
@@ -221,10 +221,6 @@
                         default      :   pkt_boundaries_bits_free = 8'd0;
                 endcase
         end
-
-
-
-
 
         always @(*) begin
         	last_word_bytes_free = 0;
@@ -401,7 +397,7 @@
 		m_axis_tvalid_next = 1;
 		if(m_axis_tready) begin
 			m_axis_tlast_next = 1;
-			m_axis_tdata_next = final_hash<<(C_M_AXIS_DATA_WIDTH-hash_carry_bits);
+			m_axis_tdata_next = (final_hash)<<(C_S_AXIS_DATA_WIDTH-hash_carry_bits);
 			m_axis_tstrb_next = (ALL_VALID<<(32-hash_carry_bytes));
 			state_next = WAIT_PKT;
 		end

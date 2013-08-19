@@ -222,7 +222,7 @@ module testbench();
             WORD_SET: begin
                 request_write_next = 1;
                 address_to_write_next = 32'h77800004;
-                value_to_write_next = 32'h1;
+                value_to_write_next = 32'h2;
                 state_reg_next = WAIT_WORD;
             end
 
@@ -235,7 +235,7 @@ module testbench();
             OFFSET: begin 
                 request_write_next = 1;
                 address_to_write_next = 32'h77800008;
-                value_to_write_next = 32'hffe00000;
+                value_to_write_next = 32'hfffffff0;
                 state_reg_next = WAIT_OFF;
             end
 
@@ -248,7 +248,7 @@ module testbench();
             BYTES_SET: begin 
                 request_write_next = 1;
                 address_to_write_next = 32'h7780000c;
-                value_to_write_next = 32'h4b; //75 Bytes
+                value_to_write_next = 32'h292; //124 Bytes
                 state_reg_next = WAIT_BYTES;
             end
 
