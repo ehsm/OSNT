@@ -314,7 +314,7 @@
    	fallthrough_small_fifo
 	#(
 		.WIDTH(C_M_AXIS_DATA_WIDTH+C_M_AXIS_TUSER_WIDTH+C_M_AXIS_DATA_WIDTH/8+1),
-		.MAX_DEPTH_BITS(3)
+		.MAX_DEPTH_BITS(4)
 	)
       	pkt_fifo
         (	.din ({s_axis_tlast, s_axis_tuser, s_axis_tstrb, s_axis_tdata}),     // Data in
@@ -332,7 +332,7 @@
 	fallthrough_small_fifo
 	#(
 		.WIDTH(NUM_QUEUES),
-		.MAX_DEPTH_BITS(2))
+		.MAX_DEPTH_BITS(3))
       	hit_fifo
         (
 		.din (dst_ports),     // Data in
