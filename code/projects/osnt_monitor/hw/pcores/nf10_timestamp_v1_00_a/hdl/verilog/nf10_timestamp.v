@@ -103,7 +103,8 @@ module nf10_timestamp
   wire                                            IP2Bus_Error;
   
   wire     [NUM_RW_REGS*C_S_AXI_DATA_WIDTH-1 : 0] rw_regs;
-  
+  wire [NUM_RW_REGS*C_S_AXI_DATA_WIDTH-1:0]       rw_defaults;
+
   wire	   [1:0]				  restart_time;
   wire     [TIMESTAMP_WIDTH-1:0]                  ntp_timestamp;
  
@@ -172,11 +173,13 @@ module nf10_timestamp
     .ip2bus_wrack   ( IP2Bus_WrAck   ),
     .ip2bus_error   ( IP2Bus_Error   ),
 	
-    .rw_regs        ( rw_regs )
+    .rw_regs        ( rw_regs ),
+    .rw_deafaults   ( rw_defaults )
   );
   
   // -- Register assignments
   
+  assign rw_defaults  = 0;
   assign restart_time = rw_regs[1+C_S_AXI_DATA_WIDTH*0:C_S_AXI_DATA_WIDTH*0];
   assign ntp_timestamp= rw_regs[(TIMESTAMP_WIDTH+C_S_AXI_DATA_WIDTH*1)-1:C_S_AXI_DATA_WIDTH*1];
   

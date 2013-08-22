@@ -108,7 +108,7 @@ module correction
 	     		dds_rate    	<= DDS_RATE_DEFAULT;
              		error_signed	<= 0;
              		time_prev_pps	<= 0;
-             		state       	<= WAIT_FIRST_SYNC;
+             		state       	<= WAIT_FIRST_PPS;
         	end
 		else begin
              		error_signed	<= error_signed_next;

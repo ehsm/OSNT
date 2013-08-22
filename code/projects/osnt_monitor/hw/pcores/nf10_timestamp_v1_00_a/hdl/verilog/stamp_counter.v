@@ -40,6 +40,7 @@
  */
 
 module stamp_counter
+	#(
     		parameter TIMESTAMP_WIDTH = 64)
 	(
     
@@ -84,8 +85,8 @@ module stamp_counter
 	correction
 	(
 	// input
-        	.time_pps	(time_pps_w),
-        	.sync_valid     (pps_valid_w),
+        	.time_pps      (time_pps_w),
+        	.pps_valid     (pps_valid_w),
      	// output
      		.dds_rate       (dds_rate),
      	// misc
@@ -105,7 +106,7 @@ module stamp_counter
 				time_pps    <= stamp_counter;
 			end
 			else begin
-				counter_pps <= conter_pps + 1;
+				counter_pps <= counter_pps + 1;
             			pps_valid <= 0;
       			end
    		end
