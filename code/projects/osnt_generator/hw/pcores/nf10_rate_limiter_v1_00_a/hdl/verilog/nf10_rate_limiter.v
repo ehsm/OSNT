@@ -44,18 +44,18 @@
 
 module nf10_rate_limiter
 #(
-  parameter C_S_AXI_DATA_WIDTH    = 32,
-  parameter C_S_AXI_ADDR_WIDTH    = 32,
-  parameter C_BASEADDR            = 32'hFFFFFFFF,
-  parameter C_HIGHADDR            = 32'h00000000,
-  parameter C_USE_WSTRB           = 0,
-  parameter C_DPHASE_TIMEOUT      = 0,
-  parameter C_S_AXI_ACLK_FREQ_HZ  = 100,
-  parameter C_M_AXIS_DATA_WIDTH	  = 256,
-  parameter C_S_AXIS_DATA_WIDTH	  = 256,
-  parameter C_M_AXIS_TUSER_WIDTH  = 128,
-  parameter C_M_AXIS_TUSER_WIDTH  = 128,
-  parameter C_RATE_LIMITER_TYPE   = 0 // 0 - Simple
+  parameter C_S_AXI_DATA_WIDTH   = 32,
+  parameter C_S_AXI_ADDR_WIDTH   = 32,
+  parameter C_BASEADDR           = 32'hFFFFFFFF,
+  parameter C_HIGHADDR           = 32'h00000000,
+  parameter C_USE_WSTRB          = 0,
+  parameter C_DPHASE_TIMEOUT     = 0,
+  parameter C_S_AXI_ACLK_FREQ_HZ = 100,
+  parameter C_M_AXIS_DATA_WIDTH  = 256,
+  parameter C_S_AXIS_DATA_WIDTH  = 256,
+  parameter C_M_AXIS_TUSER_WIDTH = 128,
+  parameter C_M_AXIS_TUSER_WIDTH = 128,
+  parameter C_RATE_LIMITER_TYPE  = 0 // 0 - Simple
                                       // 1 - Leaky Bucket (not supported)}
 )
 (
@@ -68,7 +68,7 @@ module nf10_rate_limiter
   input                                           s_axi_awvalid,
   input      [C_S_AXI_DATA_WIDTH-1:0]             s_axi_wdata,
   input      [C_S_AXI_DATA_WIDTH/8-1:0]           s_axi_wstrb,
-  input                                           s_axi_wvalid,
+  input                                           s_axi_wvalid, 
   input                                           s_axi_bready,
   input      [C_S_AXI_ADDR_WIDTH-1:0]             s_axi_araddr,
   input                                           s_axi_arvalid,
