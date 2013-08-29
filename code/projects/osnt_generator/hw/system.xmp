@@ -3,6 +3,7 @@ XmpVersion: 13.4
 VerMgmt: 13.4
 IntStyle: default
 Flow: ise
+ModuleSearchPath: /home/mshahbaz/Personal/OSNT/code/lib/hw/std/pcores/nf10_switch_output_port_lookup_v1_00_a/../../../
 MHS File: system.mhs
 Architecture: virtex5
 Device: xc5vtx240t
