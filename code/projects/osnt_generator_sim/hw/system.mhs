@@ -142,6 +142,16 @@ BEGIN nf10_rate_limiter
  PORT axi_aresetn = Peripheral_aresetn
 END
 
+BEGIN nf10_per_port_arbiter
+ PARAMETER INSTANCE = nf10_per_port_arbiter_0
+ PARAMETER HW_VER = 1.00.a
+ PARAMETER C_S_NUM_QUEUES = 1
+ BUS_INTERFACE S_AXI = axi_interconnect_0
+ BUS_INTERFACE S_AXIS_0 = nf10_bram_output_queues_0_M_AXIS_0
+ BUS_INTERFACE M_AXIS = nf10_per_port_arbiter_0_M_AXIS
+ PORT axi_aclk = control_clk
+END
+
 BEGIN nf10_nic_output_port_lookup
  PARAMETER INSTANCE = nf10_nic_output_port_lookup_0
  PARAMETER HW_VER = 1.00.a
@@ -164,6 +174,18 @@ BEGIN nf10_mdio
  PORT PHY_MDC = nf10_mdio_0_PHY_MDC
  PORT PHY_MDIO = nf10_mdio_0_PHY_MDIO
  PORT PHY_rst_n = nf10_mdio_0_PHY_rst_n
+END
+
+BEGIN nf10_inter_packet_delay
+ PARAMETER INSTANCE = nf10_inter_packet_delay_0
+ PARAMETER HW_VER = 1.00.a
+ PARAMETER C_BASEADDR = 0x76600000
+ PARAMETER C_HIGHADDR = 0x7660ffff
+ BUS_INTERFACE S_AXI = axi_interconnect_0
+ BUS_INTERFACE M_AXIS = nf10_inter_packet_delay_0_M_AXIS
+ BUS_INTERFACE S_AXIS = nf10_per_port_arbiter_0_M_AXIS
+ PORT axi_aclk = core_clk
+ PORT axi_aresetn = Peripheral_aresetn
 END
 
 BEGIN nf10_input_arbiter
@@ -525,17 +547,5 @@ BEGIN axi_uartlite
  PORT TX = RS232_Uart_1_sout
  PORT RX = RS232_Uart_1_sin
  PORT S_AXI_ACLK = control_clk
-END
-
-BEGIN nf10_inter_packet_delay
- PARAMETER INSTANCE = nf10_inter_packet_delay_0
- PARAMETER HW_VER = 1.00.a
- PARAMETER C_BASEADDR = 0x76600000
- PARAMETER C_HIGHADDR = 0x7660ffff
- BUS_INTERFACE S_AXI = axi_interconnect_0
- BUS_INTERFACE S_AXIS = nf10_bram_output_queues_0_M_AXIS_0
- BUS_INTERFACE M_AXIS = nf10_inter_packet_delay_0_M_AXIS
- PORT axi_aclk = core_clk
- PORT axi_aresetn = Peripheral_aresetn
 END
 
