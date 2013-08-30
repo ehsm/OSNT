@@ -1,0 +1,14 @@
+##############################################################################
+## Filename:          /media/sf_Documents/GaTech/Repository/osnt/code/projects/osnt_generator/hw/pcores/nf10_inter_packet_delay_v1_00_a/data/nf10_inter_packet_delay_v2_1_0.pao
+## Description:       Peripheral Analysis Order
+## Date:              Sun Jul  7 23:40:41 2013 (by Create and Import Peripheral Wizard)
+##############################################################################
+
+lib axi_lite_ipif_v1_01_a all
+lib nf10_inter_packet_delay_v1_00_a fallthrough_small_fifo_v2 verilog
+lib nf10_inter_packet_delay_v1_00_a small_fifo_v3 verilog
+lib nf10_inter_packet_delay_v1_00_a ipif_regs verilog
+lib nf10_inter_packet_delay_v1_00_a axi_lite_regs verilog
+lib nf10_inter_packet_delay_v1_00_a axi_lite_ipif_1bar vhdl
+lib nf10_inter_packet_delay_v1_00_a nf10_inter_packet_delay verilog
+lib nf10_inter_packet_delay_v1_00_a inter_packet_delay verilog
