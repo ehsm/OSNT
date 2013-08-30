@@ -136,8 +136,8 @@ BEGIN nf10_rate_limiter
  PARAMETER C_BASEADDR = 0x77e00000
  PARAMETER C_HIGHADDR = 0x77e0ffff
  BUS_INTERFACE S_AXI = axi_interconnect_0
- BUS_INTERFACE S_AXIS = nf10_bram_output_queues_0_M_AXIS_0
  BUS_INTERFACE M_AXIS = nf10_rate_limiter_0_M_AXIS
+ BUS_INTERFACE S_AXIS = nf10_inter_packet_delay_0_M_AXIS
  PORT axi_aclk = core_clk
  PORT axi_aresetn = Peripheral_aresetn
 END
@@ -525,5 +525,17 @@ BEGIN axi_uartlite
  PORT TX = RS232_Uart_1_sout
  PORT RX = RS232_Uart_1_sin
  PORT S_AXI_ACLK = control_clk
+END
+
+BEGIN nf10_inter_packet_delay
+ PARAMETER INSTANCE = nf10_inter_packet_delay_0
+ PARAMETER HW_VER = 1.00.a
+ PARAMETER C_BASEADDR = 0x76600000
+ PARAMETER C_HIGHADDR = 0x7660ffff
+ BUS_INTERFACE S_AXI = axi_interconnect_0
+ BUS_INTERFACE S_AXIS = nf10_bram_output_queues_0_M_AXIS_0
+ BUS_INTERFACE M_AXIS = nf10_inter_packet_delay_0_M_AXIS
+ PORT axi_aclk = core_clk
+ PORT axi_aresetn = Peripheral_aresetn
 END
 
