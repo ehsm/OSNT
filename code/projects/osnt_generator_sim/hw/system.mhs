@@ -115,6 +115,34 @@
  PORT pcie_top_0_pci_exp_7_rxn_pin = pcie_top_0_pci_exp_7_rxn, DIR = I
  PORT pcie_top_0_pci_exp_7_rxp_pin = pcie_top_0_pci_exp_7_rxp, DIR = I
  PORT pcie_top_0_pci_exp_0_txn_pin = pcie_top_0_pci_exp_0_txn, DIR = O
+ PORT nf10_pcap_replay_uengine_0_qdr_d_0_pin = nf10_pcap_replay_uengine_0_qdr_d_0, DIR = O, VEC = [35:0]
+ PORT nf10_pcap_replay_uengine_0_qdr_q_0_pin = nf10_pcap_replay_uengine_0_qdr_q_0, DIR = I, VEC = [35:0]
+ PORT nf10_pcap_replay_uengine_0_qdr_sa_0_pin = nf10_pcap_replay_uengine_0_qdr_sa_0, DIR = O, VEC = [18:0]
+ PORT nf10_pcap_replay_uengine_0_qdr_w_n_0_pin = nf10_pcap_replay_uengine_0_qdr_w_n_0, DIR = O
+ PORT nf10_pcap_replay_uengine_0_qdr_r_n_0_pin = nf10_pcap_replay_uengine_0_qdr_r_n_0, DIR = O
+ PORT nf10_pcap_replay_uengine_0_qdr_bw_n_0_pin = nf10_pcap_replay_uengine_0_qdr_bw_n_0, DIR = O, VEC = [3:0]
+ PORT nf10_pcap_replay_uengine_0_qdr_dll_off_n_0_pin = nf10_pcap_replay_uengine_0_qdr_dll_off_n_0, DIR = O
+ PORT nf10_pcap_replay_uengine_0_qdr_cq_0_pin = nf10_pcap_replay_uengine_0_qdr_cq_0, DIR = I
+ PORT nf10_pcap_replay_uengine_0_qdr_cq_n_0_pin = nf10_pcap_replay_uengine_0_qdr_cq_n_0, DIR = I
+ PORT nf10_pcap_replay_uengine_0_qdr_c_n_0_pin = nf10_pcap_replay_uengine_0_qdr_c_n_0, DIR = O
+ PORT nf10_pcap_replay_uengine_0_qdr_k_n_0_pin = nf10_pcap_replay_uengine_0_qdr_k_n_0, DIR = O
+ PORT nf10_pcap_replay_uengine_0_qdr_c_0_pin = nf10_pcap_replay_uengine_0_qdr_c_0, DIR = O
+ PORT nf10_pcap_replay_uengine_0_qdr_k_0_pin = nf10_pcap_replay_uengine_0_qdr_k_0, DIR = O
+ PORT nf10_pcap_replay_uengine_0_qdr_masterbank_sel_0_pin = nf10_pcap_replay_uengine_0_qdr_masterbank_sel_0, DIR = I
+ PORT nf10_pcap_replay_uengine_0_qdr_d_1_pin = nf10_pcap_replay_uengine_0_qdr_d_1, DIR = O, VEC = [35:0]
+ PORT nf10_pcap_replay_uengine_0_qdr_q_1_pin = nf10_pcap_replay_uengine_0_qdr_q_1, DIR = I, VEC = [35:0]
+ PORT nf10_pcap_replay_uengine_0_qdr_sa_1_pin = nf10_pcap_replay_uengine_0_qdr_sa_1, DIR = O, VEC = [18:0]
+ PORT nf10_pcap_replay_uengine_0_qdr_w_n_1_pin = nf10_pcap_replay_uengine_0_qdr_w_n_1, DIR = O
+ PORT nf10_pcap_replay_uengine_0_qdr_r_n_1_pin = nf10_pcap_replay_uengine_0_qdr_r_n_1, DIR = O
+ PORT nf10_pcap_replay_uengine_0_qdr_bw_n_1_pin = nf10_pcap_replay_uengine_0_qdr_bw_n_1, DIR = O, VEC = [3:0]
+ PORT nf10_pcap_replay_uengine_0_qdr_dll_off_n_1_pin = nf10_pcap_replay_uengine_0_qdr_dll_off_n_1, DIR = O
+ PORT nf10_pcap_replay_uengine_0_qdr_cq_1_pin = nf10_pcap_replay_uengine_0_qdr_cq_1, DIR = I
+ PORT nf10_pcap_replay_uengine_0_qdr_cq_n_1_pin = nf10_pcap_replay_uengine_0_qdr_cq_n_1, DIR = I
+ PORT nf10_pcap_replay_uengine_0_qdr_c_n_1_pin = nf10_pcap_replay_uengine_0_qdr_c_n_1, DIR = O
+ PORT nf10_pcap_replay_uengine_0_qdr_k_n_1_pin = nf10_pcap_replay_uengine_0_qdr_k_n_1, DIR = O
+ PORT nf10_pcap_replay_uengine_0_qdr_c_1_pin = nf10_pcap_replay_uengine_0_qdr_c_1, DIR = O
+ PORT nf10_pcap_replay_uengine_0_qdr_k_1_pin = nf10_pcap_replay_uengine_0_qdr_k_1, DIR = O
+ PORT nf10_pcap_replay_uengine_0_qdr_masterbank_sel_1_pin = nf10_pcap_replay_uengine_0_qdr_masterbank_sel_1, DIR = I
 
 
 BEGIN proc_sys_reset
@@ -146,6 +174,8 @@ BEGIN nf10_per_port_arbiter
  PARAMETER INSTANCE = nf10_per_port_arbiter_0
  PARAMETER HW_VER = 1.00.a
  PARAMETER C_S_NUM_QUEUES = 1
+ PARAMETER C_BASEADDR = 0x76e00000
+ PARAMETER C_HIGHADDR = 0x76e0ffff
  BUS_INTERFACE S_AXI = axi_interconnect_0
  BUS_INTERFACE S_AXIS_0 = nf10_bram_output_queues_0_M_AXIS_0
  BUS_INTERFACE M_AXIS = nf10_per_port_arbiter_0_M_AXIS
@@ -510,11 +540,18 @@ BEGIN clock_generator
  PARAMETER C_CLKOUT1_FREQ = 160000000
  PARAMETER C_CLKOUT1_GROUP = NONE
  PARAMETER C_EXT_RESET_HIGH = 0
+ PARAMETER C_CLKOUT2_FREQ = 210000000
+ PARAMETER C_CLKOUT3_FREQ = 210000000
+ PARAMETER C_CLKOUT4_FREQ = 200000000
+ PARAMETER C_CLKOUT3_PHASE = 270
  PORT CLKIN = CLK
  PORT CLKOUT0 = control_clk
  PORT RST = RESET
  PORT LOCKED = dcm_locked
  PORT CLKOUT1 = core_clk
+ PORT CLKOUT2 = clock_generator_0_CLKOUT2
+ PORT CLKOUT4 = clock_generator_0_CLKOUT4
+ PORT CLKOUT3 = clock_generator_0_CLKOUT3
 END
 
 BEGIN axi_timebase_wdt
@@ -547,5 +584,50 @@ BEGIN axi_uartlite
  PORT TX = RS232_Uart_1_sout
  PORT RX = RS232_Uart_1_sin
  PORT S_AXI_ACLK = control_clk
+END
+
+BEGIN nf10_pcap_replay_uengine
+ PARAMETER INSTANCE = nf10_pcap_replay_uengine_0
+ PARAMETER HW_VER = 1.00.a
+ PARAMETER QDR_NUM_CHIPS = 2
+ PARAMETER C_BASEADDR = 0x76000000
+ PARAMETER C_HIGHADDR = 0x7600ffff
+ BUS_INTERFACE S_AXI = axi_interconnect_0
+ BUS_INTERFACE M_AXIS = nf10_pcap_replay_uengine_0_M_AXIS
+ BUS_INTERFACE S_AXIS = nf10_pcap_replay_uengine_0_M_AXIS
+ PORT axi_aclk = core_clk
+ PORT qdr_d_0 = nf10_pcap_replay_uengine_0_qdr_d_0
+ PORT qdr_q_0 = nf10_pcap_replay_uengine_0_qdr_q_0
+ PORT qdr_sa_0 = nf10_pcap_replay_uengine_0_qdr_sa_0
+ PORT qdr_w_n_0 = nf10_pcap_replay_uengine_0_qdr_w_n_0
+ PORT qdr_r_n_0 = nf10_pcap_replay_uengine_0_qdr_r_n_0
+ PORT qdr_bw_n_0 = nf10_pcap_replay_uengine_0_qdr_bw_n_0
+ PORT qdr_dll_off_n_0 = nf10_pcap_replay_uengine_0_qdr_dll_off_n_0
+ PORT qdr_cq_0 = nf10_pcap_replay_uengine_0_qdr_cq_0
+ PORT qdr_cq_n_0 = nf10_pcap_replay_uengine_0_qdr_cq_n_0
+ PORT qdr_c_n_0 = nf10_pcap_replay_uengine_0_qdr_c_n_0
+ PORT qdr_k_n_0 = nf10_pcap_replay_uengine_0_qdr_k_n_0
+ PORT qdr_c_0 = nf10_pcap_replay_uengine_0_qdr_c_0
+ PORT qdr_k_0 = nf10_pcap_replay_uengine_0_qdr_k_0
+ PORT qdr_masterbank_sel_0 = nf10_pcap_replay_uengine_0_qdr_masterbank_sel_0
+ PORT qdr_d_1 = nf10_pcap_replay_uengine_0_qdr_d_1
+ PORT qdr_q_1 = nf10_pcap_replay_uengine_0_qdr_q_1
+ PORT qdr_sa_1 = nf10_pcap_replay_uengine_0_qdr_sa_1
+ PORT qdr_w_n_1 = nf10_pcap_replay_uengine_0_qdr_w_n_1
+ PORT qdr_r_n_1 = nf10_pcap_replay_uengine_0_qdr_r_n_1
+ PORT qdr_bw_n_1 = nf10_pcap_replay_uengine_0_qdr_bw_n_1
+ PORT qdr_dll_off_n_1 = nf10_pcap_replay_uengine_0_qdr_dll_off_n_1
+ PORT qdr_cq_1 = nf10_pcap_replay_uengine_0_qdr_cq_1
+ PORT qdr_cq_n_1 = nf10_pcap_replay_uengine_0_qdr_cq_n_1
+ PORT qdr_c_n_1 = nf10_pcap_replay_uengine_0_qdr_c_n_1
+ PORT qdr_k_n_1 = nf10_pcap_replay_uengine_0_qdr_k_n_1
+ PORT qdr_c_1 = nf10_pcap_replay_uengine_0_qdr_c_1
+ PORT qdr_k_1 = nf10_pcap_replay_uengine_0_qdr_k_1
+ PORT qdr_masterbank_sel_1 = nf10_pcap_replay_uengine_0_qdr_masterbank_sel_1
+ PORT axi_aresetn = Peripheral_aresetn
+ PORT qdr_clk = clock_generator_0_CLKOUT2
+ PORT qdr_clk_200 = clock_generator_0_CLKOUT4
+ PORT qdr_clk_270 = clock_generator_0_CLKOUT3
+ PORT dcm_locked = dcm_locked
 END
 
