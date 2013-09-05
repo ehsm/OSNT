@@ -61,7 +61,7 @@ module nf10_pcap_replay_uengine
   parameter QDR_BW_WIDTH         = 4,
   parameter QDR_CQ_WIDTH         = 1,
   parameter QDR_CLK_WIDTH        = 1,
-	parameter QDR_BURST_LENGTH     = 2,
+	parameter QDR_BURST_LENGTH     = 4,
 	parameter QDR_CLK_PERIOD       = 4000,
   parameter SIM_ONLY             = 0
 )

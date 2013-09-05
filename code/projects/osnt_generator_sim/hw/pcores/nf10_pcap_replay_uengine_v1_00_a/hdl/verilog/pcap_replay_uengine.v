@@ -53,7 +53,7 @@ module pcap_replay_uengine
     parameter QDR_BW_WIDTH         = 4,
     parameter QDR_CQ_WIDTH         = 1,
     parameter QDR_CLK_WIDTH        = 1,
-		parameter QDR_BURST_LENGTH     = 2,
+		parameter QDR_BURST_LENGTH     = 4,
 		parameter QDR_CLK_PERIOD       = 4000,
 		parameter SIM_ONLY             = 0
 )
@@ -156,13 +156,13 @@ module pcap_replay_uengine
 	wire usr_rst, usr_rst_180, usr_rst_200, usr_rst_270;
   wire idelay_ctrl_rdy;
 	
-  wire                                      								fifo_wr_rd_en;
-  wire [QDR_NUM_CHIPS*QDR_DATA_WIDTH*QDR_BURST_LENGTH-1:0]  fifo_wr_data;
-  wire                                           						fifo_wr_empty;
+  wire                                       fifo_wr_rd_en;
+  wire [QDR_NUM_CHIPS*QDR_DATA_WIDTH*2-1:0]  fifo_wr_data;
+  wire                                       fifo_wr_empty;
 	
-  wire                                      								fifo_rd_wr_en;
-  wire [QDR_NUM_CHIPS*QDR_DATA_WIDTH*QDR_BURST_LENGTH-1:0]  fifo_rd_data;
-  wire                                           						fifo_rd_full;
+  wire                                       fifo_rd_wr_en;
+  wire [QDR_NUM_CHIPS*QDR_DATA_WIDTH*2-1:0]  fifo_rd_data;
+  wire                                       fifo_rd_full;
 	
 	wire                    									 user_ad_w_n;
   wire		                 									 user_d_w_n;
@@ -218,7 +218,7 @@ module pcap_replay_uengine
   axis_to_fifo #(
     .C_S_AXIS_DATA_WIDTH  (C_S_AXIS_DATA_WIDTH),
     .C_S_AXIS_TUSER_WIDTH (C_S_AXIS_TUSER_WIDTH),
-    .FIFO_DATA_WIDTH      (QDR_NUM_CHIPS*QDR_DATA_WIDTH*QDR_BURST_LENGTH)
+    .FIFO_DATA_WIDTH      (QDR_NUM_CHIPS*QDR_DATA_WIDTH*2) // *2 for both low and high value
   )
      axis_to_fifo_inst
   (
@@ -233,15 +233,15 @@ module pcap_replay_uengine
     .s_axis_tready        (s_axis_tready),
     .s_axis_tlast         (s_axis_tlast),
 
-    .fifo_rd_en           (fifo_rd_en),
-    .fifo_dout            (fifo_dout),
-    .fifo_empty           (fifo_empty),
+    .fifo_rd_en           (fifo_wr_rd_en),
+    .fifo_dout            (fifo_wr_data),
+    .fifo_empty           (fifo_wr_empty),
 
     .sw_rst               (sw_rst)
   );
 
 	fifo_to_mem #(
-    .FIFO_DATA_WIDTH      (QDR_NUM_CHIPS*QDR_DATA_WIDTH*QDR_BURST_LENGTH),
+    .FIFO_DATA_WIDTH      (QDR_NUM_CHIPS*QDR_DATA_WIDTH*2),
 		.MEM_ADDR_WIDTH       (QDR_ADDR_WIDTH),
 		.MEM_DATA_WIDTH       (QDR_NUM_CHIPS*QDR_DATA_WIDTH),
 		.MEM_BW_WIDTH         (QDR_BW_WIDTH),
@@ -302,15 +302,15 @@ module pcap_replay_uengine
         .user_d_w_n             (user_d_w_n),
         .user_bwh_n             (user_bwh_n),
         .user_bwl_n             (user_bwl_n),
-        .user_dwl               (user_dwl[QDR_DATA_WIDTH+(i+1)-1:QDR_DATA_WIDTH*i]),
-        .user_dwh               (user_dwh[QDR_DATA_WIDTH+(i+1)-1:QDR_DATA_WIDTH*i]),
+        .user_dwl               (user_dwl[QDR_DATA_WIDTH*(i+1)-1:QDR_DATA_WIDTH*i]),
+        .user_dwh               (user_dwh[QDR_DATA_WIDTH*(i+1)-1:QDR_DATA_WIDTH*i]),
         
 				.user_r_n               (user_r_n),
         .user_ad_rd             (user_ad_rd),         
         .user_rd_full           (user_rd_full[i]),
         .user_qr_valid          (user_qr_valid[i]),
-        .user_qrl               (user_qrl[QDR_DATA_WIDTH+(i+1)-1:QDR_DATA_WIDTH*i]),
-        .user_qrh               (user_qrh[QDR_DATA_WIDTH+(i+1)-1:QDR_DATA_WIDTH*i]),
+        .user_qrl               (user_qrl[QDR_DATA_WIDTH*(i+1)-1:QDR_DATA_WIDTH*i]),
+        .user_qrh               (user_qrh[QDR_DATA_WIDTH*(i+1)-1:QDR_DATA_WIDTH*i]),
         
         .idelay_ctrl_rdy        (idelay_ctrl_rdy),
         
@@ -399,7 +399,7 @@ module pcap_replay_uengine
 	endgenerate
 	
 	mem_to_fifo #(
-    .FIFO_DATA_WIDTH      (QDR_NUM_CHIPS*QDR_DATA_WIDTH*QDR_BURST_LENGTH),
+    .FIFO_DATA_WIDTH      (QDR_NUM_CHIPS*QDR_DATA_WIDTH*2),
 		.MEM_ADDR_WIDTH       (QDR_ADDR_WIDTH),
 		.MEM_DATA_WIDTH       (QDR_NUM_CHIPS*QDR_DATA_WIDTH),
 		.MEM_BW_WIDTH         (QDR_BW_WIDTH),
@@ -428,7 +428,7 @@ module pcap_replay_uengine
   fifo_to_axis #(
     .C_M_AXIS_DATA_WIDTH  (C_M_AXIS_DATA_WIDTH),
     .C_M_AXIS_TUSER_WIDTH (C_M_AXIS_TUSER_WIDTH),
-    .FIFO_DATA_WIDTH      (QDR_NUM_CHIPS*QDR_DATA_WIDTH*QDR_BURST_LENGTH)
+    .FIFO_DATA_WIDTH      (QDR_NUM_CHIPS*QDR_DATA_WIDTH*2)
   )
     fifo_to_axis_inst
   (

@@ -170,18 +170,6 @@ BEGIN nf10_rate_limiter
  PORT axi_aresetn = Peripheral_aresetn
 END
 
-BEGIN nf10_per_port_arbiter
- PARAMETER INSTANCE = nf10_per_port_arbiter_0
- PARAMETER HW_VER = 1.00.a
- PARAMETER C_S_NUM_QUEUES = 1
- PARAMETER C_BASEADDR = 0x76e00000
- PARAMETER C_HIGHADDR = 0x76e0ffff
- BUS_INTERFACE S_AXI = axi_interconnect_0
- BUS_INTERFACE S_AXIS_0 = nf10_bram_output_queues_0_M_AXIS_0
- BUS_INTERFACE M_AXIS = nf10_per_port_arbiter_0_M_AXIS
- PORT axi_aclk = control_clk
-END
-
 BEGIN nf10_nic_output_port_lookup
  PARAMETER INSTANCE = nf10_nic_output_port_lookup_0
  PARAMETER HW_VER = 1.00.a
@@ -593,8 +581,8 @@ BEGIN nf10_pcap_replay_uengine
  PARAMETER C_BASEADDR = 0x76000000
  PARAMETER C_HIGHADDR = 0x7600ffff
  BUS_INTERFACE S_AXI = axi_interconnect_0
+ BUS_INTERFACE S_AXIS = nf10_bram_output_queues_0_M_AXIS_0
  BUS_INTERFACE M_AXIS = nf10_pcap_replay_uengine_0_M_AXIS
- BUS_INTERFACE S_AXIS = nf10_pcap_replay_uengine_0_M_AXIS
  PORT axi_aclk = core_clk
  PORT qdr_d_0 = nf10_pcap_replay_uengine_0_qdr_d_0
  PORT qdr_q_0 = nf10_pcap_replay_uengine_0_qdr_q_0
@@ -610,6 +598,11 @@ BEGIN nf10_pcap_replay_uengine
  PORT qdr_c_0 = nf10_pcap_replay_uengine_0_qdr_c_0
  PORT qdr_k_0 = nf10_pcap_replay_uengine_0_qdr_k_0
  PORT qdr_masterbank_sel_0 = nf10_pcap_replay_uengine_0_qdr_masterbank_sel_0
+ PORT axi_aresetn = Peripheral_aresetn
+ PORT dcm_locked = dcm_locked
+ PORT qdr_clk = clock_generator_0_CLKOUT2
+ PORT qdr_clk_200 = clock_generator_0_CLKOUT4
+ PORT qdr_clk_270 = clock_generator_0_CLKOUT3
  PORT qdr_d_1 = nf10_pcap_replay_uengine_0_qdr_d_1
  PORT qdr_q_1 = nf10_pcap_replay_uengine_0_qdr_q_1
  PORT qdr_sa_1 = nf10_pcap_replay_uengine_0_qdr_sa_1
@@ -624,10 +617,18 @@ BEGIN nf10_pcap_replay_uengine
  PORT qdr_c_1 = nf10_pcap_replay_uengine_0_qdr_c_1
  PORT qdr_k_1 = nf10_pcap_replay_uengine_0_qdr_k_1
  PORT qdr_masterbank_sel_1 = nf10_pcap_replay_uengine_0_qdr_masterbank_sel_1
+END
+
+BEGIN nf10_per_port_arbiter
+ PARAMETER INSTANCE = nf10_per_port_arbiter_0
+ PARAMETER HW_VER = 1.00.a
+ PARAMETER C_S_NUM_QUEUES = 1
+ PARAMETER C_BASEADDR = 0x76e00000
+ PARAMETER C_HIGHADDR = 0x76e0ffff
+ BUS_INTERFACE S_AXI = axi_interconnect_0
+ BUS_INTERFACE M_AXIS = nf10_per_port_arbiter_0_M_AXIS
+ BUS_INTERFACE S_AXIS_0 = nf10_pcap_replay_uengine_0_M_AXIS
+ PORT axi_aclk = core_clk
  PORT axi_aresetn = Peripheral_aresetn
- PORT qdr_clk = clock_generator_0_CLKOUT2
- PORT qdr_clk_200 = clock_generator_0_CLKOUT4
- PORT qdr_clk_270 = clock_generator_0_CLKOUT3
- PORT dcm_locked = dcm_locked
 END
 

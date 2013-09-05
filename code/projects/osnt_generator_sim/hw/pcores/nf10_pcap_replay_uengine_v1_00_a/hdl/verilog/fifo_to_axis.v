@@ -105,7 +105,7 @@ module fifo_to_axis
 	// -- Assignments
 	generate
 		for (i=0; i<C_M_AXIS_DATA_WIDTH/8; i=i+1) begin: _unpack_data
-			assign {fifo_dout_strb[i], fifo_dout[8*(i+1):8*i]} = fifo_dout_packed[9*(i+1):9*i]; 
+			assign {fifo_dout_strb[i], fifo_dout[8*(i+1)-1:8*i]} = fifo_dout_packed[9*(i+1)-1:9*i]; 
 		end
   endgenerate
 
@@ -117,9 +117,7 @@ module fifo_to_axis
         .rd_en        (fifo_rd_en),
         .dout         (fifo_dout_packed),
         .full         (fifo_full),
-        .almost_full  (),
         .empty        (fifo_empty),
-        .almost_empty (),
         .rst          (!axi_aresetn || sw_rst),
         .wr_clk       (fifo_clk),
         .rd_clk       (axi_aclk)
