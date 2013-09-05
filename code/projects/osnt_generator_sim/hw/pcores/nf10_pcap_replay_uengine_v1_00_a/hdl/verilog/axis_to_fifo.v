@@ -111,7 +111,7 @@ module axis_to_fifo
 	// -- Assignments
 	generate
 		for (i=0; i<C_S_AXIS_DATA_WIDTH/8; i=i+1) begin: _pack_data
-			assign fifo_din_packed[9*(i+1):9*i] = {fifo_din_strb[i], fifo_din[8*(i+1):8*i]};
+			assign fifo_din_packed[9*(i+1)-1:9*i] = {fifo_din_strb[i], fifo_din[8*(i+1)-1:8*i]};
 		end
   endgenerate
 	
@@ -182,9 +182,7 @@ module axis_to_fifo
         .rd_en        (fifo_rd_en),
         .dout         (fifo_dout),
         .full         (fifo_full),
-        .almost_full  (),
         .empty        (fifo_empty),
-        .almost_empty (),
         .rst          (!axi_aresetn || sw_rst),
         .wr_clk       (axi_aclk),
         .rd_clk       (fifo_clk)

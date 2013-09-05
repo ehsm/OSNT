@@ -49,23 +49,23 @@ module fifo_to_mem
 		parameter MEM_BW_WIDTH         = 4,
 		parameter MEM_BURST_LENGTH     = 2,
 		parameter MEM_ADDR_LOW         = 0,
-		parameter MEM_ADDR_HIGH        = MEM_ADDR_LOW+(2**MEM_ADDR_WIDTH/MEM_BURST_LENGTH)-1
+		parameter MEM_ADDR_HIGH        = MEM_ADDR_LOW+(2**MEM_ADDR_WIDTH/MEM_BURST_LENGTH)
 )
 (
     // Global Ports
     input                                           clk,
 		input																						rst,
-
+		
     // FIFO Ports
     output reg                                      fifo_rd_en,
     input [FIFO_DATA_WIDTH-1:0]                     fifo_data,
     input                                           fifo_empty,
 		
 		// Memory Ports
-    output reg                   										mem_ad_w_n,
-    output reg                   										mem_d_w_n,
+    output 		                   										mem_ad_w_n,
+    output    	                										mem_d_w_n,
 		input																						mem_wr_full,
-    output reg [MEM_ADDR_WIDTH-1:0]  								mem_ad_wr,
+    output [MEM_ADDR_WIDTH-1:0]  										mem_ad_wr,
     output [MEM_BW_WIDTH-1:0]    										mem_bwh_n,
     output [MEM_BW_WIDTH-1:0]    										mem_bwl_n,
     output reg [MEM_DATA_WIDTH-1:0]  							  mem_dwl,
@@ -90,11 +90,24 @@ module fifo_to_mem
   // -- Internal Parameters
 	
 	// -- Signals
+	
+	reg [MEM_ADDR_WIDTH:0] mem_ad_wr_c;
+	reg 									 mem_wr_n_c;
 
 	// -- Assignments
 	
 	assign mem_bwh_n = {MEM_BW_WIDTH{1'b0}};
   assign mem_bwl_n = {MEM_BW_WIDTH{1'b0}};
+	
+	assign mem_ad_w_n = mem_wr_n_c;
+	assign mem_d_w_n = mem_wr_n_c;
+	
+	generate
+		if (MEM_BURST_LENGTH==2)
+ 			assign mem_ad_wr = mem_ad_wr_c[MEM_ADDR_WIDTH-1:0];
+		else if (MEM_BURST_LENGTH==4)
+			assign mem_ad_wr = mem_ad_wr_c[MEM_ADDR_WIDTH:1];
+	endgenerate
 	
   // -- Modules and Logic
 	
@@ -102,29 +115,36 @@ module fifo_to_mem
     if(rst || sw_rst) begin
 			fifo_rd_en <= 0;
 		
-      mem_ad_wr  <= MEM_ADDR_LOW;
-			mem_ad_w_n <= 1;
-			mem_d_w_n  <= 1;			
-			mem_dwl    <= {MEM_DATA_WIDTH{1'b0}};
-			mem_dwh    <= {MEM_DATA_WIDTH{1'b0}};
+      mem_ad_wr_c  <= MEM_ADDR_LOW;
+			mem_dwl    	<= {MEM_DATA_WIDTH{1'b0}};
+			mem_dwh    	<= {MEM_DATA_WIDTH{1'b0}};
     end
     else begin
 			fifo_rd_en <= 0;
-			mem_ad_w_n <= 1;
-			mem_d_w_n  <= 1;
 		
 		  if (!fifo_empty && !mem_wr_full && cal_done) begin
 				fifo_rd_en <= 1;
-			
-				mem_ad_w_n <= 0;
-				mem_d_w_n  <= 0;
 				mem_dwl    <= fifo_data[FIFO_DATA_WIDTH/2-1:0];
 				mem_dwh    <= fifo_data[FIFO_DATA_WIDTH-1:FIFO_DATA_WIDTH/2];
 	
-				if (mem_ad_wr == MEM_ADDR_HIGH) 
-					mem_ad_wr <= MEM_ADDR_LOW;
+				if (mem_ad_wr_c == MEM_ADDR_HIGH) 
+					mem_ad_wr_c <= MEM_ADDR_LOW;
 				else
-					mem_ad_wr <= mem_ad_wr + 1;	 
+					mem_ad_wr_c <= mem_ad_wr_c + 1;	 
+			end
+    end
+	end
+	
+  always @ (posedge clk) begin
+    if(rst || sw_rst) begin
+			mem_wr_n_c 	<= 1;
+    end
+    else begin
+			mem_wr_n_c <= 1;
+			
+			if (!fifo_empty && !mem_wr_full && cal_done) begin
+				if (MEM_BURST_LENGTH==2 || (MEM_BURST_LENGTH==4 && mem_wr_n_c))
+					mem_wr_n_c <= 0;
 			end
     end
   end

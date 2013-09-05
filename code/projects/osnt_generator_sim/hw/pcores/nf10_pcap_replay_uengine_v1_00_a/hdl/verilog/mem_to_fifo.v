@@ -50,7 +50,7 @@ module mem_to_fifo
 		parameter MEM_BW_WIDTH         = 4,
 		parameter MEM_BURST_LENGTH     = 2,
 		parameter MEM_ADDR_LOW         = 0,
-		parameter MEM_ADDR_HIGH        = MEM_ADDR_LOW+(2**MEM_ADDR_WIDTH/MEM_BURST_LENGTH)-1
+		parameter MEM_ADDR_HIGH        = MEM_ADDR_LOW+(2**MEM_ADDR_WIDTH/MEM_BURST_LENGTH)
 )
 (
     // Global Ports
@@ -59,9 +59,9 @@ module mem_to_fifo
 
 		
 		// Memory Ports
-    output reg                   										mem_r_n,
+    output 		                   										mem_r_n,
 		input																						mem_rd_full,
-    output reg [MEM_ADDR_WIDTH-1:0]  								mem_ad_rd,
+    output [MEM_ADDR_WIDTH-1:0]  										mem_ad_rd,
 		input																						mem_qr_valid,
     input [MEM_DATA_WIDTH-1:0]  							  		mem_qrl,
     input [MEM_DATA_WIDTH-1:0]  										mem_qrh,
@@ -90,28 +90,49 @@ module mem_to_fifo
   // -- Internal Parameters
 	
 	// -- Signals
+	
+	reg [MEM_ADDR_WIDTH:0] mem_ad_rd_c;
+	reg 									 mem_r_n_c;
 
 	// -- Assignments
+	
+	assign mem_r_n = mem_r_n_c;
+	
+	generate
+		if (MEM_BURST_LENGTH==2)
+ 			assign mem_ad_rd = mem_ad_rd_c[MEM_ADDR_WIDTH-1:0];
+		else if (MEM_BURST_LENGTH==4)
+			assign mem_ad_rd = mem_ad_rd_c[MEM_ADDR_WIDTH:1];
+	endgenerate
 	
   // -- Modules and Logic
 	
   always @ (posedge clk) begin
     if(rst || sw_rst) begin
-      mem_ad_rd  <= MEM_ADDR_LOW;
-			mem_r_n <= 1;
+      mem_ad_rd_c  <= MEM_ADDR_LOW;
     end
     else begin
-			mem_r_n <= 1;
-		
 		  if (!mem_rd_full && cal_done) begin
-				mem_r_n <= 0;
-
-				if (mem_ad_rd == MEM_ADDR_HIGH) 
-					mem_ad_rd <= MEM_ADDR_LOW;
+				if (mem_ad_rd_c == MEM_ADDR_HIGH) 
+					mem_ad_rd_c <= MEM_ADDR_LOW;
 				else
-					mem_ad_rd <= mem_ad_rd + 1;	 
+					mem_ad_rd_c <= mem_ad_rd_c + 1;	 
 			end
     end
+  end
+	
+  always @ (posedge clk) begin
+    if(rst || sw_rst) begin
+			mem_r_n_c <= 1;
+    end
+    else begin
+			mem_r_n_c <= 1;
+		
+		  if (!mem_rd_full && cal_done) begin
+				if (MEM_BURST_LENGTH==2 || (MEM_BURST_LENGTH==4 && mem_r_n_c))
+					mem_r_n_c <= 0;
+    	end
+		end
   end
 	
   always @ (posedge clk) begin
