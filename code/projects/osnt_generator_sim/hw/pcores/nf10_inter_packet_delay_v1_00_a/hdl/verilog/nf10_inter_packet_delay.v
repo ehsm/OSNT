@@ -148,10 +148,10 @@ module nf10_inter_packet_delay
     .s_axi_awready   (s_axi_awready),
 
     .rw_regs         (rw_regs),
-	.rw_defaults     (/*{NUM_RW_REGS*C_S_AXI_DATA_WIDTH{1'b0}}*/{32'b0, 32'b010}),
-	.wo_regs         (),
-	.wo_defaults     ({NUM_WO_REGS*C_S_AXI_DATA_WIDTH{1'b0}}),
-	.ro_regs         ()
+		.rw_defaults     (/*{NUM_RW_REGS*C_S_AXI_DATA_WIDTH{1'b0}}*/{32'b0, 32'b010}),
+		.wo_regs         (),
+		.wo_defaults     ({NUM_WO_REGS*C_S_AXI_DATA_WIDTH{1'b0}}),
+		.ro_regs         ()
   );
 
   // -- Register assignments

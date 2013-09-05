@@ -132,11 +132,64 @@ module nf10_per_port_arbiter
   localparam NUM_RO_REGS = 0;
 
   // -- Signals
-  wire     [NUM_RW_REGS*C_S_AXI_DATA_WIDTH-1 : 0] rw_regs;
-  wire                                            sw_rst;
+	genvar 																									i;
+	
+  wire     [NUM_RW_REGS*C_S_AXI_DATA_WIDTH-1 : 0] 				rw_regs;
+  wire                                            				sw_rst;
+	
+  wire     [C_S_NUM_QUEUES*C_S_AXIS_DATA_WIDTH-1:0]       s_axis_tdata_grp;
+  wire     [(C_S_NUM_QUEUES*(C_S_AXIS_DATA_WIDTH/8))-1:0] s_axis_tstrb_grp;
+  wire     [C_S_NUM_QUEUES*C_S_AXIS_TUSER_WIDTH-1:0]      s_axis_tuser_grp;
+  wire     [C_S_NUM_QUEUES-1:0]                           s_axis_tvalid_grp;
+  wire     [C_S_NUM_QUEUES-1:0]                           s_axis_tready_grp;
+  wire     [C_S_NUM_QUEUES-1:0]                           s_axis_tlast_grp;
 
-  wire     [C_S_NUM_QUEUES-1:0]                   s_axis_tready_c;
-
+  // -- Unpack AXI Slave Interface
+  generate
+    for (i=0; i<C_S_NUM_QUEUES; i=i+1) begin: _unpack_s_axis
+			if (i==0) begin
+      	assign s_axis_tdata_grp[C_S_AXIS_DATA_WIDTH*(i+1)-1:C_S_AXIS_DATA_WIDTH*i] = s_axis_tdata_0;
+      	assign s_axis_tstrb_grp[(C_S_AXIS_DATA_WIDTH/8)*(i+1)-1:(C_S_AXIS_DATA_WIDTH/8)*i] = s_axis_tstrb_0;
+      	assign s_axis_tuser_grp[C_S_AXIS_TUSER_WIDTH*(i+1)-1:C_S_AXIS_TUSER_WIDTH*i] = s_axis_tuser_0;
+      	assign s_axis_tvalid_grp[i] = s_axis_tvalid_0;
+      	assign s_axis_tready_0 = s_axis_tready_grp[i];
+      	assign s_axis_tlast_grp[i] = s_axis_tlast_0;
+			end
+			else if (i==1) begin
+      	assign s_axis_tdata_grp[C_S_AXIS_DATA_WIDTH*(i+1)-1:C_S_AXIS_DATA_WIDTH*i] = s_axis_tdata_1;
+      	assign s_axis_tstrb_grp[(C_S_AXIS_DATA_WIDTH/8)*(i+1)-1:(C_S_AXIS_DATA_WIDTH/8)*i] = s_axis_tstrb_1;
+      	assign s_axis_tuser_grp[C_S_AXIS_TUSER_WIDTH*(i+1)-1:C_S_AXIS_TUSER_WIDTH*i] = s_axis_tuser_1;
+      	assign s_axis_tvalid_grp[i] = s_axis_tvalid_1;
+      	assign s_axis_tready_1 = s_axis_tready_grp[i];
+      	assign s_axis_tlast_grp[i] = s_axis_tlast_1;
+			end
+			else if (i==2) begin
+      	assign s_axis_tdata_grp[C_S_AXIS_DATA_WIDTH*(i+1)-1:C_S_AXIS_DATA_WIDTH*i] = s_axis_tdata_2;
+      	assign s_axis_tstrb_grp[(C_S_AXIS_DATA_WIDTH/8)*(i+1)-1:(C_S_AXIS_DATA_WIDTH/8)*i] = s_axis_tstrb_2;
+      	assign s_axis_tuser_grp[C_S_AXIS_TUSER_WIDTH*(i+1)-1:C_S_AXIS_TUSER_WIDTH*i] = s_axis_tuser_2;
+      	assign s_axis_tvalid_grp[i] = s_axis_tvalid_2;
+      	assign s_axis_tready_2 = s_axis_tready_grp[i];
+      	assign s_axis_tlast_grp[i] = s_axis_tlast_2;
+			end
+			else if (i==3) begin
+      	assign s_axis_tdata_grp[C_S_AXIS_DATA_WIDTH*(i+1)-1:C_S_AXIS_DATA_WIDTH*i] = s_axis_tdata_3;
+      	assign s_axis_tstrb_grp[(C_S_AXIS_DATA_WIDTH/8)*(i+1)-1:(C_S_AXIS_DATA_WIDTH/8)*i] = s_axis_tstrb_3;
+      	assign s_axis_tuser_grp[C_S_AXIS_TUSER_WIDTH*(i+1)-1:C_S_AXIS_TUSER_WIDTH*i] = s_axis_tuser_3;
+      	assign s_axis_tvalid_grp[i] = s_axis_tvalid_3;
+      	assign s_axis_tready_3 = s_axis_tready_grp[i];
+      	assign s_axis_tlast_grp[i] = s_axis_tlast_3;
+			end
+			else if (i==4) begin
+      	assign s_axis_tdata_grp[C_S_AXIS_DATA_WIDTH*(i+1)-1:C_S_AXIS_DATA_WIDTH*i] = s_axis_tdata_4;
+      	assign s_axis_tstrb_grp[(C_S_AXIS_DATA_WIDTH/8)*(i+1)-1:(C_S_AXIS_DATA_WIDTH/8)*i] = s_axis_tstrb_4;
+      	assign s_axis_tuser_grp[C_S_AXIS_TUSER_WIDTH*(i+1)-1:C_S_AXIS_TUSER_WIDTH*i] = s_axis_tuser_4;
+      	assign s_axis_tvalid_grp[i] = s_axis_tvalid_4;
+      	assign s_axis_tready_4 = s_axis_tready_grp[i];
+      	assign s_axis_tlast_grp[i] = s_axis_tlast_4;
+			end
+    end
+  endgenerate
+	
   // -- AXILITE REGs
   axi_lite_regs
   #(
@@ -174,15 +227,15 @@ module nf10_per_port_arbiter
     .s_axi_awready   (s_axi_awready),
 
     .rw_regs         (rw_regs),
-	.rw_defaults     ({NUM_RW_REGS*C_S_AXI_DATA_WIDTH{1'b0}}),
-	.wo_regs         (),
-	.wo_defaults     ({NUM_WO_REGS*C_S_AXI_DATA_WIDTH{1'b0}}),
-	.ro_regs         ()
+		.rw_defaults     ({NUM_RW_REGS*C_S_AXI_DATA_WIDTH{1'b0}}),
+		.wo_regs         (),
+		.wo_defaults     ({NUM_WO_REGS*C_S_AXI_DATA_WIDTH{1'b0}}),
+		.ro_regs         ()
   );
 
   // -- Register assignments
 
-  assign sw_rst        = rw_regs[(C_S_AXI_DATA_WIDTH*0)+0];
+  assign sw_rst      = rw_regs[(C_S_AXI_DATA_WIDTH*0)+0];
 
   // -- Inter Packet Delay
   per_port_arbiter #
@@ -197,52 +250,26 @@ module nf10_per_port_arbiter
     per_port_arbiter
   (
     // Global Ports
-    .axi_aclk           ( axi_aclk ),
-    .axi_aresetn        ( axi_aresetn ),
+    .axi_aclk           	( axi_aclk ),
+    .axi_aresetn        	( axi_aresetn ),
 
     // Master Stream Ports (interface to data path)
-    .m_axis_tdata       ( m_axis_tdata ),
-    .m_axis_tstrb       ( m_axis_tstrb ),
-    .m_axis_tuser       ( m_axis_tuser ),
-    .m_axis_tvalid      ( m_axis_tvalid ),
-    .m_axis_tready      ( m_axis_tready ),
-    .m_axis_tlast       ( m_axis_tlast ),
+    .m_axis_tdata       	( m_axis_tdata ),
+    .m_axis_tstrb       	( m_axis_tstrb ),
+    .m_axis_tuser       	( m_axis_tuser ),
+    .m_axis_tvalid      	( m_axis_tvalid ),
+    .m_axis_tready      	( m_axis_tready ),
+    .m_axis_tlast       	( m_axis_tlast ),
 
     // Slave Stream Ports (interface to RX queues)
-    .s_axis_tdata_grp   ( {s_axis_tdata_4,
-                           s_axis_tdata_3,
-                           s_axis_tdata_2,
-                           s_axis_tdata_1,
-                           s_axis_tdata_0} ),
-    .s_axis_tstrb_grp   ( {s_axis_tstrb_4,
-                           s_axis_tstrb_3,
-                           s_axis_tstrb_2,
-                           s_axis_tstrb_1,
-                           s_axis_tstrb_0} ),
-    .s_axis_tuser_grp   ( {s_axis_tuser_4,
-                           s_axis_tuser_3,
-                           s_axis_tuser_2,
-                           s_axis_tuser_1,
-                           s_axis_tuser_0} ),
-    .s_axis_tvalid_grp  ( {s_axis_tvalid_4,
-                           s_axis_tvalid_3,
-                           s_axis_tvalid_2,
-                           s_axis_tvalid_1,
-                           s_axis_tvalid_0} ),
-    .s_axis_tready_grp  ( s_axis_tready_c ),
-    .s_axis_tlast_grp   ( {s_axis_tlast_4,
-                           s_axis_tlast_3,
-                           s_axis_tlast_2,
-                           s_axis_tlast_1,
-                           s_axis_tlast_0} ),
+    .s_axis_tdata_grp   	( s_axis_tdata_grp ),
+    .s_axis_tstrb_grp   	( s_axis_tstrb_grp ),
+    .s_axis_tuser_grp   	( s_axis_tuser_grp ),
+    .s_axis_tvalid_grp  	( s_axis_tvalid_grp ),
+    .s_axis_tready_grp  	( s_axis_tready_grp ),
+    .s_axis_tlast_grp   	( s_axis_tlast_grp ),
 
-    .sw_rst               ( sw_rst )
+    .sw_rst             	( sw_rst )
   );
-
-  assign {s_axis_tready_4,
-          s_axis_tready_3,
-          s_axis_tready_2,
-          s_axis_tready_1,
-          s_axis_tready_0} = s_axis_tready_c;
 
 endmodule

@@ -41,13 +41,13 @@
 
 module per_port_arbiter
 #(
-    //Master AXI Stream Data Width
-    parameter C_M_AXIS_DATA_WIDTH   = 256,
-    parameter C_S_AXIS_DATA_WIDTH   = 256,
-    parameter C_M_AXIS_TUSER_WIDTH  = 128,
-    parameter C_S_AXIS_TUSER_WIDTH  = 128,
-    parameter C_S_AXI_DATA_WIDTH    = 32,
-    parameter C_S_NUM_QUEUES        = 5,
+  //Master AXI Stream Data Width
+  parameter C_M_AXIS_DATA_WIDTH   = 256,
+  parameter C_S_AXIS_DATA_WIDTH   = 256,
+  parameter C_M_AXIS_TUSER_WIDTH  = 128,
+  parameter C_S_AXIS_TUSER_WIDTH  = 128,
+  parameter C_S_AXI_DATA_WIDTH    = 32,
+  parameter C_S_NUM_QUEUES        = 5,
 	parameter C_TUSER_TIMESTAMP_POS = 32
 )
 (
@@ -92,13 +92,13 @@ module per_port_arbiter
 
   // -- Signals
   genvar                                     i;
-  integer									 j;
+  integer									 									 j;
   
-  reg                               		 state;
-  reg                               		 next_state;
+  reg                               		 		 state;
+  reg                               		 		 next_state;
 
   reg                                        in_fifo_rd_en [0:C_S_NUM_QUEUES-1];
-  reg                                        in_fifo_wr_en [0:C_S_NUM_QUEUES-1];
+  wire                                       in_fifo_wr_en [0:C_S_NUM_QUEUES-1];
   wire                                       in_fifo_nearly_full [0:C_S_NUM_QUEUES-1];
   wire                                       in_fifo_empty [0:C_S_NUM_QUEUES-1];
   wire  [C_M_AXIS_DATA_WIDTH-1:0]            in_fifo_tdata [0:C_S_NUM_QUEUES-1];
@@ -154,7 +154,7 @@ module per_port_arbiter
 
       assign arrival_time[i] = {in_fifo_empty[i], in_fifo_tuser[i][C_TUSER_TIMESTAMP_POS+32-1:C_TUSER_TIMESTAMP_POS]}; 
 	                                              // Concatenating with fifo_empty signal to make the arrival time
-                                                  // large incase the given fifo is empty, to avoid garbage comparison.
+                                                // large incase the given fifo is empty, to avoid garbage comparison.
     end
   endgenerate
 
@@ -191,31 +191,30 @@ module per_port_arbiter
   always @ * begin
     next_state = state;
 
-	for (j=0; j<C_S_NUM_QUEUES; j=j+1)
+		for (j=0; j<C_S_NUM_QUEUES; j=j+1)
     	in_fifo_rd_en[j] = 0;
 		
-	m_axis_tdata  = in_fifo_tdata[cmp_if_c];
-	m_axis_tstrb  = in_fifo_tstrb[cmp_if_c];
-	m_axis_tuser  = in_fifo_tuser[cmp_if_c];
-	m_axis_tvalid = 0;
-	m_axis_tlast = 0;
+		m_axis_tdata  = in_fifo_tdata[cmp_if_c];
+		m_axis_tstrb  = in_fifo_tstrb[cmp_if_c];
+		m_axis_tuser  = in_fifo_tuser[cmp_if_c];
+		m_axis_tvalid = 0;
+		m_axis_tlast = 0;
 	
-	cmp_if_c = cmp_if_r;
-	
+		cmp_if_c = cmp_if_r;
 	
     case (state)
       IN_PKT_HEADER: begin
         if (!in_fifo_empty[cmp_if]) begin
           m_axis_tvalid = 1;
-		  cmp_if_c = cmp_if;
+		  		cmp_if_c = cmp_if;
 
           if (m_axis_tready) begin
             in_fifo_rd_en[cmp_if] = 1;
 
             if (!in_fifo_tlast[cmp_if])
               next_state   = IN_PKT_BODY;
-			else
-		      m_axis_tlast = 1;
+						else
+		      		m_axis_tlast = 1;
           end
         end
       end
@@ -228,9 +227,9 @@ module per_port_arbiter
             in_fifo_rd_en[cmp_if_c] = 1;
 
             if (in_fifo_tlast[cmp_if_c]) begin
-			  m_axis_tlast = 1;
+			  			m_axis_tlast = 1;
               next_state = IN_PKT_HEADER;
-			end
+						end
           end
         end
       end
