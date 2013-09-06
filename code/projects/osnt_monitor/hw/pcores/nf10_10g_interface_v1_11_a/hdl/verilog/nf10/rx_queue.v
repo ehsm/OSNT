@@ -91,7 +91,6 @@ module rx_queue
 
    reg rx_pkt_start;
    reg rx_pkt_start_sync;
-   reg pkt_start;
 
 
    // Instantiate clock domain crossing FIFO
