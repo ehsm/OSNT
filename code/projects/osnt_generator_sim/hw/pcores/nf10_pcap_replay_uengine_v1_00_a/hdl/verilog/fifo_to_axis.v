@@ -96,7 +96,6 @@ module fifo_to_axis
   wire   [C_M_AXIS_DATA_WIDTH-1:0]          fifo_dout;
   wire   [C_M_AXIS_DATA_WIDTH/8-1:0]        fifo_dout_strb;
   wire                                      fifo_empty;
-  wire                                      fifo_almost_empty;
 	wire   [C_M_AXIS_PACKED_DATA_WIDTH-1:0]   fifo_dout_packed;
 
   reg    [C_M_AXIS_TUSER_WIDTH-1:0]         axis_tuser_c;
