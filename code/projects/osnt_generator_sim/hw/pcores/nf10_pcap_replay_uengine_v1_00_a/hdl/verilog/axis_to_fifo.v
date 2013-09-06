@@ -105,7 +105,6 @@ module axis_to_fifo
   reg   [C_S_AXIS_DATA_WIDTH-1:0]           fifo_din;
   reg   [C_S_AXIS_DATA_WIDTH/8-1:0]         fifo_din_strb;
   wire                                      fifo_full;
-  wire                                      fifo_almost_full;
 	wire  [C_S_AXIS_PACKED_DATA_WIDTH-1:0]    fifo_din_packed;
 	
 	// -- Assignments

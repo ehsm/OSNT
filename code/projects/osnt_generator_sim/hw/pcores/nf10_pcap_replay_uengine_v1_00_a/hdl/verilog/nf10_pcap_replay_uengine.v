@@ -63,7 +63,7 @@ module nf10_pcap_replay_uengine
   parameter QDR_CLK_WIDTH        = 1,
 	parameter QDR_BURST_LENGTH     = 4,
 	parameter QDR_CLK_PERIOD       = 4000,
-  parameter SIM_ONLY             = 0
+  parameter SIM_ONLY             = 1
 )
 (
   // Clock and Reset
@@ -184,8 +184,8 @@ module nf10_pcap_replay_uengine
   )
     axi_lite_regs_1bar_inst
   (
-    .s_axi_aclk      (s_axi_aclk),
-    .s_axi_aresetn   (s_axi_aresetn),
+    .s_axi_aclk      (axi_aclk),
+    .s_axi_aresetn   (axi_aresetn),
     .s_axi_awaddr    (s_axi_awaddr),
     .s_axi_awvalid   (s_axi_awvalid),
     .s_axi_wdata     (s_axi_wdata),
@@ -204,8 +204,13 @@ module nf10_pcap_replay_uengine
     .s_axi_bvalid    (s_axi_bvalid),
     .s_axi_awready   (s_axi_awready),
 
-    .rw_regs         (rw_regs)
+    .rw_regs         (rw_regs),
+		.rw_defaults     ({NUM_RW_REGS*C_S_AXI_DATA_WIDTH{1'b0}}),
+		.wo_regs         (),
+		.wo_defaults     ({NUM_WO_REGS*C_S_AXI_DATA_WIDTH{1'b0}}),
+		.ro_regs         ()
   );
+  
 
   // -- Register assignments
 
