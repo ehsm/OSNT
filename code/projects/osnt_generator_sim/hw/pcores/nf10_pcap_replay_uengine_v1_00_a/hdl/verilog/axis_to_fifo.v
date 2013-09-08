@@ -5,7 +5,7 @@
  *  File:
  *        axis_to_fifo.v
  *
- *  Library:
+ *  Library:C_SRC_PORT_WIDTH
  *        hw/contrib/pcores/nf10_pcap_replay_uengine_v1_00_a
  *
  *  Module:
@@ -44,8 +44,8 @@ module axis_to_fifo
     //Master AXI Stream Data Width
     parameter C_S_AXIS_DATA_WIDTH  = 256,
     parameter C_S_AXIS_TUSER_WIDTH = 128,
-		parameter C_DST_PORT_WIDTH     = 16,
-		parameter C_TUSER_DST_PORT_POS = 24,
+		parameter C_SRC_PORT_WIDTH     = 16,
+		parameter C_TUSER_SRC_PORT_POS = 16,
 		parameter C_NUM_QUEUES         = 4
 )
 (
@@ -95,7 +95,7 @@ module axis_to_fifo
   reg                                       state;
   reg                                       next_state;
 
-	reg		[C_DST_PORT_WIDTH-1:0]							qid_onehot;
+	reg		[C_SRC_PORT_WIDTH-1:0]							qid_onehot;
 	reg		[log2(C_NUM_QUEUES)-1:0]						qid;
 
   reg                                       ififo_rd_en;
@@ -139,7 +139,7 @@ module axis_to_fifo
 	
 	// --- One-hot to decimal conversion		
 	always @ * begin
-		qid_onehot = ififo_tuser[C_TUSER_DST_PORT_POS+C_DST_PORT_WIDTH-1:C_TUSER_DST_PORT_POS];
+		qid_onehot = ififo_tuser[C_TUSER_SRC_PORT_POS+C_SRC_PORT_WIDTH-1:C_TUSER_SRC_PORT_POS];
 	
 		casex (qid_onehot)
 			'b00_00_00_00_00_00_00_XX: qid = 0;

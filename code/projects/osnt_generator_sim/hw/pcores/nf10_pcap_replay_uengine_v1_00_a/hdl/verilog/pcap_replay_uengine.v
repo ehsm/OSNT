@@ -5,7 +5,7 @@
  *  File:
  *        pcap_replay_uengine.v
  *
- *  Library:
+ *  Library:C_SRC_PORT_WIDTH
  *        hw/contrib/pcores/nf10_pcap_replay_uengine_v1_00_a
  *
  *  Module:
@@ -16,7 +16,7 @@
  *
  *  Description:
  *
- *
+ *mem_ad_
  *  Copyright notice:
  *        Copyright (C) 2010, 2011 The Board of Trustees of The Leland Stanford
  *                                 Junior University
@@ -47,10 +47,10 @@ module pcap_replay_uengine
     parameter C_M_AXIS_TUSER_WIDTH = 128,
     parameter C_S_AXIS_TUSER_WIDTH = 128,
     parameter C_S_AXI_DATA_WIDTH   = 32,
-		parameter C_DST_PORT_WIDTH     = 8,
+		parameter C_SRC_PORT_WIDTH     = 8,
 		parameter C_NUM_QUEUES         = 4,
-		parameter C_TUSER_DST_PORT_POS = 24,
-    parameter QDR_NUM_CHIPS        = 3,
+		parameter C_TUSER_SRC_PORT_POS = 16,
+    parameter QDR_NUM_CHIPS        = 2,
     parameter QDR_DATA_WIDTH       = 36,
     parameter QDR_ADDR_WIDTH       = 19,
     parameter QDR_BW_WIDTH         = 4,
@@ -58,6 +58,7 @@ module pcap_replay_uengine
     parameter QDR_CLK_WIDTH        = 1,
 		parameter QDR_BURST_LENGTH     = 4,
 		parameter QDR_CLK_PERIOD       = 4000,
+		parameter REPLAY_COUNT_WIDTH   = 32,
 		parameter SIM_ONLY             = 0
 )
 (
@@ -133,15 +134,23 @@ module pcap_replay_uengine
     output                                     			qdr_r_n_2,
     input 					                 								qdr_masterbank_sel_2,
                                                   	
-		// Misc                                         	
-		input [QDR_ADDR_WIDTH-1:0]  									  mem_addr_low_q0,
-		input [QDR_ADDR_WIDTH-1:0]  										mem_addr_high_q0,
-		input [QDR_ADDR_WIDTH-1:0]  									  mem_addr_low_q1,
-		input [QDR_ADDR_WIDTH-1:0]  										mem_addr_high_q1,
-		input [QDR_ADDR_WIDTH-1:0]  									  mem_addr_low_q2,
-		input [QDR_ADDR_WIDTH-1:0]  										mem_addr_high_q2,
-		input [QDR_ADDR_WIDTH-1:0]  									  mem_addr_low_q3,
-		input [QDR_ADDR_WIDTH-1:0]  										mem_addr_high_q3,
+		// Misc                                        
+		input																						enable_q0,
+		input [QDR_ADDR_WIDTH-1:0]  									  mem_ad_low_q0,
+		input [QDR_ADDR_WIDTH-1:0]  										mem_ad_high_q0,
+		input	[REPLAY_COUNT_WIDTH-1:0]		  						replay_count_q0,
+		input																						enable_q1,
+		input [QDR_ADDR_WIDTH-1:0]  									  mem_ad_low_q1,
+		input [QDR_ADDR_WIDTH-1:0]  										mem_ad_high_q1,
+		input	[REPLAY_COUNT_WIDTH-1:0]		  						replay_count_q1,
+		input																						enable_q2,
+		input [QDR_ADDR_WIDTH-1:0]  									  mem_ad_low_q2,
+		input [QDR_ADDR_WIDTH-1:0]  										mem_ad_high_q2,
+		input	[REPLAY_COUNT_WIDTH-1:0]		  						replay_count_q2,
+		input																						enable_q3,
+		input [QDR_ADDR_WIDTH-1:0]  									  mem_ad_low_q3,
+		input [QDR_ADDR_WIDTH-1:0]  										mem_ad_high_q3,
+		input	[REPLAY_COUNT_WIDTH-1:0]		  						replay_count_q3,
 		
     input                                      			sw_rst
 );	
@@ -177,7 +186,6 @@ module pcap_replay_uengine
 	
   wire                                       fifo_rd_wr_en;
   wire [C_S_AXIS_PACKED_DATA_WIDTH-1:0]  		 fifo_rd_data;
-	wire [log2(C_NUM_QUEUES)-1:0]					 		 fifo_rd_qid;
   wire                                       fifo_rd_full;
 	
 	wire                    									 user_ad_w_n;
@@ -218,7 +226,7 @@ module pcap_replay_uengine
 	assign qdr_cq                                              = {qdr_cq_2, qdr_cq_1, qdr_cq_0};
 	assign qdr_cq_n                                            = {qdr_cq_n_2, qdr_cq_n_1, qdr_cq_n_0};
   assign {qdr_c_2, qdr_c_1, qdr_c_0}                         = qdr_c;
-	assign {qdr_c_n_2, qdr_c_n_1, qdr_c_n_0}                   = qdr_c;
+	assign {qdr_c_n_2, qdr_c_n_1, qdr_c_n_0}                   = qdr_c_n;
 	assign {qdr_dll_off_n_2, qdr_dll_off_n_1, qdr_dll_off_n_0} = qdr_dll_off_n;
   assign {qdr_k_2, qdr_k_1, qdr_k_0}                         = qdr_k;
 	assign {qdr_k_n_2, qdr_k_n_1, qdr_k_n_0}                   = qdr_k_n;
@@ -234,8 +242,8 @@ module pcap_replay_uengine
   axis_to_fifo #(
     .C_S_AXIS_DATA_WIDTH  (C_S_AXIS_DATA_WIDTH),
     .C_S_AXIS_TUSER_WIDTH (C_S_AXIS_TUSER_WIDTH),
-		.C_DST_PORT_WIDTH			(C_DST_PORT_WIDTH),
-		.C_TUSER_DST_PORT_POS	(C_TUSER_DST_PORT_POS),
+		.C_SRC_PORT_WIDTH			(C_SRC_PORT_WIDTH),
+		.C_TUSER_SRC_PORT_POS	(C_TUSER_SRC_PORT_POS),
 		.C_NUM_QUEUES      		(C_NUM_QUEUES)
   )
      axis_to_fifo_inst
@@ -286,14 +294,18 @@ module pcap_replay_uengine
 	    .mem_dwl						(user_dwl),
 	    .mem_dwh						(user_dwh),
 
-			.mem_addr_low_q0		(mem_addr_low_q0),
-			.mem_addr_high_q0		(mem_addr_high_q0),
-			.mem_addr_low_q1		(mem_addr_low_q1),
-			.mem_addr_high_q1		(mem_addr_high_q1),
-			.mem_addr_low_q2		(mem_addr_low_q2),
-			.mem_addr_high_q2		(mem_addr_high_q2),
-			.mem_addr_low_q3		(mem_addr_low_q3),
-			.mem_addr_high_q3		(mem_addr_high_q3),
+			.enable_q0					(enable_q0),
+			.mem_ad_low_q0			(mem_ad_low_q0),
+			.mem_ad_high_q0			(mem_ad_high_q0),
+			.enable_q1					(enable_q1),
+			.mem_ad_low_q1			(mem_ad_low_q1),
+			.mem_ad_high_q1			(mem_ad_high_q1),
+			.enable_q2					(enable_q2),
+			.mem_ad_low_q2			(mem_ad_low_q2),
+			.mem_ad_high_q2			(mem_ad_high_q2),
+			.enable_q3					(enable_q3),
+			.mem_ad_low_q3			(mem_ad_low_q3),
+			.mem_ad_high_q3			(mem_ad_high_q3),
 	    
 			.sw_rst							(sw_rst),
 			.cal_done						(&cal_done)
@@ -429,7 +441,9 @@ module pcap_replay_uengine
 	endgenerate
 	
 	mem_to_fifo #(
-    .FIFO_DATA_WIDTH      (QDR_NUM_CHIPS*QDR_DATA_WIDTH*2),
+    .FIFO_DATA_WIDTH      (C_S_AXIS_PACKED_DATA_WIDTH),
+		.FIFO_NUM_QUEUES      (C_NUM_QUEUES),
+		.REPLAY_COUNT_WIDTH		(REPLAY_COUNT_WIDTH),
 		.MEM_ADDR_WIDTH       (QDR_ADDR_WIDTH),
 		.MEM_DATA_WIDTH       (QDR_NUM_CHIPS*QDR_DATA_WIDTH),
 		.MEM_BW_WIDTH         (QDR_BW_WIDTH),
@@ -450,15 +464,31 @@ module pcap_replay_uengine
 	  .fifo_wr_en					(fifo_rd_wr_en),
 	  .fifo_data					(fifo_rd_data),
 	  .fifo_full					(fifo_rd_full),
-	    
+	  
+		.enable_q0					(enable_q0),
+		.mem_ad_low_q0			(mem_ad_low_q0),
+		.mem_ad_high_q0			(mem_ad_high_q0),
+		.replay_count_q0		(replay_count_q0),
+		.enable_q1					(enable_q1),
+		.mem_ad_low_q1			(mem_ad_low_q1),
+		.mem_ad_high_q1			(mem_ad_high_q1),
+		.replay_count_q1		(replay_count_q1),
+		.enable_q2					(enable_q2),
+		.mem_ad_low_q2			(mem_ad_low_q2),
+		.mem_ad_high_q2			(mem_ad_high_q2),
+		.replay_count_q2		(replay_count_q2),
+		.enable_q3					(enable_q3),
+		.mem_ad_low_q3			(mem_ad_low_q3),
+		.mem_ad_high_q3			(mem_ad_high_q3),
+		.replay_count_q3		(replay_count_q3),
+		
 	  .sw_rst							(sw_rst),
 		.cal_done						(&cal_done)
 	);
 	
   fifo_to_axis #(
     .C_M_AXIS_DATA_WIDTH  (C_M_AXIS_DATA_WIDTH),
-    .C_M_AXIS_TUSER_WIDTH (C_M_AXIS_TUSER_WIDTH),
-    .FIFO_DATA_WIDTH      (QDR_NUM_CHIPS*QDR_DATA_WIDTH*2)
+    .C_M_AXIS_TUSER_WIDTH (C_M_AXIS_TUSER_WIDTH)
   )
     fifo_to_axis_inst
   (

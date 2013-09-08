@@ -33,7 +33,7 @@
  *        MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  *        Lesser General Public License for more details.
  *
- *        You should have received a copy of the GNU Lesser General Public
+ *        You should have received cur_qid copy of the GNU Lesser General Public
  *        License along with the NetFPGA source package.  If not, see
  *        http://www.gnu.org/licenses/.
  *
@@ -73,15 +73,19 @@ module fifo_to_mem
     output reg [MEM_DATA_WIDTH-1:0]  							  mem_dwl,
     output reg [MEM_DATA_WIDTH-1:0]  								mem_dwh,
 
-    // Misc
-		input [MEM_ADDR_WIDTH-1:0]  									  mem_addr_low_q0,
-		input [MEM_ADDR_WIDTH-1:0]  										mem_addr_high_q0,
-		input [MEM_ADDR_WIDTH-1:0]  									  mem_addr_low_q1,
-		input [MEM_ADDR_WIDTH-1:0]  										mem_addr_high_q1,
-		input [MEM_ADDR_WIDTH-1:0]  									  mem_addr_low_q2,
-		input [MEM_ADDR_WIDTH-1:0]  										mem_addr_high_q2,
-		input [MEM_ADDR_WIDTH-1:0]  									  mem_addr_low_q3,
-		input [MEM_ADDR_WIDTH-1:0]  										mem_addr_high_q3,
+    // Misc -- add en_q
+		input																						enable_q0,
+		input [MEM_ADDR_WIDTH-1:0]  									  mem_ad_low_q0,
+		input [MEM_ADDR_WIDTH-1:0]  										mem_ad_high_q0,
+		input																						enable_q1,
+		input [MEM_ADDR_WIDTH-1:0]  									  mem_ad_low_q1,
+		input [MEM_ADDR_WIDTH-1:0]  										mem_ad_high_q1,
+		input																						enable_q2,
+		input [MEM_ADDR_WIDTH-1:0]  									  mem_ad_low_q2,
+		input [MEM_ADDR_WIDTH-1:0]  										mem_ad_high_q2,
+		input																						enable_q3,
+		input [MEM_ADDR_WIDTH-1:0]  									  mem_ad_low_q3,
+		input [MEM_ADDR_WIDTH-1:0]  										mem_ad_high_q3,
 		
     input                                           sw_rst,
 		input																						cal_done
@@ -105,129 +109,127 @@ module fifo_to_mem
 		
 	// -- Signals
 	
-	integer                         i, j;
+	integer                        	 	i, j;
 	
-  reg                       			state;
-  reg                       			next_state;
+  reg                       				state;
+  reg                       				next_state;
 	
-	reg [log2(FIFO_NUM_QUEUES)-1:0] fifo_qid_r;
+	wire [log2(FIFO_NUM_QUEUES)-1:0] 	cur_qid_c;
+	reg  [log2(FIFO_NUM_QUEUES)-1:0] 	cur_qid;
 
-	reg 									 					mem_wr_n_c;
-  reg [MEM_DATA_WIDTH-1:0]  			mem_dwl_c;
-  reg [MEM_DATA_WIDTH-1:0]  			mem_dwh_c;
-	reg [MEM_ADDR_WIDTH:0] 					mem_ad_wr_r[0:FIFO_NUM_QUEUES-1];	
-	reg [MEM_ADDR_WIDTH:0] 					mem_ad_wr_c[0:FIFO_NUM_QUEUES-1];
-	reg [MEM_ADDR_WIDTH-1:0] 				mem_ad_low[0:FIFO_NUM_QUEUES-1];
-	reg [MEM_ADDR_WIDTH-1:0] 				mem_ad_high[0:FIFO_NUM_QUEUES-1];
-	reg 														mem_full_r[0:FIFO_NUM_QUEUES-1];
-	reg 														mem_full_c[0:FIFO_NUM_QUEUES-1];
+	reg	[FIFO_NUM_QUEUES-1:0]	  			enable;
+	reg 									 						mem_wr_n_c;
+  reg [MEM_DATA_WIDTH-1:0]  				mem_dwl_c;
+  reg [MEM_DATA_WIDTH-1:0]  				mem_dwh_c;
+	reg [MEM_ADDR_WIDTH:0] 						mem_ad_wr_r[0:FIFO_NUM_QUEUES-1];	
+	reg [MEM_ADDR_WIDTH:0] 						mem_ad_wr_c[0:FIFO_NUM_QUEUES-1];
+	reg [MEM_ADDR_WIDTH-1:0] 					mem_ad_low[0:FIFO_NUM_QUEUES-1];
+	reg [MEM_ADDR_WIDTH-1:0] 					mem_ad_high[0:FIFO_NUM_QUEUES-1];
+	reg 															mem_full_r[0:FIFO_NUM_QUEUES-1];
+	reg 															mem_full_c[0:FIFO_NUM_QUEUES-1];
 	
 
 	// -- Assignments
 	
 	assign mem_bwh_n = {MEM_BW_WIDTH{1'b0}};
   assign mem_bwl_n = {MEM_BW_WIDTH{1'b0}};
+	
+	assign cur_qid_c = fifo_qid;
   
 	// -- Modules and Logic
 	
 	always @ * begin
 		for (i=0; i<FIFO_NUM_QUEUES; i=i+1) begin
 			if (i==0) begin
-				mem_ad_low[i]  = mem_addr_low_q0;
-				mem_ad_high[i] = mem_addr_high_q0;
+				enable[i]      = enable_q0;	
+				mem_ad_low[i]  = mem_ad_low_q0;
+				mem_ad_high[i] = mem_ad_high_q0;
 			end
 			else if (i==1) begin
-				mem_ad_low[i]  = mem_addr_low_q1;
-				mem_ad_high[i] = mem_addr_high_q1;
+				enable[i]      = enable_q1;	
+				mem_ad_low[i]  = mem_ad_low_q1;
+				mem_ad_high[i] = mem_ad_high_q1;
 			end
 			else if (i==2) begin
-				mem_ad_low[i]  = mem_addr_low_q2;
-				mem_ad_high[i] = mem_addr_high_q2;
+				enable[i]      = enable_q2;	
+				mem_ad_low[i]  = mem_ad_low_q2;
+				mem_ad_high[i] = mem_ad_high_q2;
 			end
 			else if (i==3) begin
-				mem_ad_low[i]  = mem_addr_low_q3;
-				mem_ad_high[i] = mem_addr_high_q3;
+				enable[i]      = enable_q3;	
+				mem_ad_low[i]  = mem_ad_low_q3;
+				mem_ad_high[i] = mem_ad_high_q3;
 			end
 		end
 	end
 	
 	// ---- State Machine [Combinational]
-	always @ * begin
-		next_state = state;
-		
-		fifo_rd_en = 0;
-		
-		for (j=0; j<FIFO_NUM_QUEUES; j=j+1) begin
-			mem_ad_wr_c[j] = mem_ad_wr_r[j];
-			mem_full_c[j]  = mem_full_r[j];
-		end
-		
-		mem_dwl_c  = mem_dwl;
-		mem_dwh_c  = mem_dwh;
-		mem_wr_n_c = 1;
-		
-		case (state)
-			DATA_STAGE_0: begin
-		  	if (!fifo_empty && !mem_wr_full && cal_done) begin
-					if (mem_full_r[fifo_qid]) begin
-						fifo_rd_en = 1;
-					end
-					else begin
-						if (MEM_BURST_LENGTH==2 || MEM_BURST_LENGTH==4)
-							mem_wr_n_c = 0;
-						
-						if (mem_ad_wr_r[fifo_qid] == (mem_ad_high[fifo_qid]-2)) 
-							mem_full_c[fifo_qid] = 1;
-						else
-							mem_ad_wr_c[fifo_qid] = mem_ad_wr_r[fifo_qid] + 1;
-						
-						mem_dwl_c = fifo_data[1*FIFO_DATA_WIDTH/4-1:0*FIFO_DATA_WIDTH/4];
-						mem_dwh_c = fifo_data[2*FIFO_DATA_WIDTH/4-1:1*FIFO_DATA_WIDTH/4];
-						
-						next_state = DATA_STAGE_1;
-					end
-				end
-			end
-			DATA_STAGE_1: begin
-				if (!mem_wr_full  && cal_done) begin
-					fifo_rd_en = 1;
-					
-					if (MEM_BURST_LENGTH == 2)
-						mem_wr_n_c = 0;
+	generate
+		if (MEM_DATA_WIDTH == 72) begin: _mem_width_72
+			always @ * begin
+				next_state = state;
 				
-					mem_ad_wr_c[fifo_qid] = mem_ad_wr_r[fifo_qid] + 1;
-					
-					mem_dwl_c  = fifo_data[3*FIFO_DATA_WIDTH/4-1:2*FIFO_DATA_WIDTH/4];
-					mem_dwh_c  = fifo_data[4*FIFO_DATA_WIDTH/4-1:3*FIFO_DATA_WIDTH/4];
-					
-					next_state = DATA_STAGE_0;
+				fifo_rd_en = 0;
+				
+				for (j=0; j<FIFO_NUM_QUEUES; j=j+1) begin
+					mem_ad_wr_c[j] = mem_ad_wr_r[j];
+					mem_full_c[j]  = mem_full_r[j];
 				end
+				
+				mem_dwl_c  = mem_dwl;
+				mem_dwh_c  = mem_dwh;
+				mem_wr_n_c = 1;
+				
+				case (state)
+					DATA_STAGE_0: begin
+				  	if (!fifo_empty && !mem_wr_full && cal_done) begin
+							if (!enable[cur_qid_c] || mem_full_r[cur_qid_c]) begin
+								fifo_rd_en = 1;
+							end
+							else begin
+								if (MEM_BURST_LENGTH==2 || MEM_BURST_LENGTH==4)
+									mem_wr_n_c = 0;
+								
+								if (mem_ad_wr_r[cur_qid_c] == (mem_ad_high[cur_qid_c]-2)) 
+									mem_full_c[cur_qid_c] = 1;
+								else
+									mem_ad_wr_c[cur_qid_c] = mem_ad_wr_r[cur_qid_c] + 1;
+								
+								mem_dwl_c = fifo_data[1*FIFO_DATA_WIDTH/4-1:0*FIFO_DATA_WIDTH/4];
+								mem_dwh_c = fifo_data[2*FIFO_DATA_WIDTH/4-1:1*FIFO_DATA_WIDTH/4];
+								
+								next_state = DATA_STAGE_1;
+							end
+						end
+					end
+					DATA_STAGE_1: begin
+						if (!mem_wr_full  && cal_done) begin
+							fifo_rd_en = 1;
+							
+							if (MEM_BURST_LENGTH == 2)
+								mem_wr_n_c = 0;
+						
+							mem_ad_wr_c[cur_qid_c] = mem_ad_wr_r[cur_qid_c] + 1;
+							
+							mem_dwl_c  = fifo_data[3*FIFO_DATA_WIDTH/4-1:2*FIFO_DATA_WIDTH/4];
+							mem_dwh_c  = fifo_data[4*FIFO_DATA_WIDTH/4-1:3*FIFO_DATA_WIDTH/4];
+							
+							next_state = DATA_STAGE_0;
+						end
+					end
+				endcase
 			end
-		endcase
-	end
+		end
+		//else if (MEM_DATA_WIDTH == 36) begin: _mem_width_36
+		//end
+	endgenerate
 	
 	// ---- State Machine [Sequential]
   always @ (posedge clk) begin
-    if (rst) begin
+    if (rst || sw_rst) begin
 			state 			 <= DATA_STAGE_0;
-		
-			fifo_qid_r 	 <= {log2(FIFO_NUM_QUEUES){1'b0}};
-		
-			mem_ad_w_n   <= 1;
-			mem_d_w_n    <= 1;
-			mem_dwl      <= {MEM_DATA_WIDTH{1'b0}};
-			mem_dwh      <= {MEM_DATA_WIDTH{1'b0}};
-			mem_ad_wr    <= MEM_ADDR_LOW;
-      
-			for (j=0; j<FIFO_NUM_QUEUES; j=j+1) begin
-				mem_ad_wr_r[j] <= MEM_ADDR_LOW;
-				mem_full_r[j]  <= 0;
-			end
-    end
-		else if (sw_rst) begin
-			state <= DATA_STAGE_0;
 			
-			fifo_qid_r 	 <= {log2(FIFO_NUM_QUEUES){1'b0}};
+			cur_qid 	 	 <= {log2(FIFO_NUM_QUEUES){1'b0}};
 		
 			mem_ad_w_n   <= 1;
 			mem_d_w_n    <= 1;
@@ -241,9 +243,9 @@ module fifo_to_mem
 			end
     end
     else begin
-			state <= next_state;
+			state 			<= next_state;
 			
-			fifo_qid_r <= fifo_qid;
+			cur_qid 		<= cur_qid_c;
 		
 			mem_ad_w_n  <= mem_wr_n_c;
 			mem_d_w_n   <= mem_wr_n_c;
@@ -256,9 +258,9 @@ module fifo_to_mem
 			end
 			
 			if (MEM_BURST_LENGTH==2)
-				mem_ad_wr <= mem_ad_wr_r[fifo_qid_r][MEM_ADDR_WIDTH-1:0];
+				mem_ad_wr <= mem_ad_wr_r[cur_qid][MEM_ADDR_WIDTH-1:0];
 			else if (MEM_BURST_LENGTH==4)
-				mem_ad_wr <= mem_ad_wr_r[fifo_qid_r][MEM_ADDR_WIDTH:1]; 
+				mem_ad_wr <= mem_ad_wr_r[cur_qid][MEM_ADDR_WIDTH:1]; 
     end
 	end
 	
