@@ -55,6 +55,9 @@ module nf10_pcap_replay_uengine
   parameter C_S_AXIS_DATA_WIDTH  = 256,
   parameter C_M_AXIS_TUSER_WIDTH = 128,
   parameter C_S_AXIS_TUSER_WIDTH = 128,
+	parameter C_DST_PORT_WIDTH     = 8,
+	parameter C_NUM_QUEUES         = 4,
+	parameter C_TUSER_DST_PORT_POS = 24,
   parameter QDR_NUM_CHIPS        = 3,
   parameter QDR_DATA_WIDTH       = 36,
   parameter QDR_ADDR_WIDTH       = 19,
@@ -159,14 +162,23 @@ module nf10_pcap_replay_uengine
 );
 
   // -- Internal Parameters
-  localparam NUM_RW_REGS = 2;
+  localparam NUM_RW_REGS = 9;
   localparam NUM_WO_REGS = 0;
   localparam NUM_RO_REGS = 0;
 
   // -- Signals
-  wire     [NUM_RW_REGS*C_S_AXI_DATA_WIDTH-1:0]   rw_regs;
+  wire [NUM_RW_REGS*C_S_AXI_DATA_WIDTH-1:0]   	rw_regs;
 
-  wire                                            sw_rst;
+	wire [QDR_ADDR_WIDTH-1:0]  									  mem_addr_low_q0;
+	wire [QDR_ADDR_WIDTH-1:0]  										mem_addr_high_q0;
+	wire [QDR_ADDR_WIDTH-1:0]  									  mem_addr_low_q1;
+	wire [QDR_ADDR_WIDTH-1:0]  										mem_addr_high_q1;
+	wire [QDR_ADDR_WIDTH-1:0]  									  mem_addr_low_q2;
+	wire [QDR_ADDR_WIDTH-1:0]  										mem_addr_high_q2;
+	wire [QDR_ADDR_WIDTH-1:0]  									  mem_addr_low_q3;
+	wire [QDR_ADDR_WIDTH-1:0]  										mem_addr_high_q3;
+	
+  wire                                          sw_rst;
 
   // -- AXILITE Registers
   axi_lite_regs
@@ -214,7 +226,16 @@ module nf10_pcap_replay_uengine
 
   // -- Register assignments
 
-  assign sw_rst        = rw_regs[(C_S_AXI_DATA_WIDTH*0)+0];
+  assign sw_rst        	  = rw_regs[(C_S_AXI_DATA_WIDTH*0)+0];
+	
+	assign mem_addr_low_q0  = rw_regs[(C_S_AXI_DATA_WIDTH*2)+QDR_ADDR_WIDTH-1:(C_S_AXI_DATA_WIDTH*1)];
+	assign mem_addr_high_q0 = rw_regs[(C_S_AXI_DATA_WIDTH*3)+QDR_ADDR_WIDTH-1:(C_S_AXI_DATA_WIDTH*2)];
+	assign mem_addr_low_q1  = rw_regs[(C_S_AXI_DATA_WIDTH*4)+QDR_ADDR_WIDTH-1:(C_S_AXI_DATA_WIDTH*3)];
+	assign mem_addr_high_q1 = rw_regs[(C_S_AXI_DATA_WIDTH*5)+QDR_ADDR_WIDTH-1:(C_S_AXI_DATA_WIDTH*4)];
+	assign mem_addr_low_q2  = rw_regs[(C_S_AXI_DATA_WIDTH*6)+QDR_ADDR_WIDTH-1:(C_S_AXI_DATA_WIDTH*5)];
+	assign mem_addr_high_q2 = rw_regs[(C_S_AXI_DATA_WIDTH*7)+QDR_ADDR_WIDTH-1:(C_S_AXI_DATA_WIDTH*6)];
+	assign mem_addr_low_q3  = rw_regs[(C_S_AXI_DATA_WIDTH*8)+QDR_ADDR_WIDTH-1:(C_S_AXI_DATA_WIDTH*7)];
+	assign mem_addr_high_q3 = rw_regs[(C_S_AXI_DATA_WIDTH*9)+QDR_ADDR_WIDTH-1:(C_S_AXI_DATA_WIDTH*8)];
 	
 	// TODO: 1) add enable/disbale registers for packet replay ...
 	//       2) sync the current FIFO size with Read side and loop through it ...
@@ -228,6 +249,9 @@ module nf10_pcap_replay_uengine
     .C_M_AXIS_TUSER_WIDTH ( C_M_AXIS_TUSER_WIDTH ),
     .C_S_AXIS_TUSER_WIDTH ( C_S_AXIS_TUSER_WIDTH ),
     .C_S_AXI_DATA_WIDTH   ( C_S_AXI_DATA_WIDTH ),
+		.C_DST_PORT_WIDTH			( C_DST_PORT_WIDTH ),
+		.C_NUM_QUEUES					( C_NUM_QUEUES ),
+		.C_TUSER_DST_PORT_POS	( C_TUSER_DST_PORT_POS ),
     .QDR_NUM_CHIPS        ( QDR_NUM_CHIPS ),
     .QDR_DATA_WIDTH       ( QDR_DATA_WIDTH ),
     .QDR_ADDR_WIDTH       ( QDR_ADDR_WIDTH ),
@@ -314,6 +338,15 @@ module nf10_pcap_replay_uengine
 	  .qdr_masterbank_sel_2 ( qdr_masterbank_sel_2 ),
 
     // Misc
+		.mem_addr_low_q0			(mem_addr_low_q0),
+		.mem_addr_high_q0			(mem_addr_high_q0),
+		.mem_addr_low_q1			(mem_addr_low_q1),
+		.mem_addr_high_q1			(mem_addr_high_q1),
+		.mem_addr_low_q2			(mem_addr_low_q2),
+		.mem_addr_high_q2			(mem_addr_high_q2),
+		.mem_addr_low_q3			(mem_addr_low_q3),
+		.mem_addr_high_q3			(mem_addr_high_q3),
+		
     .sw_rst               ( sw_rst )
   );
 

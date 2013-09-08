@@ -44,7 +44,9 @@ module axis_to_fifo
     //Master AXI Stream Data Width
     parameter C_S_AXIS_DATA_WIDTH  = 256,
     parameter C_S_AXIS_TUSER_WIDTH = 128,
-    parameter FIFO_DATA_WIDTH      = 72
+		parameter C_DST_PORT_WIDTH     = 16,
+		parameter C_TUSER_DST_PORT_POS = 24,
+		parameter C_NUM_QUEUES         = 4
 )
 (
     // Global Ports
@@ -62,7 +64,8 @@ module axis_to_fifo
 
     // FIFO Ports
     input                                           fifo_rd_en,
-    output [FIFO_DATA_WIDTH-1:0]                    fifo_dout,
+    output [C_S_AXIS_PACKED_DATA_WIDTH-1:0] 				fifo_dout,
+		output [log2(C_NUM_QUEUES)-1:0]									fifo_dout_qid,
     output                                          fifo_empty,
 
     // Misc
@@ -92,6 +95,9 @@ module axis_to_fifo
   reg                                       state;
   reg                                       next_state;
 
+	reg		[C_DST_PORT_WIDTH-1:0]							qid_onehot;
+	reg		[log2(C_NUM_QUEUES)-1:0]						qid;
+
   reg                                       ififo_rd_en;
   reg                                       ififo_wr_en;
   wire                                      ififo_nearly_full;
@@ -104,8 +110,10 @@ module axis_to_fifo
   reg                                       fifo_wr_en;
   reg   [C_S_AXIS_DATA_WIDTH-1:0]           fifo_din;
   reg   [C_S_AXIS_DATA_WIDTH/8-1:0]         fifo_din_strb;
-  wire                                      fifo_full;
 	wire  [C_S_AXIS_PACKED_DATA_WIDTH-1:0]    fifo_din_packed;
+	reg		[log2(C_NUM_QUEUES)-1:0]						fifo_din_qid;
+	reg		[log2(C_NUM_QUEUES)-1:0]						fifo_din_qid_r;
+  wire                                      fifo_full;
 	
 	// -- Assignments
 	generate
@@ -128,6 +136,22 @@ module axis_to_fifo
         .reset       (!axi_aresetn || sw_rst),
         .clk         (axi_aclk)
       );
+	
+	// --- One-hot to decimal conversion		
+	always @ * begin
+		qid_onehot = ififo_tuser[C_TUSER_DST_PORT_POS+C_DST_PORT_WIDTH-1:C_TUSER_DST_PORT_POS];
+	
+		casex (qid_onehot)
+			'b00_00_00_00_00_00_00_XX: qid = 0;
+			'b00_00_00_00_00_00_XX_00: qid = 1;
+			'b00_00_00_00_00_XX_00_00: qid = 2;
+			'b00_00_00_00_XX_00_00_00: qid = 3;
+			'b00_00_00_XX_00_00_00_00: qid = 4;
+			'b00_00_XX_00_00_00_00_00: qid = 5;
+			'b00_XX_00_00_00_00_00_00: qid = 6;
+			'bXX_00_00_00_00_00_00_00: qid = 7;
+		endcase
+	end
 
   // ---- AXI (Side) State Machine [Combinational]
   always @ * begin
@@ -140,12 +164,14 @@ module axis_to_fifo
     fifo_din = ififo_tdata;
     fifo_din_strb = ififo_tstrb;
     fifo_wr_en = 0;
+		fifo_din_qid = fifo_din_qid_r;
 
     case (state)
       WR_TUSER_BITS: begin // TDATA_WIDTH > TUSER_WIDTH
         if (!ififo_empty && !fifo_full) begin
           fifo_din = {{(C_S_AXIS_DATA_WIDTH-128){1'b0}}, ififo_tuser};
           fifo_din_strb = {(C_S_AXIS_DATA_WIDTH/8){1'b1}};
+					fifo_din_qid = qid;
           fifo_wr_en = 1;
 
           next_state = WR_PKT_BITS;
@@ -167,19 +193,21 @@ module axis_to_fifo
   always @ (posedge axi_aclk) begin
     if(!axi_aresetn || sw_rst) begin
       state <= WR_TUSER_BITS;
+			fifo_din_qid_r <= {log2(C_NUM_QUEUES){1'b0}};
     end
     else begin
       state <= next_state;
+			fifo_din_qid_r <= fifo_din_qid;
     end
   end
 
   // --- Async FIFO
-  xil_async_fifo #(.DIN_WIDTH(C_S_AXIS_PACKED_DATA_WIDTH), .DOUT_WIDTH(FIFO_DATA_WIDTH), .DEPTH(16))
+  xil_async_fifo #(.DIN_WIDTH(log2(C_NUM_QUEUES)+C_S_AXIS_PACKED_DATA_WIDTH), .DOUT_WIDTH(log2(C_NUM_QUEUES)+C_S_AXIS_PACKED_DATA_WIDTH), .DEPTH(16))
     async_fifo_inst
-      ( .din          (fifo_din_packed),
+      ( .din          ({fifo_din_qid, fifo_din_packed}),
         .wr_en        (fifo_wr_en),
         .rd_en        (fifo_rd_en),
-        .dout         (fifo_dout),
+        .dout         ({fifo_dout_qid, fifo_dout}),
         .full         (fifo_full),
         .empty        (fifo_empty),
         .rst          (!axi_aresetn || sw_rst),

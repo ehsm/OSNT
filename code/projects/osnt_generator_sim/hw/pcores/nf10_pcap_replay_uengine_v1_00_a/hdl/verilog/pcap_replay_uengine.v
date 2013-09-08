@@ -47,6 +47,9 @@ module pcap_replay_uengine
     parameter C_M_AXIS_TUSER_WIDTH = 128,
     parameter C_S_AXIS_TUSER_WIDTH = 128,
     parameter C_S_AXI_DATA_WIDTH   = 32,
+		parameter C_DST_PORT_WIDTH     = 8,
+		parameter C_NUM_QUEUES         = 4,
+		parameter C_TUSER_DST_PORT_POS = 24,
     parameter QDR_NUM_CHIPS        = 3,
     parameter QDR_DATA_WIDTH       = 36,
     parameter QDR_ADDR_WIDTH       = 19,
@@ -130,7 +133,16 @@ module pcap_replay_uengine
     output                                     			qdr_r_n_2,
     input 					                 								qdr_masterbank_sel_2,
                                                   	
-	// Misc                                         	
+		// Misc                                         	
+		input [QDR_ADDR_WIDTH-1:0]  									  mem_addr_low_q0,
+		input [QDR_ADDR_WIDTH-1:0]  										mem_addr_high_q0,
+		input [QDR_ADDR_WIDTH-1:0]  									  mem_addr_low_q1,
+		input [QDR_ADDR_WIDTH-1:0]  										mem_addr_high_q1,
+		input [QDR_ADDR_WIDTH-1:0]  									  mem_addr_low_q2,
+		input [QDR_ADDR_WIDTH-1:0]  										mem_addr_high_q2,
+		input [QDR_ADDR_WIDTH-1:0]  									  mem_addr_low_q3,
+		input [QDR_ADDR_WIDTH-1:0]  										mem_addr_high_q3,
+		
     input                                      			sw_rst
 );	
 
@@ -147,6 +159,8 @@ module pcap_replay_uengine
 
   // -- Internal Parameters
   localparam IODELAY_GRP = "IODELAY_MIG";
+	
+	localparam C_S_AXIS_PACKED_DATA_WIDTH = C_S_AXIS_DATA_WIDTH+C_S_AXIS_DATA_WIDTH/8; 
 
   // -- Signals
   
@@ -157,11 +171,13 @@ module pcap_replay_uengine
   wire idelay_ctrl_rdy;
 	
   wire                                       fifo_wr_rd_en;
-  wire [QDR_NUM_CHIPS*QDR_DATA_WIDTH*2-1:0]  fifo_wr_data;
+  wire [C_S_AXIS_PACKED_DATA_WIDTH-1:0]  		 fifo_wr_data;
+	wire [log2(C_NUM_QUEUES)-1:0]					 		 fifo_wr_qid;
   wire                                       fifo_wr_empty;
 	
   wire                                       fifo_rd_wr_en;
-  wire [QDR_NUM_CHIPS*QDR_DATA_WIDTH*2-1:0]  fifo_rd_data;
+  wire [C_S_AXIS_PACKED_DATA_WIDTH-1:0]  		 fifo_rd_data;
+	wire [log2(C_NUM_QUEUES)-1:0]					 		 fifo_rd_qid;
   wire                                       fifo_rd_full;
 	
 	wire                    									 user_ad_w_n;
@@ -218,7 +234,9 @@ module pcap_replay_uengine
   axis_to_fifo #(
     .C_S_AXIS_DATA_WIDTH  (C_S_AXIS_DATA_WIDTH),
     .C_S_AXIS_TUSER_WIDTH (C_S_AXIS_TUSER_WIDTH),
-    .FIFO_DATA_WIDTH      (QDR_NUM_CHIPS*QDR_DATA_WIDTH*2) // *2 for both low and high value
+		.C_DST_PORT_WIDTH			(C_DST_PORT_WIDTH),
+		.C_TUSER_DST_PORT_POS	(C_TUSER_DST_PORT_POS),
+		.C_NUM_QUEUES      		(C_NUM_QUEUES)
   )
      axis_to_fifo_inst
   (
@@ -235,13 +253,15 @@ module pcap_replay_uengine
 
     .fifo_rd_en           (fifo_wr_rd_en),
     .fifo_dout            (fifo_wr_data),
+		.fifo_dout_qid				(fifo_wr_qid),
     .fifo_empty           (fifo_wr_empty),
 
     .sw_rst               (sw_rst)
   );
 
 	fifo_to_mem #(
-    .FIFO_DATA_WIDTH      (QDR_NUM_CHIPS*QDR_DATA_WIDTH*2),
+    .FIFO_DATA_WIDTH      (C_S_AXIS_PACKED_DATA_WIDTH),
+		.FIFO_NUM_QUEUES      (C_NUM_QUEUES),
 		.MEM_ADDR_WIDTH       (QDR_ADDR_WIDTH),
 		.MEM_DATA_WIDTH       (QDR_NUM_CHIPS*QDR_DATA_WIDTH),
 		.MEM_BW_WIDTH         (QDR_BW_WIDTH),
@@ -254,6 +274,7 @@ module pcap_replay_uengine
 
 	    .fifo_rd_en					(fifo_wr_rd_en),
 	    .fifo_data					(fifo_wr_data),
+			.fifo_qid	   				(fifo_wr_qid),
 	    .fifo_empty					(fifo_wr_empty),
 		
 	    .mem_ad_w_n					(user_ad_w_n),
@@ -265,7 +286,16 @@ module pcap_replay_uengine
 	    .mem_dwl						(user_dwl),
 	    .mem_dwh						(user_dwh),
 
-	    .sw_rst							(sw_rst),
+			.mem_addr_low_q0		(mem_addr_low_q0),
+			.mem_addr_high_q0		(mem_addr_high_q0),
+			.mem_addr_low_q1		(mem_addr_low_q1),
+			.mem_addr_high_q1		(mem_addr_high_q1),
+			.mem_addr_low_q2		(mem_addr_low_q2),
+			.mem_addr_high_q2		(mem_addr_high_q2),
+			.mem_addr_low_q3		(mem_addr_low_q3),
+			.mem_addr_high_q3		(mem_addr_high_q3),
+	    
+			.sw_rst							(sw_rst),
 			.cal_done						(&cal_done)
 	);
 	
