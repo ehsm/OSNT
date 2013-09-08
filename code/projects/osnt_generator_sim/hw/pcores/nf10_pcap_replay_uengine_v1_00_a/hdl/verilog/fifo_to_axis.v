@@ -43,7 +43,8 @@ module fifo_to_axis
 #(
     //Master AXI Stream Data Width
     parameter C_M_AXIS_DATA_WIDTH  = 256,
-    parameter C_M_AXIS_TUSER_WIDTH = 128
+    parameter C_M_AXIS_TUSER_WIDTH = 128,
+    parameter FIFO_DATA_WIDTH      = 72
 )
 (
     // Global Ports
@@ -53,7 +54,7 @@ module fifo_to_axis
 
     // FIFO Ports
     input                                           fifo_wr_en,
-    input [C_M_AXIS_PACKED_DATA_WIDTH-1:0]          fifo_din,
+    input [FIFO_DATA_WIDTH-1:0]                     fifo_din,
     output                                          fifo_full,
 
     // AXI Stream Ports
@@ -108,7 +109,7 @@ module fifo_to_axis
   endgenerate
 
   // -- Modules and Logic
-  xil_async_fifo #(.DOUT_WIDTH(C_M_AXIS_PACKED_DATA_WIDTH), .DIN_WIDTH(C_M_AXIS_PACKED_DATA_WIDTH), .DEPTH(16))
+  xil_async_fifo #(.DOUT_WIDTH(C_M_AXIS_PACKED_DATA_WIDTH), .DIN_WIDTH(FIFO_DATA_WIDTH), .DEPTH(16))
     async_fifo_inst
       ( .din          (fifo_din),
         .wr_en        (fifo_wr_en),

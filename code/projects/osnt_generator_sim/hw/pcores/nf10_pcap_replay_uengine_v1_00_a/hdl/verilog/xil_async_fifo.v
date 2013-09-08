@@ -52,7 +52,7 @@ module xil_async_fifo
     input [DIN_WIDTH-1:0]  		 din,
     input                      rd_clk,
     input                      rd_en,
-    output [DOUT_WIDTH-1:0] 	 dout,
+    output [DOUT_WIDTH-1:0] dout,
     output                     full,
     output                     empty
 );
@@ -64,18 +64,31 @@ module xil_async_fifo
   // -- Modules and Logic
 	
   generate 
-	  if (DIN_WIDTH==DOUT_WIDTH) begin: _fifo_292_to_292
-		  fifo_generator_v8_4_292_to_292 _inst (
-		    .rst(rst), // input rst
-		    .wr_clk(wr_clk), // input wr_clk
-		    .rd_clk(rd_clk), // input rd_clk
-		    .din(din), // input [291 : 0] din
-		    .wr_en(wr_en), // input wr_en
-		    .rd_en(rd_en), // input rd_en
-		    .dout(dout), // output [291 : 0] dout
-		    .full(full), // output full
-		    .empty(empty) // output empty
-		  );
+	  if (DIN_WIDTH==288 && DOUT_WIDTH==144) begin: _fifo_288_to_144
+			fifo_generator_v8_4_288_to_144 _inst (
+		  	.rst(rst), // input rst
+		 	 	.wr_clk(wr_clk), // input wr_clk
+		  	.rd_clk(rd_clk), // input rd_clk
+		  	.din(din), // input [287 : 0] din
+		  	.wr_en(wr_en), // input wr_en
+		  	.rd_en(rd_en), // input rd_en
+		  	.dout(dout), // output [287 : 0] dout
+		  	.full(full), // output full
+		  	.empty(empty) // output empty
+			);
+		end
+		else if (DIN_WIDTH==144 && DOUT_WIDTH==288) begin: _fifo_144_to_288
+			fifo_generator_v8_4_144_to_288 _inst (
+	  		.rst(rst), // input rst
+	 	 		.wr_clk(wr_clk), // input wr_clk
+	  		.rd_clk(rd_clk), // input rd_clk
+	  		.din(din), // input [287 : 0] din
+	  		.wr_en(wr_en), // input wr_en
+	  		.rd_en(rd_en), // input rd_en
+	  		.dout(dout), // output [287 : 0] dout
+	  		.full(full), // output full
+	  		.empty(empty) // output empty
+			);
 		end
 	endgenerate
 	

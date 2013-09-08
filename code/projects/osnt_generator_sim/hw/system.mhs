@@ -115,34 +115,34 @@
  PORT pcie_top_0_pci_exp_7_rxn_pin = pcie_top_0_pci_exp_7_rxn, DIR = I
  PORT pcie_top_0_pci_exp_7_rxp_pin = pcie_top_0_pci_exp_7_rxp, DIR = I
  PORT pcie_top_0_pci_exp_0_txn_pin = pcie_top_0_pci_exp_0_txn, DIR = O
- PORT nf10_pcap_replay_uengine_0_qdr_d_0_pin = nf10_pcap_replay_uengine_0_qdr_d_0, DIR = O, VEC = [35:0]
- PORT nf10_pcap_replay_uengine_0_qdr_q_0_pin = nf10_pcap_replay_uengine_0_qdr_q_0, DIR = I, VEC = [35:0]
- PORT nf10_pcap_replay_uengine_0_qdr_sa_0_pin = nf10_pcap_replay_uengine_0_qdr_sa_0, DIR = O, VEC = [18:0]
- PORT nf10_pcap_replay_uengine_0_qdr_w_n_0_pin = nf10_pcap_replay_uengine_0_qdr_w_n_0, DIR = O
- PORT nf10_pcap_replay_uengine_0_qdr_r_n_0_pin = nf10_pcap_replay_uengine_0_qdr_r_n_0, DIR = O
- PORT nf10_pcap_replay_uengine_0_qdr_bw_n_0_pin = nf10_pcap_replay_uengine_0_qdr_bw_n_0, DIR = O, VEC = [3:0]
- PORT nf10_pcap_replay_uengine_0_qdr_dll_off_n_0_pin = nf10_pcap_replay_uengine_0_qdr_dll_off_n_0, DIR = O
- PORT nf10_pcap_replay_uengine_0_qdr_cq_0_pin = nf10_pcap_replay_uengine_0_qdr_cq_0, DIR = I
- PORT nf10_pcap_replay_uengine_0_qdr_cq_n_0_pin = nf10_pcap_replay_uengine_0_qdr_cq_n_0, DIR = I
- PORT nf10_pcap_replay_uengine_0_qdr_c_n_0_pin = nf10_pcap_replay_uengine_0_qdr_c_n_0, DIR = O
- PORT nf10_pcap_replay_uengine_0_qdr_k_n_0_pin = nf10_pcap_replay_uengine_0_qdr_k_n_0, DIR = O
- PORT nf10_pcap_replay_uengine_0_qdr_c_0_pin = nf10_pcap_replay_uengine_0_qdr_c_0, DIR = O
- PORT nf10_pcap_replay_uengine_0_qdr_k_0_pin = nf10_pcap_replay_uengine_0_qdr_k_0, DIR = O
- PORT nf10_pcap_replay_uengine_0_qdr_masterbank_sel_0_pin = nf10_pcap_replay_uengine_0_qdr_masterbank_sel_0, DIR = I
- PORT nf10_pcap_replay_uengine_0_qdr_d_1_pin = nf10_pcap_replay_uengine_0_qdr_d_1, DIR = O, VEC = [35:0]
- PORT nf10_pcap_replay_uengine_0_qdr_q_1_pin = nf10_pcap_replay_uengine_0_qdr_q_1, DIR = I, VEC = [35:0]
- PORT nf10_pcap_replay_uengine_0_qdr_sa_1_pin = nf10_pcap_replay_uengine_0_qdr_sa_1, DIR = O, VEC = [18:0]
- PORT nf10_pcap_replay_uengine_0_qdr_w_n_1_pin = nf10_pcap_replay_uengine_0_qdr_w_n_1, DIR = O
- PORT nf10_pcap_replay_uengine_0_qdr_r_n_1_pin = nf10_pcap_replay_uengine_0_qdr_r_n_1, DIR = O
- PORT nf10_pcap_replay_uengine_0_qdr_bw_n_1_pin = nf10_pcap_replay_uengine_0_qdr_bw_n_1, DIR = O, VEC = [3:0]
- PORT nf10_pcap_replay_uengine_0_qdr_dll_off_n_1_pin = nf10_pcap_replay_uengine_0_qdr_dll_off_n_1, DIR = O
- PORT nf10_pcap_replay_uengine_0_qdr_cq_1_pin = nf10_pcap_replay_uengine_0_qdr_cq_1, DIR = I
- PORT nf10_pcap_replay_uengine_0_qdr_cq_n_1_pin = nf10_pcap_replay_uengine_0_qdr_cq_n_1, DIR = I
- PORT nf10_pcap_replay_uengine_0_qdr_c_n_1_pin = nf10_pcap_replay_uengine_0_qdr_c_n_1, DIR = O
- PORT nf10_pcap_replay_uengine_0_qdr_k_n_1_pin = nf10_pcap_replay_uengine_0_qdr_k_n_1, DIR = O
- PORT nf10_pcap_replay_uengine_0_qdr_c_1_pin = nf10_pcap_replay_uengine_0_qdr_c_1, DIR = O
- PORT nf10_pcap_replay_uengine_0_qdr_k_1_pin = nf10_pcap_replay_uengine_0_qdr_k_1, DIR = O
- PORT nf10_pcap_replay_uengine_0_qdr_masterbank_sel_1_pin = nf10_pcap_replay_uengine_0_qdr_masterbank_sel_1, DIR = I
+ PORT qdr_d_0 = nf10_pcap_replay_uengine_0_qdr_d_0, DIR = O, VEC = [35:0]
+ PORT qdr_q_0 = nf10_pcap_replay_uengine_0_qdr_q_0, DIR = I, VEC = [35:0]
+ PORT qdr_sa_0 = nf10_pcap_replay_uengine_0_qdr_sa_0, DIR = O, VEC = [18:0]
+ PORT qdr_w_n_0 = nf10_pcap_replay_uengine_0_qdr_w_n_0, DIR = O
+ PORT qdr_r_n_0 = nf10_pcap_replay_uengine_0_qdr_r_n_0, DIR = O
+ PORT qdr_bw_n_0 = nf10_pcap_replay_uengine_0_qdr_bw_n_0, DIR = O, VEC = [3:0]
+ PORT qdr_dll_off_n_0 = nf10_pcap_replay_uengine_0_qdr_dll_off_n_0, DIR = O
+ PORT qdr_cq_0 = nf10_pcap_replay_uengine_0_qdr_cq_0, DIR = I
+ PORT qdr_cq_n_0 = nf10_pcap_replay_uengine_0_qdr_cq_n_0, DIR = I
+ PORT qdr_c_n_0 = nf10_pcap_replay_uengine_0_qdr_c_n_0, DIR = O
+ PORT qdr_k_n_0 = nf10_pcap_replay_uengine_0_qdr_k_n_0, DIR = O
+ PORT qdr_c_0 = nf10_pcap_replay_uengine_0_qdr_c_0, DIR = O
+ PORT qdr_k_0 = nf10_pcap_replay_uengine_0_qdr_k_0, DIR = O
+ PORT qdr_masterbank_sel_0 = nf10_pcap_replay_uengine_0_qdr_masterbank_sel_0, DIR = I
+ PORT qdr_d_1 = nf10_pcap_replay_uengine_0_qdr_d_1, DIR = O, VEC = [35:0]
+ PORT qdr_q_1 = nf10_pcap_replay_uengine_0_qdr_q_1, DIR = I, VEC = [35:0]
+ PORT qdr_sa_1 = nf10_pcap_replay_uengine_0_qdr_sa_1, DIR = O, VEC = [18:0]
+ PORT qdr_w_n_1 = nf10_pcap_replay_uengine_0_qdr_w_n_1, DIR = O
+ PORT qdr_r_n_1 = nf10_pcap_replay_uengine_0_qdr_r_n_1, DIR = O
+ PORT qdr_bw_n_1 = nf10_pcap_replay_uengine_0_qdr_bw_n_1, DIR = O, VEC = [3:0]
+ PORT qdr_dll_off_n_1 = nf10_pcap_replay_uengine_0_qdr_dll_off_n_1, DIR = O
+ PORT qdr_cq_1 = nf10_pcap_replay_uengine_0_qdr_cq_1, DIR = I
+ PORT qdr_cq_n_1 = nf10_pcap_replay_uengine_0_qdr_cq_n_1, DIR = I
+ PORT qdr_c_n_1 = nf10_pcap_replay_uengine_0_qdr_c_n_1, DIR = O
+ PORT qdr_k_n_1 = nf10_pcap_replay_uengine_0_qdr_k_n_1, DIR = O
+ PORT qdr_c_1 = nf10_pcap_replay_uengine_0_qdr_c_1, DIR = O
+ PORT qdr_k_1 = nf10_pcap_replay_uengine_0_qdr_k_1, DIR = O
+ PORT qdr_masterbank_sel_1 = nf10_pcap_replay_uengine_0_qdr_masterbank_sel_1, DIR = I
 
 
 BEGIN proc_sys_reset
@@ -161,13 +161,103 @@ END
 BEGIN nf10_rate_limiter
  PARAMETER INSTANCE = nf10_rate_limiter_0
  PARAMETER HW_VER = 1.00.a
- PARAMETER C_BASEADDR = 0x77e00000
- PARAMETER C_HIGHADDR = 0x77e0ffff
+ PARAMETER C_BASEADDR = 0x77600000
+ PARAMETER C_HIGHADDR = 0x7760FFFF
  BUS_INTERFACE S_AXI = axi_interconnect_0
- BUS_INTERFACE M_AXIS = nf10_rate_limiter_0_M_AXIS
- BUS_INTERFACE S_AXIS = nf10_inter_packet_delay_0_M_AXIS
+ BUS_INTERFACE M_AXIS_0 = nf10_rate_limiter_0_M_AXIS_0
+ BUS_INTERFACE S_AXIS_0 = nf10_per_port_arbiter_0_M_AXIS
+ BUS_INTERFACE S_AXIS_1 = nf10_per_port_arbiter_1_M_AXIS
+ BUS_INTERFACE S_AXIS_2 = nf10_per_port_arbiter_2_M_AXIS
+ BUS_INTERFACE S_AXIS_3 = nf10_per_port_arbiter_3_M_AXIS
+ BUS_INTERFACE M_AXIS_1 = nf10_rate_limiter_0_M_AXIS_1
+ BUS_INTERFACE M_AXIS_2 = nf10_rate_limiter_0_M_AXIS_2
+ BUS_INTERFACE M_AXIS_3 = nf10_rate_limiter_0_M_AXIS_3
  PORT axi_aclk = core_clk
  PORT axi_aresetn = Peripheral_aresetn
+END
+
+BEGIN nf10_per_port_arbiter
+ PARAMETER INSTANCE = nf10_per_port_arbiter_3
+ PARAMETER HW_VER = 1.00.a
+ PARAMETER C_S_NUM_QUEUES = 1
+ BUS_INTERFACE S_AXIS_0 = nf10_bram_output_queues_0_M_AXIS_3
+ BUS_INTERFACE M_AXIS = nf10_per_port_arbiter_3_M_AXIS
+ PORT axi_aresetn = Peripheral_aresetn
+ PORT axi_aclk = core_clk
+END
+
+BEGIN nf10_per_port_arbiter
+ PARAMETER INSTANCE = nf10_per_port_arbiter_2
+ PARAMETER HW_VER = 1.00.a
+ PARAMETER C_S_NUM_QUEUES = 1
+ BUS_INTERFACE S_AXIS_0 = nf10_bram_output_queues_0_M_AXIS_2
+ BUS_INTERFACE M_AXIS = nf10_per_port_arbiter_2_M_AXIS
+ PORT axi_aresetn = Peripheral_aresetn
+ PORT axi_aclk = core_clk
+END
+
+BEGIN nf10_per_port_arbiter
+ PARAMETER INSTANCE = nf10_per_port_arbiter_1
+ PARAMETER HW_VER = 1.00.a
+ PARAMETER C_S_NUM_QUEUES = 1
+ BUS_INTERFACE S_AXIS_0 = nf10_bram_output_queues_0_M_AXIS_1
+ BUS_INTERFACE M_AXIS = nf10_per_port_arbiter_1_M_AXIS
+ PORT axi_aresetn = Peripheral_aresetn
+ PORT axi_aclk = core_clk
+END
+
+BEGIN nf10_per_port_arbiter
+ PARAMETER INSTANCE = nf10_per_port_arbiter_0
+ PARAMETER HW_VER = 1.00.a
+ PARAMETER C_S_NUM_QUEUES = 1
+ BUS_INTERFACE S_AXIS_0 = nf10_bram_output_queues_0_M_AXIS_0
+ BUS_INTERFACE M_AXIS = nf10_per_port_arbiter_0_M_AXIS
+ PORT axi_aresetn = Peripheral_aresetn
+ PORT axi_aclk = core_clk
+END
+
+BEGIN nf10_pcap_replay_uengine
+ PARAMETER INSTANCE = nf10_pcap_replay_uengine_0
+ PARAMETER HW_VER = 1.00.a
+ PARAMETER C_BASEADDR = 0x76000000
+ PARAMETER C_HIGHADDR = 0x7600ffff
+ BUS_INTERFACE S_AXI = axi_interconnect_0
+ BUS_INTERFACE S_AXIS = nf10_nic_output_port_lookup_0_M_AXIS
+ BUS_INTERFACE M_AXIS = nf10_pcap_replay_uengine_0_M_AXIS
+ PORT axi_aclk = core_clk
+ PORT qdr_d_0 = nf10_pcap_replay_uengine_0_qdr_d_0
+ PORT qdr_q_0 = nf10_pcap_replay_uengine_0_qdr_q_0
+ PORT qdr_sa_0 = nf10_pcap_replay_uengine_0_qdr_sa_0
+ PORT qdr_w_n_0 = nf10_pcap_replay_uengine_0_qdr_w_n_0
+ PORT qdr_r_n_0 = nf10_pcap_replay_uengine_0_qdr_r_n_0
+ PORT qdr_bw_n_0 = nf10_pcap_replay_uengine_0_qdr_bw_n_0
+ PORT qdr_dll_off_n_0 = nf10_pcap_replay_uengine_0_qdr_dll_off_n_0
+ PORT qdr_cq_0 = nf10_pcap_replay_uengine_0_qdr_cq_0
+ PORT qdr_cq_n_0 = nf10_pcap_replay_uengine_0_qdr_cq_n_0
+ PORT qdr_c_n_0 = nf10_pcap_replay_uengine_0_qdr_c_n_0
+ PORT qdr_k_n_0 = nf10_pcap_replay_uengine_0_qdr_k_n_0
+ PORT qdr_c_0 = nf10_pcap_replay_uengine_0_qdr_c_0
+ PORT qdr_k_0 = nf10_pcap_replay_uengine_0_qdr_k_0
+ PORT qdr_masterbank_sel_0 = nf10_pcap_replay_uengine_0_qdr_masterbank_sel_0
+ PORT qdr_d_1 = nf10_pcap_replay_uengine_0_qdr_d_1
+ PORT qdr_q_1 = nf10_pcap_replay_uengine_0_qdr_q_1
+ PORT qdr_sa_1 = nf10_pcap_replay_uengine_0_qdr_sa_1
+ PORT qdr_w_n_1 = nf10_pcap_replay_uengine_0_qdr_w_n_1
+ PORT qdr_r_n_1 = nf10_pcap_replay_uengine_0_qdr_r_n_1
+ PORT qdr_bw_n_1 = nf10_pcap_replay_uengine_0_qdr_bw_n_1
+ PORT qdr_dll_off_n_1 = nf10_pcap_replay_uengine_0_qdr_dll_off_n_1
+ PORT qdr_cq_1 = nf10_pcap_replay_uengine_0_qdr_cq_1
+ PORT qdr_cq_n_1 = nf10_pcap_replay_uengine_0_qdr_cq_n_1
+ PORT qdr_c_n_1 = nf10_pcap_replay_uengine_0_qdr_c_n_1
+ PORT qdr_k_n_1 = nf10_pcap_replay_uengine_0_qdr_k_n_1
+ PORT qdr_c_1 = nf10_pcap_replay_uengine_0_qdr_c_1
+ PORT qdr_k_1 = nf10_pcap_replay_uengine_0_qdr_k_1
+ PORT qdr_masterbank_sel_1 = nf10_pcap_replay_uengine_0_qdr_masterbank_sel_1
+ PORT axi_aresetn = Peripheral_aresetn
+ PORT dcm_locked = dcm_locked
+ PORT qdr_clk_200 = clock_generator_0_CLKOUT4
+ PORT qdr_clk = clock_generator_0_CLKOUT2
+ PORT qdr_clk_270 = clock_generator_0_CLKOUT3
 END
 
 BEGIN nf10_nic_output_port_lookup
@@ -200,8 +290,14 @@ BEGIN nf10_inter_packet_delay
  PARAMETER C_BASEADDR = 0x76600000
  PARAMETER C_HIGHADDR = 0x7660ffff
  BUS_INTERFACE S_AXI = axi_interconnect_0
- BUS_INTERFACE M_AXIS = nf10_inter_packet_delay_0_M_AXIS
- BUS_INTERFACE S_AXIS = nf10_per_port_arbiter_0_M_AXIS
+ BUS_INTERFACE M_AXIS_0 = nf10_inter_packet_delay_0_M_AXIS_0
+ BUS_INTERFACE S_AXIS_0 = nf10_rate_limiter_0_M_AXIS_0
+ BUS_INTERFACE S_AXIS_1 = nf10_rate_limiter_0_M_AXIS_1
+ BUS_INTERFACE S_AXIS_2 = nf10_rate_limiter_0_M_AXIS_2
+ BUS_INTERFACE S_AXIS_3 = nf10_rate_limiter_0_M_AXIS_3
+ BUS_INTERFACE M_AXIS_1 = nf10_inter_packet_delay_0_M_AXIS_1
+ BUS_INTERFACE M_AXIS_2 = nf10_inter_packet_delay_0_M_AXIS_2
+ BUS_INTERFACE M_AXIS_3 = nf10_inter_packet_delay_0_M_AXIS_3
  PORT axi_aclk = core_clk
  PORT axi_aresetn = Peripheral_aresetn
 END
@@ -226,12 +322,12 @@ BEGIN nf10_bram_output_queues
  PARAMETER HW_VER = 1.00.a
  PARAMETER C_M_AXIS_DATA_WIDTH = 256
  PARAMETER C_S_AXIS_DATA_WIDTH = 256
- BUS_INTERFACE S_AXIS = nf10_nic_output_port_lookup_0_M_AXIS
+ BUS_INTERFACE M_AXIS_4 = nf10_bram_output_queues_0_M_AXIS_4
+ BUS_INTERFACE S_AXIS = nf10_pcap_replay_uengine_0_M_AXIS
  BUS_INTERFACE M_AXIS_0 = nf10_bram_output_queues_0_M_AXIS_0
  BUS_INTERFACE M_AXIS_1 = nf10_bram_output_queues_0_M_AXIS_1
  BUS_INTERFACE M_AXIS_2 = nf10_bram_output_queues_0_M_AXIS_2
  BUS_INTERFACE M_AXIS_3 = nf10_bram_output_queues_0_M_AXIS_3
- BUS_INTERFACE M_AXIS_4 = nf10_bram_output_queues_0_M_AXIS_4
  PORT axi_aclk = core_clk
  PORT axi_resetn = Peripheral_aresetn
 END
@@ -252,7 +348,7 @@ BEGIN nf10_10g_interface
  PARAMETER C_DEFAULT_VALUE_ENABLE = 1
  PARAMETER C_DEFAULT_SRC_PORT = 0x40
  BUS_INTERFACE M_AXIS = nf10_10g_interface_3_M_AXIS
- BUS_INTERFACE S_AXIS = nf10_bram_output_queues_0_M_AXIS_3
+ BUS_INTERFACE S_AXIS = nf10_inter_packet_delay_0_M_AXIS_3
  PORT xaui_tx_l3_p = nf10_10g_interface_3_xaui_tx_l3_p
  PORT xaui_tx_l3_n = nf10_10g_interface_3_xaui_tx_l3_n
  PORT xaui_tx_l0_p = nf10_10g_interface_3_xaui_tx_l0_p
@@ -284,7 +380,7 @@ BEGIN nf10_10g_interface
  PARAMETER C_M_AXIS_DATA_WIDTH = 256
  PARAMETER C_S_AXIS_DATA_WIDTH = 256
  BUS_INTERFACE M_AXIS = nf10_10g_interface_2_M_AXIS
- BUS_INTERFACE S_AXIS = nf10_bram_output_queues_0_M_AXIS_2
+ BUS_INTERFACE S_AXIS = nf10_inter_packet_delay_0_M_AXIS_2
  PORT dclk = control_clk
  PORT xaui_tx_l3_p = nf10_10g_interface_2_xaui_tx_l3_p
  PORT xaui_tx_l3_n = nf10_10g_interface_2_xaui_tx_l3_n
@@ -316,7 +412,7 @@ BEGIN nf10_10g_interface
  PARAMETER C_M_AXIS_DATA_WIDTH = 256
  PARAMETER C_S_AXIS_DATA_WIDTH = 256
  BUS_INTERFACE M_AXIS = nf10_10g_interface_1_M_AXIS
- BUS_INTERFACE S_AXIS = nf10_bram_output_queues_0_M_AXIS_1
+ BUS_INTERFACE S_AXIS = nf10_inter_packet_delay_0_M_AXIS_1
  PORT dclk = control_clk
  PORT xaui_tx_l3_n = nf10_10g_interface_1_xaui_tx_l3_n
  PORT xaui_tx_l1_n = nf10_10g_interface_1_xaui_tx_l1_n
@@ -348,7 +444,7 @@ BEGIN nf10_10g_interface
  PARAMETER C_M_AXIS_DATA_WIDTH = 256
  PARAMETER C_S_AXIS_DATA_WIDTH = 256
  BUS_INTERFACE M_AXIS = nf10_10g_interface_0_M_AXIS
- BUS_INTERFACE S_AXIS = nf10_rate_limiter_0_M_AXIS
+ BUS_INTERFACE S_AXIS = nf10_inter_packet_delay_0_M_AXIS_0
  PORT axi_aclk = core_clk
  PORT refclk = refclk_A
  PORT dclk = control_clk
@@ -537,8 +633,8 @@ BEGIN clock_generator
  PORT RST = RESET
  PORT LOCKED = dcm_locked
  PORT CLKOUT1 = core_clk
- PORT CLKOUT2 = clock_generator_0_CLKOUT2
  PORT CLKOUT4 = clock_generator_0_CLKOUT4
+ PORT CLKOUT2 = clock_generator_0_CLKOUT2
  PORT CLKOUT3 = clock_generator_0_CLKOUT3
 END
 
@@ -572,63 +668,5 @@ BEGIN axi_uartlite
  PORT TX = RS232_Uart_1_sout
  PORT RX = RS232_Uart_1_sin
  PORT S_AXI_ACLK = control_clk
-END
-
-BEGIN nf10_pcap_replay_uengine
- PARAMETER INSTANCE = nf10_pcap_replay_uengine_0
- PARAMETER HW_VER = 1.00.a
- PARAMETER QDR_NUM_CHIPS = 2
- PARAMETER C_BASEADDR = 0x76000000
- PARAMETER C_HIGHADDR = 0x7600ffff
- BUS_INTERFACE S_AXI = axi_interconnect_0
- BUS_INTERFACE S_AXIS = nf10_bram_output_queues_0_M_AXIS_0
- BUS_INTERFACE M_AXIS = nf10_pcap_replay_uengine_0_M_AXIS
- PORT axi_aclk = core_clk
- PORT qdr_d_0 = nf10_pcap_replay_uengine_0_qdr_d_0
- PORT qdr_q_0 = nf10_pcap_replay_uengine_0_qdr_q_0
- PORT qdr_sa_0 = nf10_pcap_replay_uengine_0_qdr_sa_0
- PORT qdr_w_n_0 = nf10_pcap_replay_uengine_0_qdr_w_n_0
- PORT qdr_r_n_0 = nf10_pcap_replay_uengine_0_qdr_r_n_0
- PORT qdr_bw_n_0 = nf10_pcap_replay_uengine_0_qdr_bw_n_0
- PORT qdr_dll_off_n_0 = nf10_pcap_replay_uengine_0_qdr_dll_off_n_0
- PORT qdr_cq_0 = nf10_pcap_replay_uengine_0_qdr_cq_0
- PORT qdr_cq_n_0 = nf10_pcap_replay_uengine_0_qdr_cq_n_0
- PORT qdr_c_n_0 = nf10_pcap_replay_uengine_0_qdr_c_n_0
- PORT qdr_k_n_0 = nf10_pcap_replay_uengine_0_qdr_k_n_0
- PORT qdr_c_0 = nf10_pcap_replay_uengine_0_qdr_c_0
- PORT qdr_k_0 = nf10_pcap_replay_uengine_0_qdr_k_0
- PORT qdr_masterbank_sel_0 = nf10_pcap_replay_uengine_0_qdr_masterbank_sel_0
- PORT axi_aresetn = Peripheral_aresetn
- PORT dcm_locked = dcm_locked
- PORT qdr_clk = clock_generator_0_CLKOUT2
- PORT qdr_clk_200 = clock_generator_0_CLKOUT4
- PORT qdr_clk_270 = clock_generator_0_CLKOUT3
- PORT qdr_d_1 = nf10_pcap_replay_uengine_0_qdr_d_1
- PORT qdr_q_1 = nf10_pcap_replay_uengine_0_qdr_q_1
- PORT qdr_sa_1 = nf10_pcap_replay_uengine_0_qdr_sa_1
- PORT qdr_w_n_1 = nf10_pcap_replay_uengine_0_qdr_w_n_1
- PORT qdr_r_n_1 = nf10_pcap_replay_uengine_0_qdr_r_n_1
- PORT qdr_bw_n_1 = nf10_pcap_replay_uengine_0_qdr_bw_n_1
- PORT qdr_dll_off_n_1 = nf10_pcap_replay_uengine_0_qdr_dll_off_n_1
- PORT qdr_cq_1 = nf10_pcap_replay_uengine_0_qdr_cq_1
- PORT qdr_cq_n_1 = nf10_pcap_replay_uengine_0_qdr_cq_n_1
- PORT qdr_c_n_1 = nf10_pcap_replay_uengine_0_qdr_c_n_1
- PORT qdr_k_n_1 = nf10_pcap_replay_uengine_0_qdr_k_n_1
- PORT qdr_c_1 = nf10_pcap_replay_uengine_0_qdr_c_1
- PORT qdr_k_1 = nf10_pcap_replay_uengine_0_qdr_k_1
- PORT qdr_masterbank_sel_1 = nf10_pcap_replay_uengine_0_qdr_masterbank_sel_1
-END
-
-BEGIN nf10_per_port_arbiter
- PARAMETER INSTANCE = nf10_per_port_arbiter_0
- PARAMETER HW_VER = 1.00.a
- PARAMETER C_S_NUM_QUEUES = 1
- PARAMETER C_BASEADDR = 0x76e00000
- PARAMETER C_HIGHADDR = 0x76e0ffff
- BUS_INTERFACE S_AXI = axi_interconnect_0
- BUS_INTERFACE M_AXIS = nf10_per_port_arbiter_0_M_AXIS
- BUS_INTERFACE S_AXIS_0 = nf10_pcap_replay_uengine_0_M_AXIS
- PORT axi_aclk = core_clk
- PORT axi_aresetn = Peripheral_aresetn
 END
 

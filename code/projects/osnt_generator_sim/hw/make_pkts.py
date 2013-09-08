@@ -67,7 +67,7 @@ from scapy.layers.all import Ether, IP, TCP
 
 pkts=[]
 # A simple TCP/IP packet embedded in an Ethernet II frame
-for i in range(8):
+for i in range(4):
     pkt = (Ether(src='11:22:33:44:55:66', dst='77:88:99:aa:bb:cc')/
            IP(src='192.168.1.1', dst='192.168.1.2')/
            TCP()/
@@ -81,7 +81,7 @@ for i in range(8):
 with open( os.path.join( script_dir, 'dma_0_stim.axi' ), 'w' ) as f:
     axitools.axis_dump( pkts, f, 256, 1e-9 )
 with open( os.path.join( script_dir, 'dma_0_expected.axi' ), 'w' ) as f:
-    axitools.axis_dump( pkts*4, f, 256, 1e-9 )
+    axitools.axis_dump( pkts*4*2, f, 256, 1e-9 )
 # 10g interfaces
 for i in range(4):
     # replace source port
@@ -90,4 +90,4 @@ for i in range(4):
     with open( os.path.join( script_dir, 'nf10_10g_interface_%d_stim.axi' % i ), 'w' ) as f:
         axitools.axis_dump( pkts, f, 256, 1e-9 )
     with open( os.path.join( script_dir, 'nf10_10g_interface_%d_expected.axi' % i ), 'w' ) as f:
-        axitools.axis_dump( pkts[0:2], f, 256, 1e-9 )
+        axitools.axis_dump( pkts[0]*2, f, 256, 1e-9 )
