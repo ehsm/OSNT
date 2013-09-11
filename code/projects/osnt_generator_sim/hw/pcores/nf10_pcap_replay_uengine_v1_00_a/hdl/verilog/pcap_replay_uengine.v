@@ -55,6 +55,7 @@ module pcap_replay_uengine
     parameter QDR_CLK_WIDTH        = 1,
 		parameter QDR_BURST_LENGTH     = 4,
 		parameter QDR_CLK_PERIOD       = 4000,
+		parameter REPLAY_COUNT_WIDTH   = 32,
 		parameter SIM_ONLY             = 0
 )
 (
@@ -130,7 +131,10 @@ module pcap_replay_uengine
     output                                     			qdr_r_n_2,
     input 					                 								qdr_masterbank_sel_2,
                                                   	
-	// Misc                                         	
+		// Misc                                         	
+		input [QDR_ADDR_WIDTH-1:0]  										mem_addr_high,
+		input	[REPLAY_COUNT_WIDTH-1:0]									replay_count,
+		input																						start_replay,	
     input                                      			sw_rst
 );	
 
@@ -202,7 +206,7 @@ module pcap_replay_uengine
 	assign qdr_cq                                              = {qdr_cq_2, qdr_cq_1, qdr_cq_0};
 	assign qdr_cq_n                                            = {qdr_cq_n_2, qdr_cq_n_1, qdr_cq_n_0};
   assign {qdr_c_2, qdr_c_1, qdr_c_0}                         = qdr_c;
-	assign {qdr_c_n_2, qdr_c_n_1, qdr_c_n_0}                   = qdr_c;
+	assign {qdr_c_n_2, qdr_c_n_1, qdr_c_n_0}                   = qdr_c_n;
 	assign {qdr_dll_off_n_2, qdr_dll_off_n_1, qdr_dll_off_n_0} = qdr_dll_off_n;
   assign {qdr_k_2, qdr_k_1, qdr_k_0}                         = qdr_k;
 	assign {qdr_k_n_2, qdr_k_n_1, qdr_k_n_0}                   = qdr_k_n;
@@ -218,7 +222,7 @@ module pcap_replay_uengine
   axis_to_fifo #(
     .C_S_AXIS_DATA_WIDTH  (C_S_AXIS_DATA_WIDTH),
     .C_S_AXIS_TUSER_WIDTH (C_S_AXIS_TUSER_WIDTH),
-    .FIFO_DATA_WIDTH      (QDR_NUM_CHIPS*QDR_DATA_WIDTH*2) // *2 for both low and high value
+    .FIFO_DATA_WIDTH      (QDR_NUM_CHIPS*QDR_DATA_WIDTH*2) // x2 for both low and high value
   )
      axis_to_fifo_inst
   (
@@ -264,6 +268,8 @@ module pcap_replay_uengine
 	    .mem_bwl_n					(user_bwl_n),
 	    .mem_dwl						(user_dwl),
 	    .mem_dwh						(user_dwh),
+			
+			.mem_addr_high			(mem_addr_high),
 
 	    .sw_rst							(sw_rst),
 			.cal_done						(&cal_done)
@@ -421,6 +427,10 @@ module pcap_replay_uengine
 	  .fifo_data					(fifo_rd_data),
 	  .fifo_full					(fifo_rd_full),
 	    
+		.mem_addr_high			(mem_addr_high),
+		.replay_count				(replay_count),
+		.start_replay				(start_replay),
+			
 	  .sw_rst							(sw_rst),
 		.cal_done						(&cal_done)
 	);

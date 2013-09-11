@@ -44,25 +44,27 @@
 
 module nf10_per_port_arbiter
 #(
-  parameter C_S_AXI_DATA_WIDTH   = 32,
-  parameter C_S_AXI_ADDR_WIDTH   = 32,
-  parameter C_BASEADDR           = 32'hFFFFFFFF,
-  parameter C_HIGHADDR           = 32'h00000000,
-  parameter C_USE_WSTRB          = 0,
-  parameter C_DPHASE_TIMEOUT     = 0,
-  parameter C_S_AXI_ACLK_FREQ_HZ = 100,
+  //parameter C_S_AXI_DATA_WIDTH   = 32,
+  //parameter C_S_AXI_ADDR_WIDTH   = 32,
+  //parameter C_BASEADDR           = 32'hFFFFFFFF,
+  //parameter C_HIGHADDR           = 32'h00000000,
+  //parameter C_USE_WSTRB          = 0,
+  //parameter C_DPHASE_TIMEOUT     = 0,
+  //parameter C_S_AXI_ACLK_FREQ_HZ = 100,
   parameter C_M_AXIS_DATA_WIDTH  = 256,
   parameter C_S_AXIS_DATA_WIDTH  = 256,
   parameter C_M_AXIS_TUSER_WIDTH = 128,
   parameter C_S_AXIS_TUSER_WIDTH = 128,
-  parameter C_S_NUM_QUEUES       = 5
+  parameter C_S_NUM_QUEUES       = 5,
+	parameter C_TUSER_TIMESTAMP_POS = 32,
+	parameter TIMESTAMP_WIDTH       = 32
 )
 (
   // Clock and Reset
   input                                           axi_aclk,
   input                                           axi_aresetn,
 
-  // Slave AXI Ports
+  /*// Slave AXI Ports
   input      [C_S_AXI_ADDR_WIDTH-1:0]             s_axi_awaddr,
   input                                           s_axi_awvalid,
   input      [C_S_AXI_DATA_WIDTH-1:0]             s_axi_wdata,
@@ -79,7 +81,7 @@ module nf10_per_port_arbiter
   output                                          s_axi_wready,
   output     [1:0]                                s_axi_bresp,
   output                                          s_axi_bvalid,
-  output                                          s_axi_awready,
+  output                                          s_axi_awready,*/
 
   // Master Stream Ports (interface to data path)
   output     [C_M_AXIS_DATA_WIDTH-1:0]            m_axis_tdata,
@@ -126,16 +128,16 @@ module nf10_per_port_arbiter
   input                                           s_axis_tlast_4
 );
 
-  // -- Internal Parameters
+  /*// -- Internal Parameters
   localparam NUM_RW_REGS = 2;
   localparam NUM_WO_REGS = 0;
-  localparam NUM_RO_REGS = 0;
+  localparam NUM_RO_REGS = 0;*/
 
   // -- Signals
 	genvar 																									i;
 	
-  wire     [NUM_RW_REGS*C_S_AXI_DATA_WIDTH-1 : 0] 				rw_regs;
-  wire                                            				sw_rst;
+  /*wire     [NUM_RW_REGS*C_S_AXI_DATA_WIDTH-1 : 0] 				rw_regs;
+  wire                                            				sw_rst;*/
 	
   wire     [C_S_NUM_QUEUES*C_S_AXIS_DATA_WIDTH-1:0]       s_axis_tdata_grp;
   wire     [(C_S_NUM_QUEUES*(C_S_AXIS_DATA_WIDTH/8))-1:0] s_axis_tstrb_grp;
@@ -190,7 +192,7 @@ module nf10_per_port_arbiter
     end
   endgenerate
 	
-  // -- AXILITE REGs
+  /*// -- AXILITE REGs
   axi_lite_regs
   #(
     .C_S_AXI_DATA_WIDTH   (C_S_AXI_DATA_WIDTH),
@@ -231,21 +233,22 @@ module nf10_per_port_arbiter
 		.wo_regs         (),
 		.wo_defaults     ({NUM_WO_REGS*C_S_AXI_DATA_WIDTH{1'b0}}),
 		.ro_regs         ()
-  );
+  );*/
 
-  // -- Register assignments
+  /*// -- Register assignments
 
-  assign sw_rst      = rw_regs[(C_S_AXI_DATA_WIDTH*0)+0];
+  assign sw_rst      = rw_regs[(C_S_AXI_DATA_WIDTH*0)+0];*/
 
   // -- Inter Packet Delay
   per_port_arbiter #
   (
-    .C_M_AXIS_DATA_WIDTH  ( C_M_AXIS_DATA_WIDTH ),
-    .C_S_AXIS_DATA_WIDTH  ( C_S_AXIS_DATA_WIDTH ),
-    .C_m_axis_tuser_WIDTH ( C_M_AXIS_TUSER_WIDTH ),
-    .C_m_axis_tuser_WIDTH ( C_M_AXIS_TUSER_WIDTH ),
-    .C_S_AXI_DATA_WIDTH   ( C_S_AXI_DATA_WIDTH ),
-    .C_S_NUM_QUEUES       ( C_S_NUM_QUEUES )
+    .C_M_AXIS_DATA_WIDTH  	( C_M_AXIS_DATA_WIDTH ),
+    .C_S_AXIS_DATA_WIDTH  	( C_S_AXIS_DATA_WIDTH ),
+    .C_M_AXIS_TUSER_WIDTH 	( C_M_AXIS_TUSER_WIDTH ),
+    .C_S_AXIS_TUSER_WIDTH 	( C_S_AXIS_TUSER_WIDTH ),
+    .C_S_NUM_QUEUES       	( C_S_NUM_QUEUES ),
+		.C_TUSER_TIMESTAMP_POS	( C_TUSER_TIMESTAMP_POS ),
+		.TIMESTAMP_WIDTH				( TIMESTAMP_WIDTH )
   )
     per_port_arbiter
   (
@@ -269,7 +272,7 @@ module nf10_per_port_arbiter
     .s_axis_tready_grp  	( s_axis_tready_grp ),
     .s_axis_tlast_grp   	( s_axis_tlast_grp ),
 
-    .sw_rst             	( sw_rst )
+    .sw_rst             	( 1'b0/*sw_rst*/ )
   );
 
 endmodule

@@ -46,7 +46,7 @@
   * of 10G/2, 10G/4, 10G/8 and so on ...
   */
 
-module rate_limiter_simple
+module rate_limiter
 #(
     //Master AXI Stream Data Width
     parameter C_M_AXIS_DATA_WIDTH  = 256,

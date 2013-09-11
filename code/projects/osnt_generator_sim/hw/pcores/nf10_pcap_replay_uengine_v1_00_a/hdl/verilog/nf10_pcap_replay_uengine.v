@@ -63,7 +63,8 @@ module nf10_pcap_replay_uengine
   parameter QDR_CLK_WIDTH        = 1,
 	parameter QDR_BURST_LENGTH     = 4,
 	parameter QDR_CLK_PERIOD       = 4000,
-  parameter SIM_ONLY             = 0
+	parameter REPLAY_COUNT_WIDTH   = 32,
+  parameter SIM_ONLY             = 1
 )
 (
   // Clock and Reset
@@ -159,14 +160,17 @@ module nf10_pcap_replay_uengine
 );
 
   // -- Internal Parameters
-  localparam NUM_RW_REGS = 2;
-  localparam NUM_WO_REGS = 0;
-  localparam NUM_RO_REGS = 0;
+  localparam NUM_RW_REGS = 3;
+  localparam NUM_WO_REGS = 1;
+  localparam NUM_RO_REGS = 1;
 
   // -- Signals
-  wire     [NUM_RW_REGS*C_S_AXI_DATA_WIDTH-1:0]   rw_regs;
+  wire [NUM_RW_REGS*C_S_AXI_DATA_WIDTH-1:0]   		rw_regs;
 
   wire                                            sw_rst;
+	wire [QDR_ADDR_WIDTH-1:0]  											mem_addr_high;
+	wire [REPLAY_COUNT_WIDTH-1:0]										replay_count;
+	wire																						start_replay;	
 
   // -- AXILITE Registers
   axi_lite_regs
@@ -184,8 +188,8 @@ module nf10_pcap_replay_uengine
   )
     axi_lite_regs_1bar_inst
   (
-    .s_axi_aclk      (s_axi_aclk),
-    .s_axi_aresetn   (s_axi_aresetn),
+    .s_axi_aclk      (axi_aclk),
+    .s_axi_aresetn   (axi_aresetn),
     .s_axi_awaddr    (s_axi_awaddr),
     .s_axi_awvalid   (s_axi_awvalid),
     .s_axi_wdata     (s_axi_wdata),
@@ -204,16 +208,21 @@ module nf10_pcap_replay_uengine
     .s_axi_bvalid    (s_axi_bvalid),
     .s_axi_awready   (s_axi_awready),
 
-    .rw_regs         (rw_regs)
+    .rw_regs         (rw_regs),
+		.rw_defaults     ({NUM_RW_REGS*C_S_AXI_DATA_WIDTH{1'b0}}), //{32'd2, 32'd160, 32'b10}),
+		.wo_regs         (),
+		.wo_defaults     ({NUM_WO_REGS*C_S_AXI_DATA_WIDTH{1'b0}}),
+		.ro_regs         ()
   );
+  
 
   // -- Register assignments
 
-  assign sw_rst        = rw_regs[(C_S_AXI_DATA_WIDTH*0)+0];
+  assign sw_rst          = rw_regs[(C_S_AXI_DATA_WIDTH*0)+0];
+	assign start_replay    = rw_regs[(C_S_AXI_DATA_WIDTH*0)+1];
 	
-	// TODO: 1) add enable/disbale registers for packet replay ...
-	//       2) sync the current FIFO size with Read side and loop through it ...
-	//       3) no. of iteration and others etc  
+	assign mem_addr_high   = rw_regs[(C_S_AXI_DATA_WIDTH*1)+QDR_ADDR_WIDTH-1:(C_S_AXI_DATA_WIDTH*1)]; 
+	assign replay_count    = rw_regs[(C_S_AXI_DATA_WIDTH*2)+REPLAY_COUNT_WIDTH-1:(C_S_AXI_DATA_WIDTH*2)]; 
 
   // -- Pcap Replay uEngine
   pcap_replay_uengine #
@@ -309,6 +318,10 @@ module nf10_pcap_replay_uengine
 	  .qdr_masterbank_sel_2 ( qdr_masterbank_sel_2 ),
 
     // Misc
+		.mem_addr_high				(mem_addr_high),
+		.replay_count					(replay_count),
+		.start_replay					(start_replay),
+		
     .sw_rst               ( sw_rst )
   );
 

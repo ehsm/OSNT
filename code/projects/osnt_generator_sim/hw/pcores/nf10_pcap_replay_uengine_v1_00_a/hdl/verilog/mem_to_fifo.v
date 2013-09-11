@@ -50,7 +50,8 @@ module mem_to_fifo
 		parameter MEM_BW_WIDTH         = 4,
 		parameter MEM_BURST_LENGTH     = 2,
 		parameter MEM_ADDR_LOW         = 0,
-		parameter MEM_ADDR_HIGH        = MEM_ADDR_LOW+(2**MEM_ADDR_WIDTH/MEM_BURST_LENGTH)
+		parameter MEM_ADDR_HIGH        = MEM_ADDR_LOW+(2**MEM_ADDR_WIDTH/MEM_BURST_LENGTH),
+		parameter REPLAY_COUNT_WIDTH   = 32
 )
 (
     // Global Ports
@@ -72,6 +73,10 @@ module mem_to_fifo
     input                                           fifo_full,
 
     // Misc
+		input [MEM_ADDR_WIDTH-1:0]  										mem_addr_high,
+		input	[REPLAY_COUNT_WIDTH-1:0]									replay_count,
+		input																						start_replay,	
+		
     input                                           sw_rst,
 		input																						cal_done
 );
@@ -91,48 +96,44 @@ module mem_to_fifo
 	
 	// -- Signals
 	
-	reg [MEM_ADDR_WIDTH:0] mem_ad_rd_c;
-	reg 									 mem_r_n_c;
+	reg [MEM_ADDR_WIDTH:0] 			 mem_ad_rd_r;
+	reg 									 			 mem_r_n_r;
+	reg [REPLAY_COUNT_WIDTH-1:0] replay_count_r;
 
 	// -- Assignments
 	
-	assign mem_r_n = mem_r_n_c;
+	assign mem_r_n = mem_r_n_r;
 	
 	generate
 		if (MEM_BURST_LENGTH==2)
- 			assign mem_ad_rd = mem_ad_rd_c[MEM_ADDR_WIDTH-1:0];
+ 			assign mem_ad_rd = mem_ad_rd_r[MEM_ADDR_WIDTH-1:0];
 		else if (MEM_BURST_LENGTH==4)
-			assign mem_ad_rd = mem_ad_rd_c[MEM_ADDR_WIDTH:1];
+			assign mem_ad_rd = mem_ad_rd_r[MEM_ADDR_WIDTH:1];
 	endgenerate
 	
   // -- Modules and Logic
 	
   always @ (posedge clk) begin
     if(rst || sw_rst) begin
-      mem_ad_rd_c  <= MEM_ADDR_LOW;
+      mem_ad_rd_r  <= MEM_ADDR_LOW;
+			mem_r_n_r <= 1;
+			replay_count_r <= replay_count;
     end
-    else begin
-		  if (!mem_rd_full && cal_done) begin
-				if (mem_ad_rd_c == MEM_ADDR_HIGH) 
-					mem_ad_rd_c <= MEM_ADDR_LOW;
+    else if (start_replay) begin
+			mem_r_n_r <= 1;
+			
+		  if (!mem_rd_full && cal_done && replay_count_r!=0) begin
+				if (MEM_BURST_LENGTH==2 || (MEM_BURST_LENGTH==4 && mem_r_n_r))
+					mem_r_n_r <= 0;
+			
+				if (mem_ad_rd_r == mem_addr_high-1) begin
+					mem_ad_rd_r    <= MEM_ADDR_LOW;
+					replay_count_r <= replay_count_r - 1;
+				end
 				else
-					mem_ad_rd_c <= mem_ad_rd_c + 1;	 
+					mem_ad_rd_r <= mem_ad_rd_r + 1;	 
 			end
     end
-  end
-	
-  always @ (posedge clk) begin
-    if(rst || sw_rst) begin
-			mem_r_n_c <= 1;
-    end
-    else begin
-			mem_r_n_c <= 1;
-		
-		  if (!mem_rd_full && cal_done) begin
-				if (MEM_BURST_LENGTH==2 || (MEM_BURST_LENGTH==4 && mem_r_n_c))
-					mem_r_n_c <= 0;
-    	end
-		end
   end
 	
   always @ (posedge clk) begin

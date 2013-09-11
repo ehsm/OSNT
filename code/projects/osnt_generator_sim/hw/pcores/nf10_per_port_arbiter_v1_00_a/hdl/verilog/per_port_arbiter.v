@@ -46,9 +46,9 @@ module per_port_arbiter
   parameter C_S_AXIS_DATA_WIDTH   = 256,
   parameter C_M_AXIS_TUSER_WIDTH  = 128,
   parameter C_S_AXIS_TUSER_WIDTH  = 128,
-  parameter C_S_AXI_DATA_WIDTH    = 32,
   parameter C_S_NUM_QUEUES        = 5,
-	parameter C_TUSER_TIMESTAMP_POS = 32
+	parameter C_TUSER_TIMESTAMP_POS = 32,
+	parameter TIMESTAMP_WIDTH       = 32
 )
 (
     // Global Ports
@@ -97,23 +97,26 @@ module per_port_arbiter
   reg                               		 		 state;
   reg                               		 		 next_state;
 
-  reg                                        in_fifo_rd_en [0:C_S_NUM_QUEUES-1];
-  wire                                       in_fifo_wr_en [0:C_S_NUM_QUEUES-1];
-  wire                                       in_fifo_nearly_full [0:C_S_NUM_QUEUES-1];
-  wire                                       in_fifo_empty [0:C_S_NUM_QUEUES-1];
+  reg   [0:C_S_NUM_QUEUES-1]                 in_fifo_rd_en;
+  wire  [0:C_S_NUM_QUEUES-1]                 in_fifo_wr_en;
+  wire  [0:C_S_NUM_QUEUES-1]                 in_fifo_nearly_full;
+  wire  [0:C_S_NUM_QUEUES-1]                 in_fifo_empty;
   wire  [C_M_AXIS_DATA_WIDTH-1:0]            in_fifo_tdata [0:C_S_NUM_QUEUES-1];
   wire  [C_M_AXIS_TUSER_WIDTH-1:0]           in_fifo_tuser [0:C_S_NUM_QUEUES-1];
   wire  [C_M_AXIS_DATA_WIDTH/8-1:0]          in_fifo_tstrb [0:C_S_NUM_QUEUES-1];
-  wire                                       in_fifo_tlast [0:C_S_NUM_QUEUES-1];
+  wire  [0:C_S_NUM_QUEUES-1]                 in_fifo_tlast;
 
   wire  [C_S_AXIS_DATA_WIDTH-1:0]            s_axis_tdata [0:C_S_NUM_QUEUES-1];
   wire  [((C_S_AXIS_DATA_WIDTH/8))-1:0]      s_axis_tstrb [0:C_S_NUM_QUEUES-1];
   wire  [C_S_AXIS_TUSER_WIDTH-1:0]           s_axis_tuser [0:C_S_NUM_QUEUES-1];
-  wire                                       s_axis_tvalid [0:C_S_NUM_QUEUES-1];
-  wire                                       s_axis_tready [0:C_S_NUM_QUEUES-1];
-  wire                                       s_axis_tlast [0:C_S_NUM_QUEUES-1];
+  wire  [C_S_AXIS_DATA_WIDTH-1:0]            s_axis_tdata_c;
+  wire  [((C_S_AXIS_DATA_WIDTH/8))-1:0]      s_axis_tstrb_c;
+  wire  [C_S_AXIS_TUSER_WIDTH-1:0]           s_axis_tuser_c;
+  wire  [0:C_S_NUM_QUEUES-1]                 s_axis_tvalid;
+  wire  [0:C_S_NUM_QUEUES-1]                 s_axis_tready;
+  wire  [0:C_S_NUM_QUEUES-1]                 s_axis_tlast;
 
-  wire  [31:0]                               arrival_time [0:C_S_NUM_QUEUES-1];
+	wire  [TIMESTAMP_WIDTH:0]               	 arrival_time [0:C_S_NUM_QUEUES-1];
 
   wire  [log2(C_S_NUM_QUEUES)-1:0]           cmp_if;
   reg   [log2(C_S_NUM_QUEUES)-1:0]           cmp_if_c;
@@ -130,7 +133,6 @@ module per_port_arbiter
       assign s_axis_tlast[i]      = s_axis_tlast_grp[i];
     end
   endgenerate
-
 
   // -- Modules and Logic
   generate
@@ -152,7 +154,7 @@ module per_port_arbiter
       assign s_axis_tready[i] = !in_fifo_nearly_full[i];
       assign in_fifo_wr_en[i] = s_axis_tvalid[i] && s_axis_tready[i];
 
-      assign arrival_time[i] = {in_fifo_empty[i], in_fifo_tuser[i][C_TUSER_TIMESTAMP_POS+32-1:C_TUSER_TIMESTAMP_POS]}; 
+      assign arrival_time[i] = {in_fifo_empty[i], in_fifo_tuser[i][C_TUSER_TIMESTAMP_POS+TIMESTAMP_WIDTH-1:C_TUSER_TIMESTAMP_POS]}; 
 	                                              // Concatenating with fifo_empty signal to make the arrival time
                                                 // large incase the given fifo is empty, to avoid garbage comparison.
     end
@@ -161,23 +163,24 @@ module per_port_arbiter
   // --- Priority Arbiter
   generate
     for (i=0; i<C_S_NUM_QUEUES; i=i+1) begin: _arbiter
-      reg [32:0] cmp_arrival_time = 33'b0;
+      reg [TIMESTAMP_WIDTH:0] cmp_arrival_time = {(TIMESTAMP_WIDTH+1){1'b0}};
       reg [log2(C_S_NUM_QUEUES)-1:0] cmp_if = 0;
+		  wire [TIMESTAMP_WIDTH:0] arrival_time_c = arrival_time[i];
 
       if (i==0) begin : _0
         always @ * begin
-          cmp_arrival_time = arrival_time[i];
+          cmp_arrival_time = arrival_time_c;
           cmp_if = i;
         end
       end
       else begin : _n
         always @ * begin
-          if (_arbiter[i-1].cmp_arrival_time < arrival_time[i]) begin
+          if (_arbiter[i-1].cmp_arrival_time < arrival_time_c) begin
             cmp_arrival_time = _arbiter[i-1].cmp_arrival_time;
             cmp_if = _arbiter[i-1].cmp_if;
           end
           else begin
-            cmp_arrival_time = arrival_time[i];
+            cmp_arrival_time = arrival_time_c;
             cmp_if = i;
           end
         end
@@ -187,6 +190,10 @@ module per_port_arbiter
 
   assign cmp_if = _arbiter[C_S_NUM_QUEUES-1].cmp_if;
   
+	assign m_axis_tdata_c = in_fifo_tdata[cmp_if_c];
+	assign m_axis_tstrb_c = in_fifo_tstrb[cmp_if_c];
+	assign m_axis_tuser_c = in_fifo_tuser[cmp_if_c];
+	
   // --- Primary State Machine [Combinational]
   always @ * begin
     next_state = state;
@@ -194,11 +201,11 @@ module per_port_arbiter
 		for (j=0; j<C_S_NUM_QUEUES; j=j+1)
     	in_fifo_rd_en[j] = 0;
 		
-		m_axis_tdata  = in_fifo_tdata[cmp_if_c];
-		m_axis_tstrb  = in_fifo_tstrb[cmp_if_c];
-		m_axis_tuser  = in_fifo_tuser[cmp_if_c];
+		m_axis_tdata  = m_axis_tdata_c;
+		m_axis_tstrb  = m_axis_tstrb_c;
+		m_axis_tuser  = m_axis_tuser_c;
 		m_axis_tvalid = 0;
-		m_axis_tlast = 0;
+		m_axis_tlast  = 0;
 	
 		cmp_if_c = cmp_if_r;
 	
@@ -212,7 +219,7 @@ module per_port_arbiter
             in_fifo_rd_en[cmp_if] = 1;
 
             if (!in_fifo_tlast[cmp_if])
-              next_state   = IN_PKT_BODY;
+              next_state = IN_PKT_BODY;
 						else
 		      		m_axis_tlast = 1;
           end
