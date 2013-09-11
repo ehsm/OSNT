@@ -169,7 +169,7 @@ module rx_queue
                      info_fifo_wr_en = 1'b1;
                      if(~fifo_almost_full) begin
                          fifo_wr_en = 1'b1;
-			 rx_pkt_start = 1'b0;
+			 rx_pkt_start = 1'b1;
                          state_next = WAIT_FOR_EOP;
                      end
                      else begin
