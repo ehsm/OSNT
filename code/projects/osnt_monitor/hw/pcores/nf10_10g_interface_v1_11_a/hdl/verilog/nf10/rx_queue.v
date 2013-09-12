@@ -51,7 +51,7 @@ module rx_queue
    output reg tlast,
    input  tready,
 
-   output reg pkt_start,
+   output pkt_start,
 
    input clk,
    input reset,
@@ -90,8 +90,11 @@ module rx_queue
    reg  err_tvalid;
 
    reg rx_pkt_start;
-   reg rx_pkt_start_sync;
+   reg rx_pkt_start_d1, rx_pkt_start_d2;
+   reg rx_pkt_start_sync_d1, rx_pkt_start_sync_d2;
 
+
+   assign pkt_start = rx_pkt_start_sync_d1 & ~rx_pkt_start_sync_d2;
 
    // Instantiate clock domain crossing FIFO
    FIFO36_72 #(
@@ -149,13 +152,39 @@ module rx_queue
          );
 
      always @(posedge clk) begin
-     	rx_pkt_start_sync <= rx_pkt_start;
-	pkt_start <= rx_pkt_start_sync;
      	if(rx_fifo_rd_en) begin
         	tdata <= tdata_delay;
             	tstrb <= tstrb_delay;
         end
      end
+
+// -------
+
+// clock domain crossing for the pkt_start puls
+
+     always @(posedge clk156 or posedge reset) begin
+         if(reset) begin
+        	rx_pkt_start_d1 <= 0;
+        	rx_pkt_start_d2 <= 0;
+         end
+         else begin
+                rx_pkt_start_d1 <= rx_pkt_start;
+    		rx_pkt_start_d2 <= rx_pkt_start_d1;
+         end
+     end
+
+     always @(posedge clk or posedge reset) begin
+         if(reset) begin
+         	rx_pkt_start_sync_d1 <= 0;
+        	rx_pkt_start_sync_d2 <= 0;
+         end
+         else begin
+		rx_pkt_start_sync_d1 <= rx_pkt_start_d2 | rx_pkt_start_d1;
+        	rx_pkt_start_sync_d2 <= rx_pkt_start_sync_d1;
+         end
+     end
+
+// --------
 
      always @* begin
          state_next = state;
