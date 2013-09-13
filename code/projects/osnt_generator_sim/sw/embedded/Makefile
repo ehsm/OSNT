@@ -6,10 +6,10 @@
 #        Makefile
 #
 #  Project:
-#        nic
+#        reference_nic
 #
 #  Author:
-#        Mario Flajslik
+#        James Hongyi Zeng
 #
 #  Description:
 #        make all : Make BRAM initialized bitfile to result/
@@ -85,4 +85,6 @@ $(DOWNLOAD_BIT): ${PROCESSOR}/lib/libxil.a $(ELF) $(SYSTEM_BD) $(SYSTEM_BIT)
 
 $(SYSTEM_BIT) $(HWSPEC):
 	$(MAKE) -C ../../hw exporttosdk
+	@cp -rf ../../hw/ise/system.bit $(HW_DIR)
+	@cp -rf ../../hw/implementation/system_bd.bmm $(HW_DIR)
 
