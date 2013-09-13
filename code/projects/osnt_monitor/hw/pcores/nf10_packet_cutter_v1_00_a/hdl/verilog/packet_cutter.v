@@ -100,8 +100,10 @@
 
    	localparam MAX_WORDS_PKT            = 2048;
 	localparam HASH_BYTES		    = (HASH_WIDTH)>>3;
-	localparam HASH_CARRY_WIDTH	    = log2(HASH_BYTES);     
 	localparam ALL_VALID		    = 32'hffffffff; 
+   
+        localparam COUNT_BIT_WIDTH	    = log2(C_M_AXIS_DATA_WIDTH);
+        localparam COUNT_BYTE_WIDTH         = COUNT_BIT_WIDTH-3;
 
 	//---------------------- Wires and regs---------------------------
 
@@ -129,13 +131,13 @@
 	wire[C_S_AXIS_DATA_WIDTH-1:0]           one_word_hash;
 	wire[C_S_AXIS_DATA_WIDTH-1:0]		final_hash;
 	
-	reg[4:0]				last_word_bytes_free;
-	reg[7:0]				pkt_boundaries_bits_free;			
+	reg[COUNT_BYTE_WIDTH-1:0]		last_word_bytes_free;
+	reg[COUNT_BIT_WIDTH-1:0]		pkt_boundaries_bits_free;			
 
-	reg[4:0]				bytes_free,bytes_free_next;
-        reg[7:0]                                bits_free,bits_free_next;
-	reg[HASH_CARRY_WIDTH-1:0]		hash_carry_bytes,hash_carry_bytes_next;
-	reg[HASH_CARRY_WIDTH+2:0]		hash_carry_bits,hash_carry_bits_next;
+	reg[COUNT_BYTE_WIDTH-1:0]	        bytes_free,bytes_free_next;
+        reg[COUNT_BIT_WIDTH-1:0]                bits_free,bits_free_next;
+	reg[COUNT_BYTE_WIDTH-1:0]		hash_carry_bytes,hash_carry_bytes_next;
+	reg[COUNT_BIT_WIDTH-1:0]		hash_carry_bits,hash_carry_bits_next;
 
 	reg [C_S_AXIS_DATA_WIDTH-1:0]		hash;
 	reg [C_S_AXIS_DATA_WIDTH-1:0]           hash_next;
@@ -365,18 +367,12 @@
 		if(m_axis_tready) begin
 			in_fifo_rd_en = 1;
 			if(bytes_free < HASH_BYTES) begin
-				if(!bytes_free) begin
-					m_axis_tlast = 0;
-					state_next = SEND_LAST_WORD;
-				end
-				else begin
-					m_axis_tlast = 0;				
-					m_axis_tdata = (last_word_pkt_temp_cleaned | (final_hash >> (HASH_WIDTH-bits_free)));
-					m_axis_tstrb = ALL_VALID;
-					hash_carry_bytes_next = HASH_BYTES - bytes_free;
-					hash_carry_bits_next = (HASH_BYTES - bytes_free)<<3;
-					state_next = SEND_LAST_WORD;
-				end
+				m_axis_tstrb = ALL_VALID;
+				hash_carry_bytes_next = HASH_BYTES - bytes_free;
+                                hash_carry_bits_next = (HASH_BYTES - bytes_free)<<3;
+				m_axis_tlast = 0;
+				m_axis_tdata = (last_word_pkt_temp_cleaned | (final_hash >> (HASH_WIDTH-bits_free)));
+				state_next = SEND_LAST_WORD;
 			end
 			else begin
 				m_axis_tlast = 1;
