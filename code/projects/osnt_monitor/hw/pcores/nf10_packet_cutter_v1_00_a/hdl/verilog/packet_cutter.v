@@ -110,13 +110,7 @@
 
    	reg [NUM_STATES-1:0]			state,state_next;
 
-   	reg [C_M_AXIS_DATA_WIDTH-1:0]      	m_axis_tdata_next;
-   	reg [((C_M_AXIS_DATA_WIDTH/8))-1:0]	m_axis_tstrb_next;
-   	reg [C_M_AXIS_TUSER_WIDTH-1:0] 		m_axis_tuser_next;
-   	reg 					m_axis_tvalid_next;
-   	reg 					m_axis_tlast_next;
-
-        wire [C_S_AXIS_TUSER_WIDTH-1:0]         tuser_fifo;
+	wire [C_S_AXIS_TUSER_WIDTH-1:0]         tuser_fifo;
         wire [((C_M_AXIS_DATA_WIDTH/8))-1:0]    tstrb_fifo;
         wire                                    tlast_fifo;
         wire [C_M_AXIS_DATA_WIDTH-1:0]          tdata_fifo;
@@ -262,11 +256,11 @@
    	end
 
 	always @(*) begin
-      		m_axis_tuser_next = tuser_fifo;
-      		m_axis_tstrb_next = tstrb_fifo;
-      		m_axis_tlast_next = tlast_fifo;
-      		m_axis_tdata_next = tdata_fifo;
-      		m_axis_tvalid_next = 0;
+      		m_axis_tuser = tuser_fifo;
+      		m_axis_tstrb = tstrb_fifo;
+      		m_axis_tlast = tlast_fifo;
+      		m_axis_tdata = tdata_fifo;
+      		m_axis_tvalid = 0;
    
       		in_fifo_rd_en = 0;
       
@@ -293,7 +287,7 @@
                 cut_counter_next = counter;
                 tstrb_cut_next = cut_offset;
         	if(!in_fifo_empty) begin
-                	m_axis_tvalid_next = 1;
+                	m_axis_tvalid = 1;
 			if(cut_bytes > tuser_fifo[15:0])
 				pkt_short_next = 1;
 			else
@@ -312,7 +306,7 @@
 			if(!cut_counter) begin
 				if(tlast_fifo) begin
 					if(pkt_short) begin
-						m_axis_tvalid_next = 1;
+						m_axis_tvalid = 1;
 						if(m_axis_tready) begin
 							in_fifo_rd_en = 1;
                                                 	state_next = WAIT_PKT;
@@ -320,7 +314,7 @@
 					end
 					else begin
 						if(bytes_to_cut<HASH_WIDTH) begin
-							m_axis_tvalid_next = 1;
+							m_axis_tvalid = 1;
 							if(m_axis_tready) begin
 								in_fifo_rd_en = 1;
 								state_next = WAIT_PKT;
@@ -340,7 +334,7 @@
 				end
 			end
 			else begin
-				m_axis_tvalid_next = 1;
+				m_axis_tvalid = 1;
 				if(m_axis_tready) begin
 					in_fifo_rd_en = 1;
 					if(tlast_fifo)
@@ -367,38 +361,38 @@
 	end
 
 	COMPLETE_PKT: begin
-		m_axis_tvalid_next = 1;
+		m_axis_tvalid = 1;
 		if(m_axis_tready) begin
 			in_fifo_rd_en = 1;
 			if(bytes_free < HASH_BYTES) begin
 				if(!bytes_free) begin
-					m_axis_tlast_next = 0;
+					m_axis_tlast = 0;
 					state_next = SEND_LAST_WORD;
 				end
 				else begin
-					m_axis_tlast_next = 0;				
-					m_axis_tdata_next = (last_word_pkt_temp_cleaned | (final_hash >> (HASH_WIDTH-bits_free)));
-					m_axis_tstrb_next = ALL_VALID;
+					m_axis_tlast = 0;				
+					m_axis_tdata = (last_word_pkt_temp_cleaned | (final_hash >> (HASH_WIDTH-bits_free)));
+					m_axis_tstrb = ALL_VALID;
 					hash_carry_bytes_next = HASH_BYTES - bytes_free;
 					hash_carry_bits_next = (HASH_BYTES - bytes_free)<<3;
 					state_next = SEND_LAST_WORD;
 				end
 			end
 			else begin
-				m_axis_tlast_next = 1;
-				m_axis_tdata_next = (last_word_pkt_temp_cleaned | (final_hash << (bits_free-HASH_WIDTH)));
-				m_axis_tstrb_next = (ALL_VALID<<(bytes_free-HASH_BYTES));
+				m_axis_tlast = 1;
+				m_axis_tdata = (last_word_pkt_temp_cleaned | (final_hash << (bits_free-HASH_WIDTH)));
+				m_axis_tstrb = (ALL_VALID<<(bytes_free-HASH_BYTES));
 				state_next = WAIT_PKT;
 			end
 		end
 	end
 	
 	SEND_LAST_WORD: begin
-		m_axis_tvalid_next = 1;
+		m_axis_tvalid = 1;
 		if(m_axis_tready) begin
-			m_axis_tlast_next = 1;
-			m_axis_tdata_next = (final_hash)<<(C_S_AXIS_DATA_WIDTH-hash_carry_bits);
-			m_axis_tstrb_next = (ALL_VALID<<(32-hash_carry_bytes));
+			m_axis_tlast = 1;
+			m_axis_tdata = (final_hash)<<(C_S_AXIS_DATA_WIDTH-hash_carry_bits);
+			m_axis_tstrb = (ALL_VALID<<(32-hash_carry_bytes));
 			state_next = WAIT_PKT;
 		end
 	end
@@ -412,11 +406,6 @@
          		state 		<= WAIT_PKT;
          		cut_counter	<= 0;
 			tstrb_cut	<= 0;
-         		m_axis_tvalid   <= 0;
-         		m_axis_tdata    <= 0;
-         		m_axis_tuser    <= 0;
-         		m_axis_tstrb    <= 0;
-         		m_axis_tlast    <= 0;
                         bytes_free 	<= 0;
                         bits_free 	<= 0;
 			bytes_to_cut    <= 0;
@@ -428,12 +417,6 @@
       		end
       		else begin
          		state <= state_next;
-
-	 		m_axis_tvalid<= m_axis_tvalid_next;
-         		m_axis_tdata <= m_axis_tdata_next;
-         		m_axis_tuser <= m_axis_tuser_next;
-         		m_axis_tstrb <= m_axis_tstrb_next;
-         		m_axis_tlast <= m_axis_tlast_next;
 
                 	bytes_free <= bytes_free_next;
                 	bits_free <= bits_free_next;
