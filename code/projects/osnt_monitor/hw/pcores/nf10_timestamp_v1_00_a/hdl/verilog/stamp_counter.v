@@ -55,7 +55,7 @@ module stamp_counter
  	);
 
 
-   	reg [TIMESTAMP_WIDTH-1:0]	temp;
+   	reg [TIMESTAMP_WIDTH-7:0]	temp;
 
    	reg [TIMESTAMP_WIDTH-1:0]	time_pps;
    	reg                             pps_valid;
@@ -134,7 +134,7 @@ module stamp_counter
 		end
         end
 
-endmodule // stamp_counter
+endmodule // stap_counter
 
 
 
