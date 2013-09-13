@@ -64,7 +64,7 @@ module nf10_pcap_replay_uengine
 	parameter QDR_BURST_LENGTH     = 4,
 	parameter QDR_CLK_PERIOD       = 4000,
 	parameter REPLAY_COUNT_WIDTH   = 32,
-  parameter SIM_ONLY             = 1
+  parameter SIM_ONLY             = 0
 )
 (
   // Clock and Reset

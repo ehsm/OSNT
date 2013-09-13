@@ -6,10 +6,10 @@
  *        helloworld.c
  *
  *  Project:
- *        nic
+ *        reference_nic
  *
  *  Author:
- *        Mario Flajslik
+ *        James Hongyi Zeng
  *
  *  Description:
  *        Example C file to initialize AEL2005 in 10G mode through

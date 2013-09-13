@@ -5,18 +5,22 @@
 #  File:
 #        Makefile
 #
-#  Project:
-#        nic
+#  Library:
+#        hw/std/pcores/nf10_pcap_replay_uengine_v1_00_a
 #
 #  Author:
-#        Mario Flajslik
+#        Sam D'Amico
+#        James Hongyi Zeng
+#		 Muhammad Shahbaz
 #
 #  Description:
-#        make : Make the nic host driver. Load the driver with "insmod nf10.ko"
+#        make install : Copy Xilinx files into NetFPGA-10G library
 #
+#        For more information about how Xilinx EDK works, please visit
+#        http://www.xilinx.com/support/documentation/dt_edk.htm
 #
 #  Copyright notice:
-#        Copyright (C) 2010, 2011 The Board of Trustees of The Leland Stanford
+#        Copyright (C) 2010, 2011, 2012 The Board of Trustees of The Leland Stanford
 #                                 Junior University
 #
 #  Licence:
@@ -37,14 +41,18 @@
 #
 #
 
-obj-m += nf10.o
-nf10-objs += nf10driver.o
-nf10-objs += nf10iface.o
-nf10-objs += nf10fops.o
-nf10-objs += nf10priv.o
+COREGEN_DIR:= coregen
 
-all:
-	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) modules
+install: hdl/verilog/controller/qdrii_top.v
+	
+hdl/verilog/controller/qdrii_top.v: xco/mig.xco xco/mig.prj
+	@mkdir -p $(COREGEN_DIR);
+	@cd $(COREGEN_DIR) && coregen -b ../xco/mig.xco
+	@cp -r $(COREGEN_DIR)/controller/user_design/rtl hdl/verilog/controller
+	@echo "/////////////////////////////////////////";
+	@echo "//Xilinx memory controller core installed.";
+	@echo "/////////////////////////////////////////";
+	@rm -rf $(COREGEN_DIR);
 
 clean:
-	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) clean
+	rm -rf hdl/verilog/controller/
