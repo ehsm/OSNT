@@ -171,7 +171,7 @@ module nf10_timestamp
     .ip2bus_error   ( IP2Bus_Error   ),
 	
     .rw_regs        ( rw_regs ),
-    .rw_deafaults   ( rw_defaults )
+    .rw_defaults   ( rw_defaults )
   );
   
   // -- Register assignments
