@@ -123,7 +123,6 @@
 
    	wire [C_S_AXI_DATA_WIDTH-1:0]		counter;
 
-	reg [15:0]				bytes_to_cut,bytes_to_cut_next;
 	reg					pkt_short,pkt_short_next;
 
 	wire[C_S_AXIS_DATA_WIDTH-1:0]		first_word_hash;
@@ -144,6 +143,10 @@
 
 	reg [C_S_AXIS_DATA_WIDTH-1:0]		last_word_pkt_temp,last_word_pkt_temp_next;
 	wire[C_S_AXIS_DATA_WIDTH-1:0]		last_word_pkt_temp_cleaned;
+
+        wire[15:0]				len_pkt_cut;
+	wire					pkt_cuttable;
+        wire[15:0]				pkt_len;
 
    //------------------------- Modules-------------------------------
 
@@ -169,6 +172,10 @@
         assign s_axis_tready = !in_fifo_nearly_full;
 
 	assign counter = (cut_en) ? cut_words : MAX_WORDS_PKT;
+ 
+        assign len_pkt_cut = cut_bytes + HASH_BYTES;
+	assign pkt_cuttable = (tuser_fifo[15:0] > len_pkt_cut);
+	assign pkt_len = (cut_en & pkt_cuttable) ? len_pkt_cut : tuser_fifo[15:0];
 	 
 	assign first_word_hash = (~(({C_S_AXIS_DATA_WIDTH{1'b1}}<<bits_free))&tdata_fifo);
         assign last_word_hash  = (({C_S_AXIS_DATA_WIDTH{1'b1}}<<pkt_boundaries_bits_free)&tdata_fifo);
@@ -276,8 +283,7 @@
 		hash_carry_bytes_next = hash_carry_bytes;
                 hash_carry_bits_next = hash_carry_bits;
 
-		bytes_to_cut_next = bytes_to_cut;
-		pkt_short_next = 0;
+		pkt_short_next = pkt_short;
 
 		hash_next = hash;
 
@@ -290,10 +296,12 @@
                 tstrb_cut_next = cut_offset;
         	if(!in_fifo_empty) begin
                 	m_axis_tvalid = 1;
-			if(cut_bytes > tuser_fifo[15:0])
+			m_axis_tuser[15:0] = pkt_len;
+			if(!pkt_cuttable)
 				pkt_short_next = 1;
-			else
-				bytes_to_cut_next = tuser_fifo[15:0]-cut_bytes;
+			else begin
+				pkt_short_next = 0;
+			end
 			bytes_free_next = last_word_bytes_free;
 			bits_free_next = (last_word_bytes_free<<3);
 			if(m_axis_tready) begin
@@ -315,17 +323,8 @@
 						end
 					end
 					else begin
-						if(bytes_to_cut<HASH_WIDTH) begin
-							m_axis_tvalid = 1;
-							if(m_axis_tready) begin
-								in_fifo_rd_en = 1;
-								state_next = WAIT_PKT;
-							end
-						end
-						else begin 
-							hash_next = one_word_hash;
-							state_next = COMPLETE_PKT;
-						end
+						hash_next = one_word_hash;
+						state_next = COMPLETE_PKT;
 					end
 				end
 				else begin
@@ -404,7 +403,6 @@
 			tstrb_cut	<= 0;
                         bytes_free 	<= 0;
                         bits_free 	<= 0;
-			bytes_to_cut    <= 0;
                         hash_carry_bytes<= 0;
                         hash_carry_bits <= 0;
                         hash 		<= 0;
@@ -419,7 +417,6 @@
                 	hash_carry_bytes <= hash_carry_bytes_next;
                 	hash_carry_bits <= hash_carry_bits_next;
 
-			bytes_to_cut <= bytes_to_cut_next;
 			pkt_short    <= pkt_short_next;
 
                 	hash <= hash_next;
