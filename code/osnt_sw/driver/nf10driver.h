@@ -106,6 +106,17 @@ struct nf10_card{
     struct sk_buff  **rx_bk_skb;
     uint64_t *rx_bk_dma_addr;
     uint64_t *rx_bk_size;
+
+    // rx buffer
+    uint64_t rx_buff_ptr_ori;
+    uint64_t rx_buff_physical_addr_ori;
+    uint64_t rx_buff_ptr;
+    uint64_t rx_buff_physical_addr;
+    uint64_t rx_buff_mask;
+    uint64_t rx_buff_head;
+    uint64_t rx_buff_ready;
+
+    uint64_t rx_pkt_count;
 };
 
 struct nf10_ndev_priv{
