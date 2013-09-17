@@ -55,6 +55,11 @@ module stamp_counter
  	);
 
 
+
+        localparam PPS = 27'h5F5E100;
+        localparam OVERFLOW = 32'hffffffff;
+        localparam DDS_WIDTH = 32;
+
    	reg [TIMESTAMP_WIDTH-6:0]	temp;
 
    	reg [TIMESTAMP_WIDTH-1:0]	time_pps;
@@ -70,9 +75,6 @@ module stamp_counter
 	reg [DDS_WIDTH-1:0]		dds_sync,dds_aclk;	 
  
 
-   	localparam PPS = 27'h5F5E100;
-	localparam OVERFLOW = 32'hffffffff;
-	localparam DDS_WIDTH = 32;
  
    	assign stamp_counter = {temp,5'b0};
    	assign time_pps_w = time_pps;
