@@ -149,10 +149,14 @@ static int __devinit nf10_probe(struct pci_dev *pdev, const struct pci_device_id
     card->tx_dsc_mask = 0x000007ffULL;
     card->rx_dsc_mask = 0x000007ffULL;
     card->tx_pkt_mask = 0x00007fffULL;
-    card->rx_pkt_mask = 0x00007fffULL;
+    card->rx_pkt_mask = 0x0000ffffULL;
     card->tx_dne_mask = 0x000007ffULL;
-    card->rx_dne_mask = 0x000007ffULL;
-    
+    card->rx_dne_mask = 0x00000fffULL;
+
+    card->rx_buff_mask = 0xffffULL;
+    *(((uint64_t*)card->cfg_addr)+42) = card->rx_buff_mask;
+    card->rx_pkt_count = 0;
+    /*
     if(card->tx_dsc_mask > card->tx_dne_mask){
         *(((uint64_t*)card->cfg_addr)+1) = card->tx_dne_mask;
         card->tx_dsc_mask = card->tx_dne_mask;
@@ -169,18 +173,27 @@ static int __devinit nf10_probe(struct pci_dev *pdev, const struct pci_device_id
     else if(card->rx_dne_mask > card->rx_dsc_mask){
         *(((uint64_t*)card->cfg_addr)+15) = card->rx_dsc_mask;
         card->rx_dne_mask = card->rx_dsc_mask;
-    }
+    }*/
 
     // allocate buffers to play with
     card->host_tx_dne_ptr = pci_alloc_consistent(pdev, card->tx_dne_mask+1, &(card->host_tx_dne_dma));
     card->host_rx_dne_ptr = pci_alloc_consistent(pdev, card->rx_dne_mask+1, &(card->host_rx_dne_dma));
+    card->rx_buff_ptr_ori = pci_alloc_consistent(pdev, card->rx_buff_mask+1+64, &(card->rx_buff_physical_addr_ori));
+
 
     if( (card->host_rx_dne_ptr == NULL) ||
-        (card->host_tx_dne_ptr == NULL) ){
+        (card->host_tx_dne_ptr == NULL) ||
+        (card->rx_buff_ptr_ori == NULL)){
         
         printk(KERN_ERR "nf10: cannot allocate dma buffer\n");
         goto err_out_free_private2;
     }
+
+    card->rx_buff_ptr = (card->rx_buff_ptr_ori & 0xffffffffffffffc0ULL) + 0x40ULL;
+    card->rx_buff_physical_addr = (card->rx_buff_physical_addr_ori & 0xffffffffffffffc0ULL) + 0x40ULL;
+    *(((uint64_t*)card->cfg_addr)+41) = card->rx_buff_physical_addr;
+    *(((uint64_t*)card->cfg_addr)+43) = 0;
+    *(((uint64_t*)card->cfg_addr)+44) = 1;
 
     // set host buffer addresses
     *(((uint64_t*)card->cfg_addr)+16) = card->host_tx_dne_dma;
@@ -224,7 +237,7 @@ static int __devinit nf10_probe(struct pci_dev *pdev, const struct pci_device_id
         *(((uint32_t*)card->host_tx_dne_ptr) + i * 16) = 0xffffffff;
 
     for(i = 0; i < card->host_rx_dne.cl_size; i++)
-        *(((uint64_t*)card->host_rx_dne_ptr) + i * 8 + 7) = 0xffffffffffffffffULL;
+        *(((uint64_t*)card->host_rx_dne_ptr) + i * 8) = 0xffffffffffffffffULL;
 
     // initialize work queue
     if(!(card->wq = create_workqueue("int_hndlr"))){
@@ -316,6 +329,9 @@ static void __devexit nf10_remove(struct pci_dev *pdev){
 
         pci_free_consistent(pdev, card->tx_dne_mask+1, card->host_tx_dne_ptr, card->host_tx_dne_dma);
         pci_free_consistent(pdev, card->rx_dne_mask+1, card->host_rx_dne_ptr, card->host_rx_dne_dma);
+        pci_free_consistent(pdev, card->rx_buff_mask+1+64, card->rx_buff_ptr_ori, card->rx_buff_physical_addr_ori);
+        *(((uint64_t*)card->cfg_addr)+44) = 0;
+
 
         if(card->tx_bk_dma_addr) kfree(card->tx_bk_dma_addr);
         if(card->tx_bk_skb) kfree(card->tx_bk_skb);
