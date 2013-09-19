@@ -174,6 +174,8 @@ void work_handler(struct work_struct *w){
     uint32_t tx_int;
     uint64_t rx_int;
     uint64_t timestamp;
+    uint32_t sec;
+    uint32_t nsec;
     uint64_t addr;
     uint64_t index;
     struct sk_buff *skb;
@@ -210,6 +212,8 @@ void work_handler(struct work_struct *w){
         tx_int = *(((uint32_t*)card->host_tx_dne_ptr) + (card->host_tx_dne.rd_ptr)/4);
         rx_int = *(((uint64_t*)card->host_rx_dne_ptr) + (card->host_rx_dne.rd_ptr)/8);
         timestamp = *(((uint64_t*)card->host_rx_dne_ptr) + (card->host_rx_dne.rd_ptr)/8 + 1);
+        sec=(uint32_t)((timestamp>>32)&0xffffffff);
+        nsec=(uint32_t)(((timestamp&0xffffffff)*1000000000)>>32);
 
         if( (tx_int & 0xffff) == 1 ){
             irq_done = 0;
@@ -282,6 +286,8 @@ void work_handler(struct work_struct *w){
             printk(KERN_INFO "len: %d\n", len);
             printk(KERN_INFO "port_encoded: %x\n", port_encoded);
             printk(KERN_INFO "timestamp: %x\n", timestamp);
+            printk(KERN_INFO "seconds: %u\n", sec);
+            printk(KERN_INFO "nseconds: %u\n", nsec);
             printk(KERN_INFO "pkt count: %d\n", card->rx_pkt_count);
             print_hex_dump(KERN_INFO, "", DUMP_PREFIX_NONE, 16, 1, (void*)(card->rx_buff_ptr+card->rx_buff_head), len, true);
 
