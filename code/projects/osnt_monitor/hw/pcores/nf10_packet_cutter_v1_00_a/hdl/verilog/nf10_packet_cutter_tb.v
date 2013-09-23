@@ -77,12 +77,12 @@ module testbench();
     localparam WAIT_CUT = 13;
     localparam END = 14;
 
-/*  wire [255:0] tdata_m_cut;
+    wire [255:0] tdata_m_cut;
     wire         tvalid_m_cut;
     wire         tlast_m_cut;
     wire [31:0]  tstrb_m_cut;
     wire [127:0] tuser_m_cut;
-*/
+
     reg       request_read = 0;
     reg       request_read_next = 0;
     reg       request_write=0;
@@ -157,7 +157,7 @@ module testbench();
                 tdata[random] = {32{counter}};
                 if(tready[random]) begin
                     counter_next = counter + 1'b1;
-                    if(counter == 8'h1F) begin
+                    if(counter == 8'h1) begin
                         state_next = DEAD;
                         counter_next = 8'b0;
                         tlast[random] = 1'b1;
@@ -222,7 +222,7 @@ module testbench();
             WORD_SET: begin
                 request_write_next = 1;
                 address_to_write_next = 32'h77800004;
-                value_to_write_next = 32'h2;
+                value_to_write_next = 32'h0;
                 state_reg_next = WAIT_WORD;
             end
 
@@ -235,7 +235,7 @@ module testbench();
             OFFSET: begin 
                 request_write_next = 1;
                 address_to_write_next = 32'h77800008;
-                value_to_write_next = 32'hfffffff0;
+                value_to_write_next = 32'hfffffffe;
                 state_reg_next = WAIT_OFF;
             end
 
@@ -248,7 +248,7 @@ module testbench();
             BYTES_SET: begin 
                 request_write_next = 1;
                 address_to_write_next = 32'h7780000c;
-                value_to_write_next = 32'h292; //124 Bytes
+                value_to_write_next = 32'h3f; //63 Bytes
                 state_reg_next = WAIT_BYTES;
             end
 
@@ -327,20 +327,73 @@ module testbench();
 
     .S_AXIS_TDATA(tdata[0]),
     .S_AXIS_TSTRB(32'hFFFFFFFF),
-    .S_AXIS_TUSER(128'h0201AAAA),
+    .S_AXIS_TUSER(128'h02010080),
     .S_AXIS_TVALID(tvalid_0),
     .S_AXIS_TREADY(tready[0]),
     .S_AXIS_TLAST(tlast[0]),
 
-    .M_AXIS_TDATA(),
-    .M_AXIS_TSTRB(),
-    .M_AXIS_TUSER(),
-    .M_AXIS_TVALID(),
-    .M_AXIS_TREADY(1'b1),
-    .M_AXIS_TLAST()
+    .M_AXIS_TDATA(tdata_m_cut),
+    .M_AXIS_TSTRB(tstrb_m_cut),
+    .M_AXIS_TUSER(tuser_m_cut),
+    .M_AXIS_TVALID(tvalid_m_cut),
+    .M_AXIS_TREADY(tready_m_cut),
+    .M_AXIS_TLAST(tlast_m_cut)
 
    );
 
+
+ nf10_bram_output_queues
+    #(.C_M_AXIS_DATA_WIDTH(256),
+      .C_S_AXIS_DATA_WIDTH(256),
+      .C_M_AXIS_TUSER_WIDTH(128),
+      .C_S_AXIS_TUSER_WIDTH(128)
+     ) dut
+    (
+    .axi_aclk(clk),
+    .axi_resetn(~reset),
+
+    .m_axis_tdata_0(),
+    .m_axis_tstrb_0(),
+    .m_axis_tvalid_0(),
+    .m_axis_tready_0(1'b1),
+    .m_axis_tlast_0(),
+    .m_axis_tuser_0(),
+
+    .m_axis_tdata_1(),
+    .m_axis_tstrb_1(),
+    .m_axis_tvalid_1(),
+    .m_axis_tready_1(1'b1),
+    .m_axis_tlast_1(),
+    .m_axis_tuser_1(),
+
+    .m_axis_tdata_2(),
+    .m_axis_tstrb_2(),
+    .m_axis_tvalid_2(),
+    .m_axis_tready_2(1'b1),
+    .m_axis_tlast_2(),
+    .m_axis_tuser_2(),
+
+    .m_axis_tdata_3(),
+    .m_axis_tstrb_3(),
+    .m_axis_tvalid_3(),
+    .m_axis_tready_3(1'b1),
+    .m_axis_tlast_3(),
+    .m_axis_tuser_3(),
+
+    .m_axis_tdata_4(),
+    .m_axis_tstrb_4(),
+    .m_axis_tvalid_4(),
+    .m_axis_tready_4(1'b1),
+    .m_axis_tlast_4(),
+    .m_axis_tuser_4(),
+
+    .s_axis_tdata(tdata_m_cut),
+    .s_axis_tstrb(tstrb_m_cut),
+    .s_axis_tvalid(tvalid_m_cut),
+    .s_axis_tready(tready_m_cut),
+    .s_axis_tlast(tlast_m_cut),
+    .s_axis_tuser(tuser_m_cut)
+   );
 
 
 
