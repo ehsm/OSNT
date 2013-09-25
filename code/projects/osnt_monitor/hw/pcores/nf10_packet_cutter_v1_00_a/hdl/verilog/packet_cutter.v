@@ -101,7 +101,8 @@
    	localparam MAX_WORDS_PKT            = 2048;
 	localparam HASH_BYTES		    = (HASH_WIDTH)>>3;
 	localparam ALL_VALID		    = 32'hffffffff; 
-   
+
+	localparam BYTES_ONE_WORD           = C_M_AXIS_DATA_WIDTH >>3;   
         localparam COUNT_BIT_WIDTH	    = log2(C_M_AXIS_DATA_WIDTH);
         localparam COUNT_BYTE_WIDTH         = COUNT_BIT_WIDTH-3;
 
@@ -184,7 +185,7 @@
 
 	assign one_word_hash   = ((~({C_S_AXIS_DATA_WIDTH{1'b1}}<<bits_free))&({C_S_AXIS_DATA_WIDTH{1'b1}}<<pkt_boundaries_bits_free)&tdata_fifo);
         assign final_hash      = {{HASH_WIDTH{1'b0}},hash[HASH_WIDTH-1:0]^hash[(2*HASH_WIDTH)-1:HASH_WIDTH]};
-	//assign final_hash      =128'hdeadbeefaccafeafddddeaeaccffadad; //DEBUG fixed value
+	//assign final_hash      = 128'hdeadbeefaccafeafddddeaeaccffadad; //DEBUG fixed value
 
         always @(*) begin
                 pkt_boundaries_bits_free = 0;
@@ -367,8 +368,8 @@
 			in_fifo_rd_en = 1;
 			if(bytes_free < HASH_BYTES) begin
 				m_axis_tstrb = ALL_VALID;
-				hash_carry_bytes_next = HASH_BYTES - bytes_free;
-                                hash_carry_bits_next = (HASH_BYTES - bytes_free)<<3;
+				hash_carry_bytes_next = HASH_BYTES[COUNT_BYTE_WIDTH-1:0] - bytes_free;
+                                hash_carry_bits_next = (HASH_BYTES[COUNT_BYTE_WIDTH-1:0] - bytes_free)<<3;
 				m_axis_tlast = 0;
 				m_axis_tdata = (last_word_pkt_temp_cleaned | (final_hash >> (HASH_WIDTH-bits_free)));
 				state_next = SEND_LAST_WORD;
@@ -387,7 +388,7 @@
 		if(m_axis_tready) begin
 			m_axis_tlast = 1;
 			m_axis_tdata = (final_hash)<<(C_S_AXIS_DATA_WIDTH-hash_carry_bits);
-			m_axis_tstrb = (ALL_VALID<<(32-hash_carry_bytes));
+			m_axis_tstrb = (ALL_VALID<<(BYTES_ONE_WORD[COUNT_BYTE_WIDTH-1:0]-hash_carry_bytes));
 			state_next = WAIT_PKT;
 		end
 	end
