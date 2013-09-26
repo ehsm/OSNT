@@ -324,6 +324,7 @@
 						end
 					end
 					else begin
+						last_word_pkt_temp_next = tdata_fifo;
 						hash_next = one_word_hash;
 						state_next = COMPLETE_PKT;
 					end
