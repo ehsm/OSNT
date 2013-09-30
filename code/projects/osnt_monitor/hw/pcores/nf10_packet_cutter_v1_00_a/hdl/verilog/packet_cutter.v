@@ -100,8 +100,11 @@
 
    	localparam MAX_WORDS_PKT            = 2048;
 	localparam HASH_BYTES		    = (HASH_WIDTH)>>3;
-	localparam HASH_CARRY_WIDTH	    = log2(HASH_BYTES);     
 	localparam ALL_VALID		    = 32'hffffffff; 
+
+	localparam BYTES_ONE_WORD           = C_M_AXIS_DATA_WIDTH >>3;   
+        localparam COUNT_BIT_WIDTH	    = log2(C_M_AXIS_DATA_WIDTH);
+        localparam COUNT_BYTE_WIDTH         = COUNT_BIT_WIDTH-3;
 
 	//---------------------- Wires and regs---------------------------
 
@@ -110,13 +113,7 @@
 
    	reg [NUM_STATES-1:0]			state,state_next;
 
-   	reg [C_M_AXIS_DATA_WIDTH-1:0]      	m_axis_tdata_next;
-   	reg [((C_M_AXIS_DATA_WIDTH/8))-1:0]	m_axis_tstrb_next;
-   	reg [C_M_AXIS_TUSER_WIDTH-1:0] 		m_axis_tuser_next;
-   	reg 					m_axis_tvalid_next;
-   	reg 					m_axis_tlast_next;
-
-        wire [C_S_AXIS_TUSER_WIDTH-1:0]         tuser_fifo;
+	wire [C_S_AXIS_TUSER_WIDTH-1:0]         tuser_fifo;
         wire [((C_M_AXIS_DATA_WIDTH/8))-1:0]    tstrb_fifo;
         wire                                    tlast_fifo;
         wire [C_M_AXIS_DATA_WIDTH-1:0]          tdata_fifo;
@@ -127,7 +124,6 @@
 
    	wire [C_S_AXI_DATA_WIDTH-1:0]		counter;
 
-	reg [15:0]				bytes_to_cut,bytes_to_cut_next;
 	reg					pkt_short,pkt_short_next;
 
 	wire[C_S_AXIS_DATA_WIDTH-1:0]		first_word_hash;
@@ -135,19 +131,23 @@
 	wire[C_S_AXIS_DATA_WIDTH-1:0]           one_word_hash;
 	wire[C_S_AXIS_DATA_WIDTH-1:0]		final_hash;
 	
-	reg[4:0]				last_word_bytes_free;
-	reg[7:0]				pkt_boundaries_bits_free;			
+	reg[COUNT_BYTE_WIDTH-1:0]		last_word_bytes_free;
+	reg[COUNT_BIT_WIDTH-1:0]		pkt_boundaries_bits_free;			
 
-	reg[4:0]				bytes_free,bytes_free_next;
-        reg[7:0]                                bits_free,bits_free_next;
-	reg[HASH_CARRY_WIDTH-1:0]		hash_carry_bytes,hash_carry_bytes_next;
-	reg[HASH_CARRY_WIDTH+2:0]		hash_carry_bits,hash_carry_bits_next;
+	reg[COUNT_BYTE_WIDTH-1:0]	        bytes_free,bytes_free_next;
+        reg[COUNT_BIT_WIDTH-1:0]                bits_free,bits_free_next;
+	reg[COUNT_BYTE_WIDTH-1:0]		hash_carry_bytes,hash_carry_bytes_next;
+	reg[COUNT_BIT_WIDTH-1:0]		hash_carry_bits,hash_carry_bits_next;
 
 	reg [C_S_AXIS_DATA_WIDTH-1:0]		hash;
 	reg [C_S_AXIS_DATA_WIDTH-1:0]           hash_next;
 
 	reg [C_S_AXIS_DATA_WIDTH-1:0]		last_word_pkt_temp,last_word_pkt_temp_next;
 	wire[C_S_AXIS_DATA_WIDTH-1:0]		last_word_pkt_temp_cleaned;
+
+        wire[15:0]				len_pkt_cut;
+	wire					pkt_cuttable;
+        wire[15:0]				pkt_len;
 
    //------------------------- Modules-------------------------------
 
@@ -173,15 +173,19 @@
         assign s_axis_tready = !in_fifo_nearly_full;
 
 	assign counter = (cut_en) ? cut_words : MAX_WORDS_PKT;
+ 
+        assign len_pkt_cut = cut_bytes + HASH_BYTES;
+	assign pkt_cuttable = (tuser_fifo[15:0] > len_pkt_cut);
+	assign pkt_len = (cut_en & pkt_cuttable) ? len_pkt_cut : tuser_fifo[15:0];
 	 
-	assign first_word_hash = (({C_S_AXIS_DATA_WIDTH{1'b1}}<<bits_free)&tdata_fifo);
+	assign first_word_hash = (~(({C_S_AXIS_DATA_WIDTH{1'b1}}<<bits_free))&tdata_fifo);
         assign last_word_hash  = (({C_S_AXIS_DATA_WIDTH{1'b1}}<<pkt_boundaries_bits_free)&tdata_fifo);
 
 	assign last_word_pkt_temp_cleaned = (({C_S_AXIS_DATA_WIDTH{1'b1}}<<bits_free)&last_word_pkt_temp);
 
-	assign one_word_hash   = (({C_S_AXIS_DATA_WIDTH{1'b1}}<<bits_free)&({C_S_AXIS_DATA_WIDTH{1'b1}}<<bits_free)&tdata_fifo);
+	assign one_word_hash   = ((~({C_S_AXIS_DATA_WIDTH{1'b1}}<<bits_free))&({C_S_AXIS_DATA_WIDTH{1'b1}}<<pkt_boundaries_bits_free)&tdata_fifo);
         assign final_hash      = {{HASH_WIDTH{1'b0}},hash[HASH_WIDTH-1:0]^hash[(2*HASH_WIDTH)-1:HASH_WIDTH]};
-	//assign final_hash      =128'hdeadbeefaccafeafddddeaeaccffadad; //DEBUG fixed value
+	//assign final_hash      = 128'hdeadbeefaccafeafddddeaeaccffadad; //DEBUG fixed value
 
         always @(*) begin
                 pkt_boundaries_bits_free = 0;
@@ -262,11 +266,11 @@
    	end
 
 	always @(*) begin
-      		m_axis_tuser_next = tuser_fifo;
-      		m_axis_tstrb_next = tstrb_fifo;
-      		m_axis_tlast_next = tlast_fifo;
-      		m_axis_tdata_next = tdata_fifo;
-      		m_axis_tvalid_next = 0;
+      		m_axis_tuser = tuser_fifo;
+      		m_axis_tstrb = tstrb_fifo;
+      		m_axis_tlast = tlast_fifo;
+      		m_axis_tdata = tdata_fifo;
+      		m_axis_tvalid = 0;
    
       		in_fifo_rd_en = 0;
       
@@ -280,8 +284,7 @@
 		hash_carry_bytes_next = hash_carry_bytes;
                 hash_carry_bits_next = hash_carry_bits;
 
-		bytes_to_cut_next = bytes_to_cut;
-		pkt_short_next = 0;
+		pkt_short_next = pkt_short;
 
 		hash_next = hash;
 
@@ -293,11 +296,13 @@
                 cut_counter_next = counter;
                 tstrb_cut_next = cut_offset;
         	if(!in_fifo_empty) begin
-                	m_axis_tvalid_next = 1;
-			if(cut_bytes > tuser_fifo[15:0])
+                	m_axis_tvalid = 1;
+			m_axis_tuser[15:0] = pkt_len;
+			if(!pkt_cuttable)
 				pkt_short_next = 1;
-			else
-				bytes_to_cut_next = tuser_fifo[15:0]-cut_bytes;
+			else begin
+				pkt_short_next = 0;
+			end
 			bytes_free_next = last_word_bytes_free;
 			bits_free_next = (last_word_bytes_free<<3);
 			if(m_axis_tready) begin
@@ -312,24 +317,16 @@
 			if(!cut_counter) begin
 				if(tlast_fifo) begin
 					if(pkt_short) begin
-						m_axis_tvalid_next = 1;
+						m_axis_tvalid = 1;
 						if(m_axis_tready) begin
 							in_fifo_rd_en = 1;
                                                 	state_next = WAIT_PKT;
 						end
 					end
 					else begin
-						if(bytes_to_cut<HASH_WIDTH) begin
-							m_axis_tvalid_next = 1;
-							if(m_axis_tready) begin
-								in_fifo_rd_en = 1;
-								state_next = WAIT_PKT;
-							end
-						end
-						else begin 
-							hash_next = one_word_hash;
-							state_next = COMPLETE_PKT;
-						end
+						last_word_pkt_temp_next = tdata_fifo;
+						hash_next = one_word_hash;
+						state_next = COMPLETE_PKT;
 					end
 				end
 				else begin
@@ -340,7 +337,7 @@
 				end
 			end
 			else begin
-				m_axis_tvalid_next = 1;
+				m_axis_tvalid = 1;
 				if(m_axis_tready) begin
 					in_fifo_rd_en = 1;
 					if(tlast_fifo)
@@ -367,38 +364,32 @@
 	end
 
 	COMPLETE_PKT: begin
-		m_axis_tvalid_next = 1;
+		m_axis_tvalid = 1;
 		if(m_axis_tready) begin
 			in_fifo_rd_en = 1;
 			if(bytes_free < HASH_BYTES) begin
-				if(!bytes_free) begin
-					m_axis_tlast_next = 0;
-					state_next = SEND_LAST_WORD;
-				end
-				else begin
-					m_axis_tlast_next = 0;				
-					m_axis_tdata_next = (last_word_pkt_temp_cleaned | (final_hash >> (HASH_WIDTH-bits_free)));
-					m_axis_tstrb_next = ALL_VALID;
-					hash_carry_bytes_next = HASH_BYTES - bytes_free;
-					hash_carry_bits_next = (HASH_BYTES - bytes_free)<<3;
-					state_next = SEND_LAST_WORD;
-				end
+				m_axis_tstrb = ALL_VALID;
+				hash_carry_bytes_next = HASH_BYTES[COUNT_BYTE_WIDTH-1:0] - bytes_free;
+                                hash_carry_bits_next = (HASH_BYTES[COUNT_BYTE_WIDTH-1:0] - bytes_free)<<3;
+				m_axis_tlast = 0;
+				m_axis_tdata = (last_word_pkt_temp_cleaned | (final_hash >> (HASH_WIDTH-bits_free)));
+				state_next = SEND_LAST_WORD;
 			end
 			else begin
-				m_axis_tlast_next = 1;
-				m_axis_tdata_next = (last_word_pkt_temp_cleaned | (final_hash << (bits_free-HASH_WIDTH)));
-				m_axis_tstrb_next = (ALL_VALID<<(bytes_free-HASH_BYTES));
+				m_axis_tlast = 1;
+				m_axis_tdata = (last_word_pkt_temp_cleaned | (final_hash << (bits_free-HASH_WIDTH)));
+				m_axis_tstrb = (ALL_VALID<<(bytes_free-HASH_BYTES));
 				state_next = WAIT_PKT;
 			end
 		end
 	end
 	
 	SEND_LAST_WORD: begin
-		m_axis_tvalid_next = 1;
+		m_axis_tvalid = 1;
 		if(m_axis_tready) begin
-			m_axis_tlast_next = 1;
-			m_axis_tdata_next = (final_hash)<<(C_S_AXIS_DATA_WIDTH-hash_carry_bits);
-			m_axis_tstrb_next = (ALL_VALID<<(32-hash_carry_bytes));
+			m_axis_tlast = 1;
+			m_axis_tdata = (final_hash)<<(C_S_AXIS_DATA_WIDTH-hash_carry_bits);
+			m_axis_tstrb = (ALL_VALID<<(BYTES_ONE_WORD[COUNT_BYTE_WIDTH-1:0]-hash_carry_bytes));
 			state_next = WAIT_PKT;
 		end
 	end
@@ -412,14 +403,8 @@
          		state 		<= WAIT_PKT;
          		cut_counter	<= 0;
 			tstrb_cut	<= 0;
-         		m_axis_tvalid   <= 0;
-         		m_axis_tdata    <= 0;
-         		m_axis_tuser    <= 0;
-         		m_axis_tstrb    <= 0;
-         		m_axis_tlast    <= 0;
                         bytes_free 	<= 0;
                         bits_free 	<= 0;
-			bytes_to_cut    <= 0;
                         hash_carry_bytes<= 0;
                         hash_carry_bits <= 0;
                         hash 		<= 0;
@@ -429,18 +414,11 @@
       		else begin
          		state <= state_next;
 
-	 		m_axis_tvalid<= m_axis_tvalid_next;
-         		m_axis_tdata <= m_axis_tdata_next;
-         		m_axis_tuser <= m_axis_tuser_next;
-         		m_axis_tstrb <= m_axis_tstrb_next;
-         		m_axis_tlast <= m_axis_tlast_next;
-
                 	bytes_free <= bytes_free_next;
                 	bits_free <= bits_free_next;
                 	hash_carry_bytes <= hash_carry_bytes_next;
                 	hash_carry_bits <= hash_carry_bits_next;
 
-			bytes_to_cut <= bytes_to_cut_next;
 			pkt_short    <= pkt_short_next;
 
                 	hash <= hash_next;

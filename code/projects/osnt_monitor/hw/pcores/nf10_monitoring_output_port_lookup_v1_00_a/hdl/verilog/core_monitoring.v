@@ -175,11 +175,6 @@
 
    	reg [NUM_STATES-1:0]			state,state_next;
 
-   	reg [C_M_AXIS_DATA_WIDTH-1:0]      	m_axis_tdata_next;
-   	reg [((C_M_AXIS_DATA_WIDTH/8))-1:0]	m_axis_tstrb_next;
-   	reg [C_M_AXIS_TUSER_WIDTH-1:0] 		m_axis_tuser_next;
-   	reg 					m_axis_tvalid_next;
-   	reg 					m_axis_tlast_next;
 
    //------------------------- Modules-------------------------------
 
@@ -353,11 +348,11 @@
     **********************************************************************/
 
 	always @(*) begin
-      		m_axis_tuser_next = tuser_fifo;
-      		m_axis_tstrb_next = tstrb_fifo;
-      		m_axis_tlast_next = tlast_fifo;
-      		m_axis_tdata_next = tdata_fifo;
-      		m_axis_tvalid_next = 0;
+      		m_axis_tuser = tuser_fifo;
+      		m_axis_tstrb = tstrb_fifo;
+      		m_axis_tlast = tlast_fifo;
+      		m_axis_tdata = tdata_fifo;
+      		m_axis_tvalid = 0;
    
       		in_fifo_rd_en = 0;
       		hit_fifo_rd_en = 0;
@@ -368,8 +363,8 @@
         
 		WAIT_TILL_DONE_DECODE: begin
         		if(!hit_fifo_empty) begin
-				m_axis_tvalid_next = 1;
-				m_axis_tuser_next[DST_PORT_POS+7:DST_PORT_POS] = fifo_dst_ports;
+				m_axis_tvalid = 1;
+				m_axis_tuser[DST_PORT_POS+7:DST_PORT_POS] = fifo_dst_ports;
 				if(m_axis_tready) begin
 					in_fifo_rd_en = 1;
 					hit_fifo_rd_en = 1;
@@ -381,7 +376,7 @@
 
         	IN_PACKET: begin
 			if(!in_fifo_empty) begin
-				m_axis_tvalid_next = 1;
+				m_axis_tvalid = 1;
 				if(m_axis_tready) begin
 					in_fifo_rd_en = 1;
 					if(tlast_fifo)
@@ -397,22 +392,11 @@
 	always @(posedge axi_aclk) begin
       		if(~axi_resetn) begin
          		state 		<= WAIT_TILL_DONE_DECODE;
-         		m_axis_tvalid   <= 0;
-         		m_axis_tdata    <= 0;
-         		m_axis_tuser    <= 0;
-         		m_axis_tstrb    <= 0;
-         		m_axis_tlast    <= 0;
 			pkt_valid_reg   <= 0;
 			pkt_attributes_reg  <= 0;
       		end
       		else begin
          		state <= state_next;
-
-	 		m_axis_tvalid<= m_axis_tvalid_next;
-         		m_axis_tdata <= m_axis_tdata_next;
-         		m_axis_tuser <= m_axis_tuser_next;
-         		m_axis_tstrb <= m_axis_tstrb_next;
-         		m_axis_tlast <= m_axis_tlast_next;
 
 			pkt_valid_reg<= pkt_valid;
 			pkt_attributes_reg<=pkt_attributes;

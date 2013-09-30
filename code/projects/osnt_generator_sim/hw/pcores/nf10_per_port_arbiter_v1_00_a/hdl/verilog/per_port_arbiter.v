@@ -109,12 +109,13 @@ module per_port_arbiter
   wire  [C_S_AXIS_DATA_WIDTH-1:0]            s_axis_tdata [0:C_S_NUM_QUEUES-1];
   wire  [((C_S_AXIS_DATA_WIDTH/8))-1:0]      s_axis_tstrb [0:C_S_NUM_QUEUES-1];
   wire  [C_S_AXIS_TUSER_WIDTH-1:0]           s_axis_tuser [0:C_S_NUM_QUEUES-1];
-  wire  [C_S_AXIS_DATA_WIDTH-1:0]            s_axis_tdata_c;
-  wire  [((C_S_AXIS_DATA_WIDTH/8))-1:0]      s_axis_tstrb_c;
-  wire  [C_S_AXIS_TUSER_WIDTH-1:0]           s_axis_tuser_c;
   wire  [0:C_S_NUM_QUEUES-1]                 s_axis_tvalid;
   wire  [0:C_S_NUM_QUEUES-1]                 s_axis_tready;
   wire  [0:C_S_NUM_QUEUES-1]                 s_axis_tlast;
+	
+  wire  [C_S_AXIS_DATA_WIDTH-1:0]            m_axis_tdata_c;
+  wire  [((C_S_AXIS_DATA_WIDTH/8))-1:0]      m_axis_tstrb_c;
+  wire  [C_S_AXIS_TUSER_WIDTH-1:0]           m_axis_tuser_c;
 
 	wire  [TIMESTAMP_WIDTH:0]               	 arrival_time [0:C_S_NUM_QUEUES-1];
 

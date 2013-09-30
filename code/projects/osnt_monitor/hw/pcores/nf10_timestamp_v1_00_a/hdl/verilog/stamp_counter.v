@@ -55,25 +55,28 @@ module stamp_counter
  	);
 
 
-   	reg [TIMESTAMP_WIDTH-1:0]	temp;
+
+        localparam PPS = 27'h5F5E100;
+        localparam OVERFLOW = 32'hffffffff;
+        localparam DDS_WIDTH = 32;
+
+   	reg [TIMESTAMP_WIDTH-6:0]	temp;
 
    	reg [TIMESTAMP_WIDTH-1:0]	time_pps;
    	reg                             pps_valid;
 
-   	reg [31:0]                      accumulator;
+   	reg [DDS_WIDTH-1:0]             accumulator;
    	reg [26:0]                      counter_pps;
 
    	wire [TIMESTAMP_WIDTH-1:0]      time_pps_w;
    	wire                            pps_valid_w;
    
-   	wire [31:0]                    	dds_rate;
-	reg [31:0]			dds_sync,dds_aclk;	 
+   	wire [DDS_WIDTH-1:0]            dds_rate;
+	reg [DDS_WIDTH-1:0]		dds_sync,dds_aclk;	 
  
 
-   	localparam PPS = 27'h5F5E100;
-	localparam OVERFLOW = 32'hffffffff;
  
-   	assign stamp_counter = {temp,6'b0};
+   	assign stamp_counter = {temp,5'b0};
    	assign time_pps_w = time_pps;
    	assign pps_valid_w = pps_valid;
 
@@ -81,7 +84,8 @@ module stamp_counter
 
 	correction
 	#(
-   		.TIMESTAMP_WIDTH(64)) 
+   		.TIMESTAMP_WIDTH(TIMESTAMP_WIDTH),
+		.DDS_WIDTH(DDS_WIDTH)) 
 	correction
 	(
 	// input
@@ -123,7 +127,7 @@ module stamp_counter
 			dds_sync <= dds_rate;
                 	dds_aclk <= dds_sync;
 			if(restart_time[0])
-             			temp<= ntp_timestamp[TIMESTAMP_WIDTH-1:6];
+             			temp<= ntp_timestamp[TIMESTAMP_WIDTH-1:5];
 			else if (restart_time[1])
 	     			temp<= 0;
         		else begin
@@ -134,7 +138,7 @@ module stamp_counter
 		end
         end
 
-endmodule // stamp_counter
+endmodule // stap_counter
 
 
 

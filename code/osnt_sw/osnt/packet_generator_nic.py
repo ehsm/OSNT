@@ -1,7 +1,9 @@
 import os
 from scapy import *
 from scapy.all import *
+from subprocess import Popen, PIPE
 
+#base timestamp of all engines is 1
 class CBR_Engine:
     # pkt_rate in pkts/second, pkt_length in bytes
     def __init__(self, engine_name, pkt_rate, pkt_length):
@@ -13,7 +15,7 @@ class CBR_Engine:
         pkts = [None]*pkt_number
         for i in range(pkt_number):
             pkts[i] = Ether(''.join('X' for i in range(self.pkt_length)))
-            pkts[i].time = i/self.pkt_rate
+            pkts[i].time = i/self.pkt_rate +1
         wrpcap(self.engine_name + '.cap', pkts)
 
 class Poisson_Engine:
@@ -24,7 +26,7 @@ class Poisson_Engine:
 
     def generate(self, pkt_number):
         pkts = [None]*pkt_number
-        time = 0
+        time = 1
         for i in range(pkt_number):
             pkts[i] = Ether(''.join('X' for i in range(self.pkt_length)))
             delta = random.expovariate(self.pkt_rate)
@@ -59,7 +61,7 @@ class Port_Arbiter:
 
 
 class Rate_Limiter:
-    # rate in bps
+    # rate in bits per second
     def __init__(self, iface, rate):
         self.iface = iface
         self.rate = float(rate)
@@ -73,14 +75,26 @@ class Rate_Limiter:
             last_pkt_end_time = pkt.time + len(pkt)*8/self.rate
         wrpcap(self.iface + '.cap', pkts)
 
-if __name__=="__main__":
+class Pcap_Replay:
+    def __init__(self, iface):
+        self.iface = iface
 
+    def replay(self):
+        proc = Popen("sudo tcpreplay -i "+self.iface+' '+self.iface+'.cap', stdout=PIPE, shell=True)
+        print proc.stdout.read()
+
+if __name__=="__main__":
+    #CBR engine
     cbr = CBR_Engine('cbr', 100, 20)
     cbr.generate(10)
-
+    #Poisson engine
     poisson = Poisson_Engine('poisson', 100, 20)
     poisson.generate(10)
-
-    arbiter = Port_Arbiter('eth1', ['cbr', 'poisson'])
+    #Arbiter for port eth4
+    arbiter = Port_Arbiter('eth4', ['cbr', 'poisson'])
     arbiter.merge_queues()
-    rate_limiter = Rate_Limiter('eth1', 128)
+    #Rate limiter for port eth4
+    rate_limiter = Rate_Limiter('eth4', 256)
+    #Start replaying on port eth4
+    replayer = Pcap_Replay('eth4')
+    replayer.replay()

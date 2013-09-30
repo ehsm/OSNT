@@ -178,11 +178,11 @@ int nf10iface_probe(struct pci_dev *pdev, struct nf10_card *card){
 
         netif_start_queue(netdev);
     }
-
+    /*
     // give some descriptors to the card
     for(i = 0; i < card->mem_rx_dsc.cl_size-2; i++){
         nf10priv_send_rx_dsc(card);
-    }
+    }*/
 
     // yay
     return 0;

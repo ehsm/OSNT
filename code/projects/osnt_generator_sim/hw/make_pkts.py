@@ -81,7 +81,7 @@ for i in range(4):
 with open( os.path.join( script_dir, 'dma_0_stim.axi' ), 'w' ) as f:
     axitools.axis_dump( pkts, f, 256, 1e-9 )
 with open( os.path.join( script_dir, 'dma_0_expected.axi' ), 'w' ) as f:
-    axitools.axis_dump( pkts*4*2, f, 256, 1e-9 )
+    axitools.axis_dump( pkts, f, 256, 1e-9 )
 # 10g interfaces
 for i in range(4):
     # replace source port

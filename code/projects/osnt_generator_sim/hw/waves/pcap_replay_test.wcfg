@@ -27,7 +27,7 @@
          </top_modules>
       </db_ref>
    </db_ref_list>
-   <WVObjectSize size="6" />
+   <WVObjectSize size="7" />
    <wvobject fp_name="group1" type="group">
       <obj_property name="label">nf10_pcap_replay_engine</obj_property>
       <obj_property name="DisplayName">label</obj_property>
@@ -1656,6 +1656,383 @@
       <wvobject fp_name="/system_axisim_tb/dut/nf10_pcap_replay_uengine_0/nf10_pcap_replay_uengine_0/pcap_replay_uengine_inst/fifo_to_axis_inst/C_M_AXIS_PACKED_DATA_WIDTH" type="array" db_ref_id="1">
          <obj_property name="ElementShortName">C_M_AXIS_PACKED_DATA_WIDTH[31:0]</obj_property>
          <obj_property name="ObjectShortName">C_M_AXIS_PACKED_DATA_WIDTH[31:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+   </wvobject>
+   <wvobject fp_name="group475" type="group">
+      <obj_property name="label">bram_oq</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <wvobject fp_name="/system_axisim_tb/dut/nf10_bram_output_queues_0/nf10_bram_output_queues_0/axi_aclk" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">axi_aclk</obj_property>
+         <obj_property name="ObjectShortName">axi_aclk</obj_property>
+      </wvobject>
+      <wvobject fp_name="/system_axisim_tb/dut/nf10_bram_output_queues_0/nf10_bram_output_queues_0/axi_resetn" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">axi_resetn</obj_property>
+         <obj_property name="ObjectShortName">axi_resetn</obj_property>
+      </wvobject>
+      <wvobject fp_name="/system_axisim_tb/dut/nf10_bram_output_queues_0/nf10_bram_output_queues_0/s_axis_tdata" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">s_axis_tdata[255:0]</obj_property>
+         <obj_property name="ObjectShortName">s_axis_tdata[255:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/system_axisim_tb/dut/nf10_bram_output_queues_0/nf10_bram_output_queues_0/s_axis_tstrb" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">s_axis_tstrb[31:0]</obj_property>
+         <obj_property name="ObjectShortName">s_axis_tstrb[31:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/system_axisim_tb/dut/nf10_bram_output_queues_0/nf10_bram_output_queues_0/s_axis_tuser" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">s_axis_tuser[127:0]</obj_property>
+         <obj_property name="ObjectShortName">s_axis_tuser[127:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/system_axisim_tb/dut/nf10_bram_output_queues_0/nf10_bram_output_queues_0/s_axis_tvalid" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">s_axis_tvalid</obj_property>
+         <obj_property name="ObjectShortName">s_axis_tvalid</obj_property>
+      </wvobject>
+      <wvobject fp_name="/system_axisim_tb/dut/nf10_bram_output_queues_0/nf10_bram_output_queues_0/s_axis_tlast" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">s_axis_tlast</obj_property>
+         <obj_property name="ObjectShortName">s_axis_tlast</obj_property>
+      </wvobject>
+      <wvobject fp_name="/system_axisim_tb/dut/nf10_bram_output_queues_0/nf10_bram_output_queues_0/m_axis_tdata_0" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">m_axis_tdata_0[255:0]</obj_property>
+         <obj_property name="ObjectShortName">m_axis_tdata_0[255:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/system_axisim_tb/dut/nf10_bram_output_queues_0/nf10_bram_output_queues_0/m_axis_tstrb_0" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">m_axis_tstrb_0[31:0]</obj_property>
+         <obj_property name="ObjectShortName">m_axis_tstrb_0[31:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/system_axisim_tb/dut/nf10_bram_output_queues_0/nf10_bram_output_queues_0/m_axis_tuser_0" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">m_axis_tuser_0[127:0]</obj_property>
+         <obj_property name="ObjectShortName">m_axis_tuser_0[127:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/system_axisim_tb/dut/nf10_bram_output_queues_0/nf10_bram_output_queues_0/m_axis_tvalid_0" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">m_axis_tvalid_0</obj_property>
+         <obj_property name="ObjectShortName">m_axis_tvalid_0</obj_property>
+      </wvobject>
+      <wvobject fp_name="/system_axisim_tb/dut/nf10_bram_output_queues_0/nf10_bram_output_queues_0/m_axis_tready_0" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">m_axis_tready_0</obj_property>
+         <obj_property name="ObjectShortName">m_axis_tready_0</obj_property>
+      </wvobject>
+      <wvobject fp_name="/system_axisim_tb/dut/nf10_bram_output_queues_0/nf10_bram_output_queues_0/m_axis_tlast_0" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">m_axis_tlast_0</obj_property>
+         <obj_property name="ObjectShortName">m_axis_tlast_0</obj_property>
+      </wvobject>
+      <wvobject fp_name="/system_axisim_tb/dut/nf10_bram_output_queues_0/nf10_bram_output_queues_0/m_axis_tdata_1" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">m_axis_tdata_1[255:0]</obj_property>
+         <obj_property name="ObjectShortName">m_axis_tdata_1[255:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/system_axisim_tb/dut/nf10_bram_output_queues_0/nf10_bram_output_queues_0/m_axis_tstrb_1" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">m_axis_tstrb_1[31:0]</obj_property>
+         <obj_property name="ObjectShortName">m_axis_tstrb_1[31:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/system_axisim_tb/dut/nf10_bram_output_queues_0/nf10_bram_output_queues_0/m_axis_tuser_1" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">m_axis_tuser_1[127:0]</obj_property>
+         <obj_property name="ObjectShortName">m_axis_tuser_1[127:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/system_axisim_tb/dut/nf10_bram_output_queues_0/nf10_bram_output_queues_0/m_axis_tvalid_1" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">m_axis_tvalid_1</obj_property>
+         <obj_property name="ObjectShortName">m_axis_tvalid_1</obj_property>
+      </wvobject>
+      <wvobject fp_name="/system_axisim_tb/dut/nf10_bram_output_queues_0/nf10_bram_output_queues_0/m_axis_tready_1" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">m_axis_tready_1</obj_property>
+         <obj_property name="ObjectShortName">m_axis_tready_1</obj_property>
+      </wvobject>
+      <wvobject fp_name="/system_axisim_tb/dut/nf10_bram_output_queues_0/nf10_bram_output_queues_0/m_axis_tlast_1" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">m_axis_tlast_1</obj_property>
+         <obj_property name="ObjectShortName">m_axis_tlast_1</obj_property>
+      </wvobject>
+      <wvobject fp_name="/system_axisim_tb/dut/nf10_bram_output_queues_0/nf10_bram_output_queues_0/m_axis_tdata_2" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">m_axis_tdata_2[255:0]</obj_property>
+         <obj_property name="ObjectShortName">m_axis_tdata_2[255:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/system_axisim_tb/dut/nf10_bram_output_queues_0/nf10_bram_output_queues_0/m_axis_tstrb_2" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">m_axis_tstrb_2[31:0]</obj_property>
+         <obj_property name="ObjectShortName">m_axis_tstrb_2[31:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/system_axisim_tb/dut/nf10_bram_output_queues_0/nf10_bram_output_queues_0/m_axis_tuser_2" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">m_axis_tuser_2[127:0]</obj_property>
+         <obj_property name="ObjectShortName">m_axis_tuser_2[127:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/system_axisim_tb/dut/nf10_bram_output_queues_0/nf10_bram_output_queues_0/m_axis_tvalid_2" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">m_axis_tvalid_2</obj_property>
+         <obj_property name="ObjectShortName">m_axis_tvalid_2</obj_property>
+      </wvobject>
+      <wvobject fp_name="/system_axisim_tb/dut/nf10_bram_output_queues_0/nf10_bram_output_queues_0/m_axis_tready_2" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">m_axis_tready_2</obj_property>
+         <obj_property name="ObjectShortName">m_axis_tready_2</obj_property>
+      </wvobject>
+      <wvobject fp_name="/system_axisim_tb/dut/nf10_bram_output_queues_0/nf10_bram_output_queues_0/m_axis_tlast_2" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">m_axis_tlast_2</obj_property>
+         <obj_property name="ObjectShortName">m_axis_tlast_2</obj_property>
+      </wvobject>
+      <wvobject fp_name="/system_axisim_tb/dut/nf10_bram_output_queues_0/nf10_bram_output_queues_0/m_axis_tdata_3" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">m_axis_tdata_3[255:0]</obj_property>
+         <obj_property name="ObjectShortName">m_axis_tdata_3[255:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/system_axisim_tb/dut/nf10_bram_output_queues_0/nf10_bram_output_queues_0/m_axis_tstrb_3" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">m_axis_tstrb_3[31:0]</obj_property>
+         <obj_property name="ObjectShortName">m_axis_tstrb_3[31:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/system_axisim_tb/dut/nf10_bram_output_queues_0/nf10_bram_output_queues_0/m_axis_tuser_3" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">m_axis_tuser_3[127:0]</obj_property>
+         <obj_property name="ObjectShortName">m_axis_tuser_3[127:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/system_axisim_tb/dut/nf10_bram_output_queues_0/nf10_bram_output_queues_0/m_axis_tvalid_3" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">m_axis_tvalid_3</obj_property>
+         <obj_property name="ObjectShortName">m_axis_tvalid_3</obj_property>
+      </wvobject>
+      <wvobject fp_name="/system_axisim_tb/dut/nf10_bram_output_queues_0/nf10_bram_output_queues_0/m_axis_tready_3" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">m_axis_tready_3</obj_property>
+         <obj_property name="ObjectShortName">m_axis_tready_3</obj_property>
+      </wvobject>
+      <wvobject fp_name="/system_axisim_tb/dut/nf10_bram_output_queues_0/nf10_bram_output_queues_0/m_axis_tlast_3" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">m_axis_tlast_3</obj_property>
+         <obj_property name="ObjectShortName">m_axis_tlast_3</obj_property>
+      </wvobject>
+      <wvobject fp_name="/system_axisim_tb/dut/nf10_bram_output_queues_0/nf10_bram_output_queues_0/m_axis_tdata_4" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">m_axis_tdata_4[255:0]</obj_property>
+         <obj_property name="ObjectShortName">m_axis_tdata_4[255:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/system_axisim_tb/dut/nf10_bram_output_queues_0/nf10_bram_output_queues_0/m_axis_tstrb_4" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">m_axis_tstrb_4[31:0]</obj_property>
+         <obj_property name="ObjectShortName">m_axis_tstrb_4[31:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/system_axisim_tb/dut/nf10_bram_output_queues_0/nf10_bram_output_queues_0/m_axis_tuser_4" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">m_axis_tuser_4[127:0]</obj_property>
+         <obj_property name="ObjectShortName">m_axis_tuser_4[127:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/system_axisim_tb/dut/nf10_bram_output_queues_0/nf10_bram_output_queues_0/m_axis_tvalid_4" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">m_axis_tvalid_4</obj_property>
+         <obj_property name="ObjectShortName">m_axis_tvalid_4</obj_property>
+      </wvobject>
+      <wvobject fp_name="/system_axisim_tb/dut/nf10_bram_output_queues_0/nf10_bram_output_queues_0/m_axis_tready_4" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">m_axis_tready_4</obj_property>
+         <obj_property name="ObjectShortName">m_axis_tready_4</obj_property>
+      </wvobject>
+      <wvobject fp_name="/system_axisim_tb/dut/nf10_bram_output_queues_0/nf10_bram_output_queues_0/m_axis_tlast_4" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">m_axis_tlast_4</obj_property>
+         <obj_property name="ObjectShortName">m_axis_tlast_4</obj_property>
+      </wvobject>
+      <wvobject fp_name="/system_axisim_tb/dut/nf10_bram_output_queues_0/nf10_bram_output_queues_0/nearly_full_fifo" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">nearly_full_fifo[4:0]</obj_property>
+         <obj_property name="ObjectShortName">nearly_full_fifo[4:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/system_axisim_tb/dut/nf10_bram_output_queues_0/nf10_bram_output_queues_0/empty" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">empty[4:0]</obj_property>
+         <obj_property name="ObjectShortName">empty[4:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/system_axisim_tb/dut/nf10_bram_output_queues_0/nf10_bram_output_queues_0/metadata_nearly_full_fifo" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">metadata_nearly_full_fifo[4:0]</obj_property>
+         <obj_property name="ObjectShortName">metadata_nearly_full_fifo[4:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/system_axisim_tb/dut/nf10_bram_output_queues_0/nf10_bram_output_queues_0/metadata_empty" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">metadata_empty[4:0]</obj_property>
+         <obj_property name="ObjectShortName">metadata_empty[4:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/system_axisim_tb/dut/nf10_bram_output_queues_0/nf10_bram_output_queues_0/fifo_out_tuser" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">fifo_out_tuser[4:0,127:0]</obj_property>
+         <obj_property name="ObjectShortName">fifo_out_tuser[4:0,127:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/system_axisim_tb/dut/nf10_bram_output_queues_0/nf10_bram_output_queues_0/fifo_out_tdata" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">fifo_out_tdata[4:0,255:0]</obj_property>
+         <obj_property name="ObjectShortName">fifo_out_tdata[4:0,255:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/system_axisim_tb/dut/nf10_bram_output_queues_0/nf10_bram_output_queues_0/fifo_out_tstrb" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">fifo_out_tstrb[4:0,31:0]</obj_property>
+         <obj_property name="ObjectShortName">fifo_out_tstrb[4:0,31:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/system_axisim_tb/dut/nf10_bram_output_queues_0/nf10_bram_output_queues_0/fifo_out_tlast" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">fifo_out_tlast[4:0]</obj_property>
+         <obj_property name="ObjectShortName">fifo_out_tlast[4:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/system_axisim_tb/dut/nf10_bram_output_queues_0/nf10_bram_output_queues_0/rd_en" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">rd_en[4:0]</obj_property>
+         <obj_property name="ObjectShortName">rd_en[4:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/system_axisim_tb/dut/nf10_bram_output_queues_0/nf10_bram_output_queues_0/oq" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">oq[4:0]</obj_property>
+         <obj_property name="ObjectShortName">oq[4:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/system_axisim_tb/dut/nf10_bram_output_queues_0/nf10_bram_output_queues_0/s_axis_tready" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">s_axis_tready</obj_property>
+         <obj_property name="ObjectShortName">s_axis_tready</obj_property>
+      </wvobject>
+      <wvobject fp_name="/system_axisim_tb/dut/nf10_bram_output_queues_0/nf10_bram_output_queues_0/nearly_full" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">nearly_full[4:0]</obj_property>
+         <obj_property name="ObjectShortName">nearly_full[4:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/system_axisim_tb/dut/nf10_bram_output_queues_0/nf10_bram_output_queues_0/metadata_nearly_full" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">metadata_nearly_full[4:0]</obj_property>
+         <obj_property name="ObjectShortName">metadata_nearly_full[4:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/system_axisim_tb/dut/nf10_bram_output_queues_0/nf10_bram_output_queues_0/wr_en" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">wr_en[4:0]</obj_property>
+         <obj_property name="ObjectShortName">wr_en[4:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/system_axisim_tb/dut/nf10_bram_output_queues_0/nf10_bram_output_queues_0/metadata_rd_en" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">metadata_rd_en[4:0]</obj_property>
+         <obj_property name="ObjectShortName">metadata_rd_en[4:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/system_axisim_tb/dut/nf10_bram_output_queues_0/nf10_bram_output_queues_0/metadata_wr_en" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">metadata_wr_en[4:0]</obj_property>
+         <obj_property name="ObjectShortName">metadata_wr_en[4:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/system_axisim_tb/dut/nf10_bram_output_queues_0/nf10_bram_output_queues_0/cur_queue" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">cur_queue[4:0]</obj_property>
+         <obj_property name="ObjectShortName">cur_queue[4:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/system_axisim_tb/dut/nf10_bram_output_queues_0/nf10_bram_output_queues_0/cur_queue_next" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">cur_queue_next[4:0]</obj_property>
+         <obj_property name="ObjectShortName">cur_queue_next[4:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/system_axisim_tb/dut/nf10_bram_output_queues_0/nf10_bram_output_queues_0/state" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">state[2:0]</obj_property>
+         <obj_property name="ObjectShortName">state[2:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/system_axisim_tb/dut/nf10_bram_output_queues_0/nf10_bram_output_queues_0/state_next" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">state_next[2:0]</obj_property>
+         <obj_property name="ObjectShortName">state_next[2:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/system_axisim_tb/dut/nf10_bram_output_queues_0/nf10_bram_output_queues_0/metadata_state" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">metadata_state[4:0,1:0]</obj_property>
+         <obj_property name="ObjectShortName">metadata_state[4:0,1:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/system_axisim_tb/dut/nf10_bram_output_queues_0/nf10_bram_output_queues_0/metadata_state_next" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">metadata_state_next[4:0,1:0]</obj_property>
+         <obj_property name="ObjectShortName">metadata_state_next[4:0,1:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/system_axisim_tb/dut/nf10_bram_output_queues_0/nf10_bram_output_queues_0/first_word" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">first_word</obj_property>
+         <obj_property name="ObjectShortName">first_word</obj_property>
+      </wvobject>
+      <wvobject fp_name="/system_axisim_tb/dut/nf10_bram_output_queues_0/nf10_bram_output_queues_0/first_word_next" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">first_word_next</obj_property>
+         <obj_property name="ObjectShortName">first_word_next</obj_property>
+      </wvobject>
+      <wvobject fp_name="/system_axisim_tb/dut/nf10_bram_output_queues_0/nf10_bram_output_queues_0/C_M_AXIS_DATA_WIDTH" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">C_M_AXIS_DATA_WIDTH[31:0]</obj_property>
+         <obj_property name="ObjectShortName">C_M_AXIS_DATA_WIDTH[31:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/system_axisim_tb/dut/nf10_bram_output_queues_0/nf10_bram_output_queues_0/C_S_AXIS_DATA_WIDTH" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">C_S_AXIS_DATA_WIDTH[31:0]</obj_property>
+         <obj_property name="ObjectShortName">C_S_AXIS_DATA_WIDTH[31:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/system_axisim_tb/dut/nf10_bram_output_queues_0/nf10_bram_output_queues_0/C_M_AXIS_TUSER_WIDTH" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">C_M_AXIS_TUSER_WIDTH[31:0]</obj_property>
+         <obj_property name="ObjectShortName">C_M_AXIS_TUSER_WIDTH[31:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/system_axisim_tb/dut/nf10_bram_output_queues_0/nf10_bram_output_queues_0/C_S_AXIS_TUSER_WIDTH" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">C_S_AXIS_TUSER_WIDTH[31:0]</obj_property>
+         <obj_property name="ObjectShortName">C_S_AXIS_TUSER_WIDTH[31:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/system_axisim_tb/dut/nf10_bram_output_queues_0/nf10_bram_output_queues_0/NUM_QUEUES" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">NUM_QUEUES[31:0]</obj_property>
+         <obj_property name="ObjectShortName">NUM_QUEUES[31:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/system_axisim_tb/dut/nf10_bram_output_queues_0/nf10_bram_output_queues_0/NUM_QUEUES_WIDTH" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">NUM_QUEUES_WIDTH[31:0]</obj_property>
+         <obj_property name="ObjectShortName">NUM_QUEUES_WIDTH[31:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/system_axisim_tb/dut/nf10_bram_output_queues_0/nf10_bram_output_queues_0/BUFFER_SIZE" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">BUFFER_SIZE[31:0]</obj_property>
+         <obj_property name="ObjectShortName">BUFFER_SIZE[31:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/system_axisim_tb/dut/nf10_bram_output_queues_0/nf10_bram_output_queues_0/BUFFER_SIZE_WIDTH" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">BUFFER_SIZE_WIDTH[31:0]</obj_property>
+         <obj_property name="ObjectShortName">BUFFER_SIZE_WIDTH[31:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/system_axisim_tb/dut/nf10_bram_output_queues_0/nf10_bram_output_queues_0/MAX_PACKET_SIZE" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">MAX_PACKET_SIZE[31:0]</obj_property>
+         <obj_property name="ObjectShortName">MAX_PACKET_SIZE[31:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/system_axisim_tb/dut/nf10_bram_output_queues_0/nf10_bram_output_queues_0/BUFFER_THRESHOLD" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">BUFFER_THRESHOLD[31:0]</obj_property>
+         <obj_property name="ObjectShortName">BUFFER_THRESHOLD[31:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/system_axisim_tb/dut/nf10_bram_output_queues_0/nf10_bram_output_queues_0/NUM_STATES" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">NUM_STATES[31:0]</obj_property>
+         <obj_property name="ObjectShortName">NUM_STATES[31:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/system_axisim_tb/dut/nf10_bram_output_queues_0/nf10_bram_output_queues_0/IDLE" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">IDLE[31:0]</obj_property>
+         <obj_property name="ObjectShortName">IDLE[31:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/system_axisim_tb/dut/nf10_bram_output_queues_0/nf10_bram_output_queues_0/WR_PKT" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">WR_PKT[31:0]</obj_property>
+         <obj_property name="ObjectShortName">WR_PKT[31:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/system_axisim_tb/dut/nf10_bram_output_queues_0/nf10_bram_output_queues_0/DROP" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">DROP[31:0]</obj_property>
+         <obj_property name="ObjectShortName">DROP[31:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/system_axisim_tb/dut/nf10_bram_output_queues_0/nf10_bram_output_queues_0/NUM_METADATA_STATES" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">NUM_METADATA_STATES[31:0]</obj_property>
+         <obj_property name="ObjectShortName">NUM_METADATA_STATES[31:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/system_axisim_tb/dut/nf10_bram_output_queues_0/nf10_bram_output_queues_0/WAIT_HEADER" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">WAIT_HEADER[31:0]</obj_property>
+         <obj_property name="ObjectShortName">WAIT_HEADER[31:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/system_axisim_tb/dut/nf10_bram_output_queues_0/nf10_bram_output_queues_0/WAIT_EOP" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">WAIT_EOP[31:0]</obj_property>
+         <obj_property name="ObjectShortName">WAIT_EOP[31:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/system_axisim_tb/dut/nf10_bram_output_queues_0/nf10_bram_output_queues_0/DST_POS" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">DST_POS[31:0]</obj_property>
+         <obj_property name="ObjectShortName">DST_POS[31:0]</obj_property>
          <obj_property name="Radix">HEXRADIX</obj_property>
       </wvobject>
    </wvobject>

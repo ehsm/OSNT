@@ -41,7 +41,8 @@
 
   
 module correction
-	#(parameter TIMESTAMP_WIDTH = 64)
+	#(parameter TIMESTAMP_WIDTH = 64,
+	  parameter DDS_WIDTH = 32)
    	(
     	// input
     		input [TIMESTAMP_WIDTH-1:0]      time_pps,
@@ -66,7 +67,7 @@ module correction
 
 	reg [NUM_STATES-1:0]     state,state_next;
 	reg [TIMESTAMP_WIDTH-1:0]time_prev_pps,time_prev_pps_next;
-     	reg [31:0]   		 dds_rate_next;
+     	reg [DDS_WIDTH-1:0]      dds_rate_next;
      	reg [TIMESTAMP_WIDTH-1:0]error_signed,error_signed_next;
  
     

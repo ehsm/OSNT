@@ -173,6 +173,9 @@ void work_handler(struct work_struct *w){
     int irq_done = 0;
     uint32_t tx_int;
     uint64_t rx_int;
+    uint64_t timestamp;
+    uint32_t sec;
+    uint32_t nsec;
     uint64_t addr;
     uint64_t index;
     struct sk_buff *skb;
@@ -207,7 +210,10 @@ void work_handler(struct work_struct *w){
         
         // read the host completion buffers
         tx_int = *(((uint32_t*)card->host_tx_dne_ptr) + (card->host_tx_dne.rd_ptr)/4);
-        rx_int = *(((uint64_t*)card->host_rx_dne_ptr) + (card->host_rx_dne.rd_ptr)/8 + 7);
+        rx_int = *(((uint64_t*)card->host_rx_dne_ptr) + (card->host_rx_dne.rd_ptr)/8);
+        timestamp = *(((uint64_t*)card->host_rx_dne_ptr) + (card->host_rx_dne.rd_ptr)/8 + 1);
+        sec=(uint32_t)((timestamp>>32)&0xffffffff);
+        nsec=(uint32_t)(((timestamp&0xffffffff)*1000000000)>>32);
 
         if( (tx_int & 0xffff) == 1 ){
             irq_done = 0;
@@ -244,11 +250,13 @@ void work_handler(struct work_struct *w){
             // manage host completion buffer
             addr = card->host_rx_dne.rd_ptr;
             card->host_rx_dne.rd_ptr = (addr + 64) & card->host_rx_dne.mask;
+            *(((uint64_t*)card->cfg_addr)+45) = card->host_rx_dne.rd_ptr;
             index = addr / 64;
             
             // invalidate host rx completion buffer
-            *(((uint64_t*)card->host_rx_dne_ptr) + index * 8 + 7) = 0xffffffffffffffffULL;
+            *(((uint64_t*)card->host_rx_dne_ptr) + index * 8) = 0xffffffffffffffffULL;
 
+            /*
             // skb is now ready
             skb = card->rx_bk_skb[index];
             pci_unmap_single(card->pdev, card->rx_bk_dma_addr[index], skb->len, PCI_DMA_FROMDEVICE);
@@ -257,7 +265,7 @@ void work_handler(struct work_struct *w){
             
             // give the card a new RX descriptor
             nf10priv_send_rx_dsc(card);
-
+            */
             // read data from the completion buffer
             len = rx_int & 0xffff;
             port_encoded = (rx_int >> 16) & 0xffff;
@@ -273,8 +281,24 @@ void work_handler(struct work_struct *w){
             else 
                 port = -1;
 
-            //printk(KERN_ERR "rec %d\n", len);
+            card->rx_pkt_count += 1;
 
+            printk(KERN_INFO "len: %d\n", len);
+            printk(KERN_INFO "port_encoded: %x\n", port_encoded);
+            printk(KERN_INFO "timestamp: %x\n", timestamp);
+            printk(KERN_INFO "seconds: %u\n", sec);
+            printk(KERN_INFO "nseconds: %u\n", nsec);
+            printk(KERN_INFO "pkt count: %d\n", card->rx_pkt_count);
+            print_hex_dump(KERN_INFO, "", DUMP_PREFIX_NONE, 16, 1, (void*)(card->rx_buff_ptr+card->rx_buff_head), len, true);
+
+            card->rx_buff_head = ((card->rx_buff_head + ((len-1)/64 + 1)*64) & card->rx_buff_mask);
+            *(((uint64_t*)card->cfg_addr)+43) = card->rx_buff_head;
+            card->mem_rx_pkt.rd_ptr = ((card->mem_rx_pkt.rd_ptr + ((len-1)/64 + 1)*64) & card->rx_pkt_mask);
+            *(((uint64_t*)card->cfg_addr)+46) = card->mem_rx_pkt.rd_ptr;
+
+
+            //printk(KERN_ERR "rec %d\n", len);
+            /*
             if(len > 1514 || len < 60 || port < 0 || port > 3){
                 printk(KERN_ERR"nf10: invalid pakcet\n");
             }
@@ -325,7 +349,7 @@ void work_handler(struct work_struct *w){
             }
             else{ // invalid or down port, drop packet
                 kfree_skb(skb);
-            }
+            }*/
         }
 
         work_counter++;

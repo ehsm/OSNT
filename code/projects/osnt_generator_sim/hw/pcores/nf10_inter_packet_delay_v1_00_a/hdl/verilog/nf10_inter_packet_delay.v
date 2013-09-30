@@ -60,10 +60,11 @@ module nf10_inter_packet_delay
 )
 (
   // Clock and Reset
-  input                                           axi_aclk,
   input                                           axi_aresetn,
 
   // Slave AXI Ports
+  input                                           s_axi_aclk,
+  input                                           s_axi_aresetn,
   input      [C_S_AXI_ADDR_WIDTH-1:0]             s_axi_awaddr,
   input                                           s_axi_awvalid,
   input      [C_S_AXI_DATA_WIDTH-1:0]             s_axi_wdata,
@@ -164,12 +165,18 @@ module nf10_inter_packet_delay
 	
 	genvar																					i;
 	
+	wire																						axi_aclk;
+	
   wire     [NUM_RW_REGS*C_S_AXI_DATA_WIDTH-1:0]   rw_regs;
 
   wire                                            sw_rst[0:C_NUM_QUEUES-1];
   wire                                            ipd_en[0:C_NUM_QUEUES-1];
   wire                                            use_reg_val[0:C_NUM_QUEUES-1];
   wire     [C_S_AXI_DATA_WIDTH-1:0]               delay_reg_val[0:C_NUM_QUEUES-1];
+	
+	// -- Assignments
+	
+	assign 	 axi_aclk = s_axi_aclk;
 
   // -- AXILITE Registers
   axi_lite_regs
@@ -187,8 +194,8 @@ module nf10_inter_packet_delay
   )
     axi_lite_regs_1bar_inst
   (
-    .s_axi_aclk      (axi_aclk),
-    .s_axi_aresetn   (axi_aresetn),
+    .s_axi_aclk      (s_axi_aclk),
+    .s_axi_aresetn   (s_axi_aresetn),
     .s_axi_awaddr    (s_axi_awaddr),
     .s_axi_awvalid   (s_axi_awvalid),
     .s_axi_wdata     (s_axi_wdata),
