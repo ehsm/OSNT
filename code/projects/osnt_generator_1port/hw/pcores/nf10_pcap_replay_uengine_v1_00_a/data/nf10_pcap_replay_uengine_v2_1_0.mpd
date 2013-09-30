@@ -1,9 +1,40 @@
-###################################################################
-##
-## Name     : nf10_pcap_replay_uengine
-## Desc     : Microprocessor Peripheral Description
-##
-###################################################################
+################################################################################
+#
+#  NetFPGA-10G http://www.netfpga.org
+#
+#  File:
+#        nf10_pcap_replay_uengine_v2_1_0.mpd
+#
+#  Library:
+#        hw/std/pcores/nf10_pcap_replay_uengine_v1_00_a
+#
+#  Author:
+#        Muhammad Shahbaz
+#
+#  Description:
+#        Microprocessor Peripheral Description File
+#
+#  Copyright notice:
+#        Copyright (C) 2010, 2011 The Board of Trustees of The Leland Stanford
+#                                 Junior University
+#
+#  Licence:
+#        This file is part of the NetFPGA 10G development base package.
+#
+#        This file is free code: you can redistribute it and/or modify it under
+#        the terms of the GNU Lesser General Public License version 2.1 as
+#        published by the Free Software Foundation.
+#
+#        This package is distributed in the hope that it will be useful, but
+#        WITHOUT ANY WARRANTY; without even the implied warranty of
+#        MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+#        Lesser General Public License for more details.
+#
+#        You should have received a copy of the GNU Lesser General Public
+#        License along with the NetFPGA source package.  If not, see
+#        http://www.gnu.org/licenses/.
+#
+#
 
 BEGIN nf10_pcap_replay_uengine
 
@@ -52,6 +83,7 @@ PARAMETER REPLAY_COUNT_WIDTH = 32, DT = INTEGER, ASSIGNMENT = CONSTANT
 ## Ports
 PORT dcm_locked = "", DIR = I
 
+# AXI Slave Interface
 PORT s_axi_aclk = "", DIR = I, SIGIS = CLK, BUS = M_AXIS:S_AXIS:S_AXI
 PORT s_axi_aresetn = "", DIR = I, SIGIS = RST
 PORT s_axi_awaddr = AWADDR, DIR = I, VEC = [(C_S_AXI_ADDR_WIDTH-1):0], ENDIAN = LITTLE, BUS = S_AXI
@@ -72,6 +104,7 @@ PORT s_axi_bresp = BRESP, DIR = O, VEC = [1:0], BUS = S_AXI
 PORT s_axi_bvalid = BVALID, DIR = O, BUS = S_AXI
 PORT s_axi_awready = AWREADY, DIR = O, BUS = S_AXI
 
+# AXI-Stream Master Interface
 PORT m_axis_tdata = TDATA, DIR = O, VEC = [C_M_AXIS_DATA_WIDTH-1:0], BUS = M_AXIS, ENDIAN = LITTLE
 PORT m_axis_tstrb = TSTRB, DIR = O, VEC = [(C_M_AXIS_DATA_WIDTH/8)-1:0], BUS = M_AXIS, ENDIAN = LITTLE
 PORT m_axis_tuser = TUSER, DIR = O, VEC = [C_M_AXIS_TUSER_WIDTH-1:0], BUS = M_AXIS, ENDIAN = LITTLE
@@ -79,6 +112,7 @@ PORT m_axis_tvalid = TVALID, DIR = O, BUS = M_AXIS
 PORT m_axis_tready = TREADY, DIR = I, BUS = M_AXIS
 PORT m_axis_tlast = TLAST, DIR = O, BUS = M_AXIS
 
+# AXI-Stream Slave Interface
 PORT s_axis_tdata = TDATA, DIR = I, VEC = [C_S_AXIS_DATA_WIDTH-1:0], BUS = S_AXIS, ENDIAN = LITTLE
 PORT s_axis_tstrb = TSTRB, DIR = I, VEC = [(C_S_AXIS_DATA_WIDTH/8)-1:0], BUS = S_AXIS, ENDIAN = LITTLE
 PORT s_axis_tuser = TUSER, DIR = I, VEC = [C_S_AXIS_TUSER_WIDTH-1:0], BUS = S_AXIS, ENDIAN = LITTLE
@@ -86,10 +120,12 @@ PORT s_axis_tvalid = TVALID, DIR = I, BUS = S_AXIS
 PORT s_axis_tready = TREADY, DIR = O, BUS = S_AXIS
 PORT s_axis_tlast = TLAST, DIR = I, BUS = S_AXIS
 
+# QDR Clocks
 PORT qdr_clk = "", DIR = I, SIGIS = CLK
 PORT qdr_clk_200 = "", DIR = I, SIGIS = CLK
 PORT qdr_clk_270 = "", DIR = I, SIGIS = CLK
 
+# QDR 0 Interface
 PORT qdr_d_0 = "", DIR = O, IO_IF = QDR_0, VEC = [QDR_DATA_WIDTH-1:0], ISVALID = (QDR_NUM_CHIPS > 0)
 PORT qdr_q_0 = "", DIR = I, IO_IF = QDR_0, VEC = [QDR_DATA_WIDTH-1:0], ISVALID = (QDR_NUM_CHIPS > 0)
 PORT qdr_sa_0 = "", DIR = O, IO_IF = QDR_0, VEC = [QDR_ADDR_WIDTH-1:0], ISVALID = (QDR_NUM_CHIPS > 0)
@@ -105,6 +141,7 @@ PORT qdr_c_0 = "", DIR = O, IO_IF = QDR_0, VEC = [QDR_CLK_WIDTH-1:0], ISVALID = 
 PORT qdr_k_0 = "", DIR = O, IO_IF = QDR_0, VEC = [QDR_CLK_WIDTH-1:0], ISVALID = (QDR_NUM_CHIPS > 0)
 PORT qdr_masterbank_sel_0 = "", DIR = I, IO_IF = QDR_0, ISVALID = (QDR_NUM_CHIPS > 0)
 
+# QDR 1 Interface
 PORT qdr_d_1 = "", DIR = O, IO_IF = QDR_1, VEC = [QDR_DATA_WIDTH-1:0], ISVALID = (QDR_NUM_CHIPS > 1)
 PORT qdr_q_1 = "", DIR = I, IO_IF = QDR_1, VEC = [QDR_DATA_WIDTH-1:0], ISVALID = (QDR_NUM_CHIPS > 1)
 PORT qdr_sa_1 = "", DIR = O, IO_IF = QDR_1, VEC = [QDR_ADDR_WIDTH-1:0], ISVALID = (QDR_NUM_CHIPS > 1)
@@ -120,6 +157,7 @@ PORT qdr_c_1 = "", DIR = O, IO_IF = QDR_1, VEC = [QDR_CLK_WIDTH-1:0], ISVALID = 
 PORT qdr_k_1 = "", DIR = O, IO_IF = QDR_1, VEC = [QDR_CLK_WIDTH-1:0], ISVALID = (QDR_NUM_CHIPS > 1)
 PORT qdr_masterbank_sel_1 = "", DIR = I, IO_IF = QDR_1, ISVALID = (QDR_NUM_CHIPS > 1)
 
+# QDR 2 Interface
 PORT qdr_d_2 = "", DIR = O, IO_IF = QDR_2, VEC = [QDR_DATA_WIDTH-1:0], ISVALID = (QDR_NUM_CHIPS > 2)
 PORT qdr_q_2 = "", DIR = I, IO_IF = QDR_2, VEC = [QDR_DATA_WIDTH-1:0], ISVALID = (QDR_NUM_CHIPS > 2)
 PORT qdr_sa_2 = "", DIR = O, IO_IF = QDR_2, VEC = [QDR_ADDR_WIDTH-1:0], ISVALID = (QDR_NUM_CHIPS > 2)

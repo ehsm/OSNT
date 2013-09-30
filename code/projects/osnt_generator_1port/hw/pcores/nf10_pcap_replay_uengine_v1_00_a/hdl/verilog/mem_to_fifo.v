@@ -39,9 +39,6 @@
  *
  */
 
-// TODO: 1) Add a packet size length check ...
-//       2) Add number of interation check ...
-
 module mem_to_fifo
 #(
     parameter FIFO_DATA_WIDTH      = 72,

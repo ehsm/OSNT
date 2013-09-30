@@ -39,8 +39,6 @@
  *
  */
 
-// TODO: Add a packet size length check ...
-
 module fifo_to_mem
 #(
     parameter FIFO_DATA_WIDTH      = 72,
@@ -117,6 +115,7 @@ module fifo_to_mem
 		
 	  if (!fifo_empty && !mem_wr_full && cal_done) begin
 			fifo_rd_en = 1;
+			//Note: we are draining the input FIFO even if the QDR memory is full ... (this should be properly handled by the software)
 			
 			if (!mem_full_r && (MEM_BURST_LENGTH==2 || (MEM_BURST_LENGTH==4 && mem_wr_n_r)))
 				mem_wr_n_c = 0;

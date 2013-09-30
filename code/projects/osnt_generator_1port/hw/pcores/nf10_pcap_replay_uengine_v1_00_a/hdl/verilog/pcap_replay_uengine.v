@@ -157,7 +157,7 @@ module pcap_replay_uengine
   genvar i;
 	
 	wire qdr_clk_180;
-	wire usr_rst, usr_rst_180, usr_rst_200, usr_rst_270;
+	wire user_rst, user_rst_180, user_rst_200, user_rst_270;
   wire idelay_ctrl_rdy;
 	
   wire                                       fifo_wr_rd_en;
@@ -254,7 +254,7 @@ module pcap_replay_uengine
 	  fifo_to_mem_inst
 	(
 	    .clk								(qdr_clk),
-			.rst								(usr_rst),
+			.rst								(user_rst),
 
 	    .fifo_rd_en					(fifo_wr_rd_en),
 	    .fifo_data					(fifo_wr_data),
@@ -298,9 +298,9 @@ module pcap_replay_uengine
         .clk0                   (qdr_clk),
         .clk180                 (qdr_clk_180),
         .clk270                 (qdr_clk_270),
-        .user_rst_0							(usr_rst),
-        .user_rst_180						(usr_rst_180),
-        .user_rst_270						(usr_rst_270),
+        .user_rst_0							(user_rst),
+        .user_rst_180						(user_rst_180),
+        .user_rst_270						(user_rst_270),
 				
         .user_ad_w_n            (user_ad_w_n),
         .user_ad_wr             (user_ad_wr),
@@ -364,10 +364,10 @@ module pcap_replay_uengine
   (
    	.sys_rst_n              (axi_aresetn),
    	.locked                 (dcm_locked),
-   	.user_rst_0             (usr_rst),
-   	.user_rst_180           (usr_rst_180),
-   	.user_rst_270           (usr_rst_270),
-   	.user_rst_200           (usr_rst_200),
+   	.user_rst_0             (user_rst),
+   	.user_rst_180           (user_rst_180),
+   	.user_rst_270           (user_rst_270),
+   	.user_rst_200           (user_rst_200),
    	.idelay_ctrl_rdy        (idelay_ctrl_rdy),
    	.clk0                   (qdr_clk),
    	.clk180                 (qdr_clk_180),
@@ -380,7 +380,7 @@ module pcap_replay_uengine
   )
 	  u_qdrii_idelay_ctrl
   (
-    .user_rst_200    (usr_rst_200),
+    .user_rst_200    (user_rst_200),
     .idelay_ctrl_rdy (idelay_ctrl_rdy),
     .clk200          (qdr_clk_200)
   );
@@ -414,7 +414,7 @@ module pcap_replay_uengine
 		mem_to_fifo_inst
 	(
     .clk								(qdr_clk),
-		.rst								(usr_rst),
+		.rst								(user_rst),
 	
 	  .mem_r_n						(user_r_n),
 		.mem_rd_full				(&user_rd_full),

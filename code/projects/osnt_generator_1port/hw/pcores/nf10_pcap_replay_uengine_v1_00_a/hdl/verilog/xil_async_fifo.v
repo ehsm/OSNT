@@ -39,6 +39,8 @@
  *
  */
 
+// TODO: (1) Cover other data width combinations ....
+
 module xil_async_fifo
 #(
     parameter DIN_WIDTH  = 256,

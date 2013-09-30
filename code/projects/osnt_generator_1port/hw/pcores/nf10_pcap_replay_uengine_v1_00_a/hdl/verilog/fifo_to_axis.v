@@ -137,8 +137,8 @@ module fifo_to_axis
 
     case (state)
       RD_TUSER_BITS: begin
-        if (!fifo_empty) begin //TDATA_WIDTH > TUSER_WIDTH
-          axis_tuser_c = fifo_dout[C_M_AXIS_TUSER_WIDTH-1:0];
+        if (!fifo_empty) begin 
+          axis_tuser_c = fifo_dout[C_M_AXIS_TUSER_WIDTH-1:0]; //Note: Always assuming that TDATA_WIDTH > TUSER_WIDTH
           fifo_rd_en = 1;
 
           next_state = RD_PKT_BITS;
