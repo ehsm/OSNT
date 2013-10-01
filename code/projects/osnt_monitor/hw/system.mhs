@@ -117,21 +117,6 @@
  PORT pcie_top_0_pci_exp_0_txn_pin = pcie_top_0_pci_exp_0_txn, DIR = O
 
 
-BEGIN nf10_switch_output_port_lookup
- PARAMETER INSTANCE = nf10_switch_output_port_lookup_0
- PARAMETER HW_VER = 1.00.a
- PARAMETER C_INTERCONNECT_S_AXI_IS_ACLK_ASYNC = 1
- PARAMETER C_M_AXIS_DATA_WIDTH = 256
- PARAMETER C_S_AXIS_DATA_WIDTH = 256
- PARAMETER C_BASEADDR = 0x74800000
- PARAMETER C_HIGHADDR = 0x7480ffff
- BUS_INTERFACE S_AXI = axi_interconnect_0
- BUS_INTERFACE S_AXIS = nf10_input_arbiter_0_M_AXIS
- BUS_INTERFACE M_AXIS = nf10_switch_output_port_lookup_0_M_AXIS
- PORT S_AXI_ACLK = core_clk
- PORT S_AXI_ARESETN = Peripheral_aresetn
-END
-
 BEGIN axi_interconnect
  PARAMETER INSTANCE = axi_interconnect_0
  PARAMETER HW_VER = 1.02.a
@@ -250,7 +235,7 @@ END
 
 BEGIN nf10_10g_interface
  PARAMETER INSTANCE = nf10_10g_interface_0
- PARAMETER HW_VER = 1.10.a
+ PARAMETER HW_VER = 1.11.a
  PARAMETER C_XAUI_REVERSE = 1
  PARAMETER C_DEFAULT_VALUE_ENABLE = 1
  PARAMETER C_DEFAULT_SRC_PORT = 0x01
@@ -278,11 +263,12 @@ BEGIN nf10_10g_interface
  PORT xaui_rx_l3_n = nf10_10g_interface_0_xaui_rx_l3_n
  PORT xaui_rx_l0_p = nf10_10g_interface_0_xaui_rx_l0_p
  PORT axi_resetn = Peripheral_aresetn
+ PORT stamp_counter = nf10_timestamp_0_STAMP_COUNTER
 END
 
 BEGIN nf10_10g_interface
  PARAMETER INSTANCE = nf10_10g_interface_1
- PARAMETER HW_VER = 1.10.a
+ PARAMETER HW_VER = 1.11.a
  PARAMETER C_XAUI_REVERSE = 1
  PARAMETER C_DEFAULT_VALUE_ENABLE = 1
  PARAMETER C_DEFAULT_SRC_PORT = 0x04
@@ -310,11 +296,12 @@ BEGIN nf10_10g_interface
  PORT refclk = refclk_B
  PORT axi_aclk = core_clk
  PORT axi_resetn = Peripheral_aresetn
+ PORT stamp_counter = nf10_timestamp_0_STAMP_COUNTER
 END
 
 BEGIN nf10_10g_interface
  PARAMETER INSTANCE = nf10_10g_interface_2
- PARAMETER HW_VER = 1.10.a
+ PARAMETER HW_VER = 1.11.a
  PARAMETER C_XAUI_REVERSE = 1
  PARAMETER C_DEFAULT_VALUE_ENABLE = 1
  PARAMETER C_DEFAULT_SRC_PORT = 0x10
@@ -342,11 +329,12 @@ BEGIN nf10_10g_interface
  PORT refclk = refclk_C
  PORT axi_aclk = core_clk
  PORT axi_resetn = Peripheral_aresetn
+ PORT stamp_counter = nf10_timestamp_0_STAMP_COUNTER
 END
 
 BEGIN nf10_10g_interface
  PARAMETER INSTANCE = nf10_10g_interface_3
- PARAMETER HW_VER = 1.10.a
+ PARAMETER HW_VER = 1.11.a
  PARAMETER C_M_AXIS_DATA_WIDTH = 256
  PARAMETER C_S_AXIS_DATA_WIDTH = 256
  PARAMETER C_DEFAULT_VALUE_ENABLE = 1
@@ -373,6 +361,7 @@ BEGIN nf10_10g_interface
  PORT refclk = refclk_D
  PORT axi_aclk = core_clk
  PORT axi_resetn = Peripheral_aresetn
+ PORT stamp_counter = nf10_timestamp_0_STAMP_COUNTER
 END
 
 BEGIN diff_input_buf
@@ -454,26 +443,18 @@ BEGIN nf10_bram_output_queues
  BUS_INTERFACE M_AXIS_2 = nf10_bram_output_queues_0_M_AXIS_2
  BUS_INTERFACE M_AXIS_3 = nf10_bram_output_queues_0_M_AXIS_3
  BUS_INTERFACE M_AXIS_4 = nf10_bram_output_queues_0_M_AXIS_4
- BUS_INTERFACE S_AXIS = nf10_switch_output_port_lookup_0_M_AXIS
+ BUS_INTERFACE S_AXIS = nf10_endianess_manager_0_M_AXIS
  PORT axi_aclk = core_clk
  PORT axi_resetn = Peripheral_aresetn
 END
 
-BEGIN nf10_axi_sim_transactor
- PARAMETER INSTANCE = nf10_axi_sim_transactor_0
- PARAMETER HW_VER = 1.00.a
- BUS_INTERFACE M_AXI = axi_interconnect_0
- PORT M_AXI_ARESETN = Peripheral_aresetn
- PORT M_AXI_ACLK = control_clk
-END
-
-BEGIN dma
+BEGIN osnt_dma
  PARAMETER INSTANCE = dma_0
  PARAMETER HW_VER = 1.10.a
- PARAMETER C_BASEADDR = 0x7d400000
- PARAMETER C_HIGHADDR = 0x7d40ffff
  PARAMETER C_M_AXIS_DATA_WIDTH = 256
  PARAMETER C_S_AXIS_DATA_WIDTH = 256
+ PARAMETER C_BASEADDR = 0x7d400000
+ PARAMETER C_HIGHADDR = 0x7d40ffff
  BUS_INTERFACE M_AXI = axi_interconnect_0
  BUS_INTERFACE M_AXIS = dma_0_M_AXIS
  BUS_INTERFACE S_AXIS = nf10_bram_output_queues_0_M_AXIS_4
@@ -504,6 +485,7 @@ BEGIN dma
  PORT pci_exp_4_txn = pcie_top_0_pci_exp_4_txn
  PORT pci_exp_4_rxp = pcie_top_0_pci_exp_4_rxp
  PORT pci_exp_4_rxn = pcie_top_0_pci_exp_4_rxn
+ PORT pci_exp_5_txp = pcie_top_0_pci_exp_5_txp
  PORT pci_exp_5_txn = pcie_top_0_pci_exp_5_txn
  PORT pci_exp_5_rxp = pcie_top_0_pci_exp_5_rxp
  PORT pci_exp_5_rxn = pcie_top_0_pci_exp_5_rxn
@@ -516,5 +498,68 @@ BEGIN dma
  PORT pci_exp_7_rxn = pcie_top_0_pci_exp_7_rxn
  PORT pci_exp_7_rxp = pcie_top_0_pci_exp_7_rxp
  PORT pci_exp_0_txn = pcie_top_0_pci_exp_0_txn
+END
+
+BEGIN nf10_axi_sim_transactor
+ PARAMETER INSTANCE = nf10_axi_sim_transactor_0
+ PARAMETER HW_VER = 1.00.a
+ BUS_INTERFACE M_AXI = axi_interconnect_0
+ PORT M_AXI_ARESETN = Peripheral_aresetn
+ PORT M_AXI_ACLK = control_clk
+END
+
+BEGIN nf10_endianess_manager
+ PARAMETER INSTANCE = nf10_endianess_manager_0
+ PARAMETER HW_VER = 1.00.a
+ PARAMETER C_S_AXIS_TDATA_WIDTH = 256
+ PARAMETER C_M_AXIS_TDATA_WIDTH = 256
+ BUS_INTERFACE S_AXIS = nf10_input_arbiter_0_M_AXIS
+ BUS_INTERFACE M_AXIS = nf10_endianess_manager_0_M_AXIS
+ BUS_INTERFACE S_AXIS_INT = nf10_packet_cutter_0_M_AXIS
+ BUS_INTERFACE M_AXIS_INT = nf10_endianess_manager_0_M_AXIS_INT
+ PORT ARESETN = Peripheral_aresetn
+ PORT ACLK = core_clk
+END
+
+BEGIN nf10_packet_cutter
+ PARAMETER INSTANCE = nf10_packet_cutter_0
+ PARAMETER HW_VER = 1.00.a
+ PARAMETER C_INTERCONNECT_S_AXI_IS_ACLK_ASYNC = 1
+ PARAMETER C_BASEADDR = 0x77a00000
+ PARAMETER C_HIGHADDR = 0x77a0ffff
+ BUS_INTERFACE S_AXI = axi_interconnect_0
+ BUS_INTERFACE M_AXIS = nf10_packet_cutter_0_M_AXIS
+ BUS_INTERFACE S_AXIS = nf10_monitoring_output_port_lookup_0_M_AXIS
+ PORT S_AXI_ACLK = core_clk
+ PORT S_AXI_ARESETN = Peripheral_aresetn
+END
+
+BEGIN nf10_timestamp
+ PARAMETER INSTANCE = nf10_timestamp_0
+ PARAMETER HW_VER = 1.00.a
+ PARAMETER C_INTERCONNECT_S_AXI_IS_ACLK_ASYNC = 1
+ PARAMETER C_BASEADDR = 0x78a00000
+ PARAMETER C_HIGHADDR = 0x78a0ffff
+ BUS_INTERFACE S_AXI = axi_interconnect_0
+ PORT S_AXI_ACLK = core_clk
+ PORT CLK_CORRECTION = control_clk
+ PORT S_AXI_ARESETN = Peripheral_aresetn
+ PORT STAMP_COUNTER = nf10_timestamp_0_STAMP_COUNTER
+END
+
+BEGIN nf10_monitoring_output_port_lookup
+ PARAMETER INSTANCE = nf10_monitoring_output_port_lookup_0
+ PARAMETER HW_VER = 1.00.a
+ PARAMETER C_INTERCONNECT_S_AXI_IS_ACLK_ASYNC = 1
+ PARAMETER C_BAR0_BASEADDR = 0x72220000
+ PARAMETER C_BAR0_HIGHADDR = 0x7222ffff
+ PARAMETER C_BAR1_BASEADDR = 0x72200000
+ PARAMETER C_BAR1_HIGHADDR = 0x7220ffff
+ BUS_INTERFACE S_AXI = axi_interconnect_0
+ BUS_INTERFACE S_AXIS = nf10_endianess_manager_0_M_AXIS_INT
+ BUS_INTERFACE M_AXIS = nf10_monitoring_output_port_lookup_0_M_AXIS
+ PORT S_AXI_ACLK = core_clk
+ PORT S_AXI_ARESETN = Peripheral_aresetn
+ PORT STAMP_COUNTER = nf10_timestamp_0_STAMP_COUNTER
 END
 
