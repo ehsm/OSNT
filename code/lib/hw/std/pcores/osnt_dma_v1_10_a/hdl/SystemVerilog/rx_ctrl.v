@@ -473,11 +473,11 @@ module rx_ctrl
                         end
                         8'hff: begin
                            dma_wr_len_nxt = rx_bytes + 8;
-                           mem_rx_pkt_wr_data = S_AXIS_TDATA[7:0];
+                           mem_rx_pkt_wr_data = S_AXIS_TDATA;
                         end
                         default: begin
                            dma_wr_len_nxt = rx_bytes + 8;
-                           mem_rx_pkt_wr_data = S_AXIS_TDATA[7:0];
+                           mem_rx_pkt_wr_data = S_AXIS_TDATA;
                         end
                      endcase
                      mac_rx_state_nxt = MAC_RX_STATE_WAIT;
