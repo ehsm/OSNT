@@ -51,6 +51,7 @@
 #define NF10_IOCTL_CMD_SET_RX_PKT_HEAD (SIOCDEVPRIVATE+6)
 #define NF10_IOCTL_CMD_START_DMA (SIOCDEVPRIVATE+7)
 #define NF10_IOCTL_CMD_STOP_DMA (SIOCDEVPRIVATE+8)
+#define NF10_IOCTL_CMD_WRITE_REG_PY (SIOCDEVPRIVATE+9)
 
 int nf10fops_open (struct inode *n, struct file *f);
 long nf10fops_ioctl (struct file *f, unsigned int cmd, unsigned long arg);

@@ -205,6 +205,51 @@ long nf10fops_ioctl (struct file *f, unsigned int cmd, unsigned long arg){
         *(((uint64_t*)card->cfg_addr) + 128) = (uint64_t)arg;
         
         break;
+    case NF10_IOCTL_CMD_WRITE_REG_PY:
+        // check for write buffer overflow
+        spin_lock_irqsave(&axi_lock, flags);
+        if(axi_wr_cnt < 64){
+            axi_wr_cnt++;
+        }
+        else{
+            val = *(((uint64_t*)card->cfg_addr) + 130);
+            if(val & 0x1){ // buffer empty
+                axi_wr_cnt = 1;
+            }
+            else if(~(val & 0x2)){ // buffer not almost full
+                axi_wr_cnt = 49;
+            }
+            else if(~(val & 0x4)){ // buffer not full
+                axi_wr_cnt = 64;
+            }
+            else{ // buffer full
+                msleep(1);
+
+                val = *(((uint64_t*)card->cfg_addr) + 130);
+                if(val & 0x1){
+                    axi_wr_cnt = 1;
+                }
+                else if(~(val & 0x2)){
+                    axi_wr_cnt = 49;
+                }
+                else if(~(val & 0x4)){
+                    axi_wr_cnt = 64;
+                }
+                else{
+                    axi_wr_cnt = 65;
+                }
+            }
+        }
+        spin_unlock_irqrestore(&axi_lock, flags);
+        if(axi_wr_cnt > 64){
+            printk(KERN_ERR "nf10: AXI write buffer full\n");
+            return -EFAULT;
+        }
+
+        // write reg
+        *(((uint64_t*)card->cfg_addr) + 128) = *((uint64_t*)arg);
+        
+        break;
     case NF10_IOCTL_CMD_READ_REG:
         if(copy_from_user(&addr, (uint64_t*)arg, 8)) printk(KERN_ERR "nf10: ioctl copy_from_user fail\n");
         *(((uint64_t*)card->cfg_addr) + 129) = (addr << 32);

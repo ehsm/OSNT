@@ -5,7 +5,7 @@ from struct import *
 
 SIOCDEVPRIVATE = 35312
 NF10_IOCTL_CMD_READ_STAT = SIOCDEVPRIVATE + 0
-NF10_IOCTL_CMD_WRITE_REG = SIOCDEVPRIVATE + 1
+NF10_IOCTL_CMD_WRITE_REG = SIOCDEVPRIVATE + 9
 NF10_IOCTL_CMD_READ_REG = SIOCDEVPRIVATE + 2
 
 def rdaxi(addr):
@@ -40,3 +40,7 @@ def get_base_addr(module_name, path="../../../hw/system.mhs"):
             if(in_module and line.find("C_BASEADDR") != -1):
                 return line[line.find("0x"):-1]
     return ""
+
+def add_hex(self, hex1, hex2):
+
+    return hex(int(hex1, 16) + int(hex2, 16))
