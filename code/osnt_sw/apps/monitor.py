@@ -10,7 +10,7 @@ OSNT_MON_STATS_BASE_ADDR = "0x72220000"
 OSNT_MON_CUTTER_BASE_ADDR = "0x77a00000"
 OSNT_MON_TIMER_BASE_ADDR = "0x78a00000"
 
-Class OSNTMonitorFilter:
+class OSNTMonitorFilter:
 
     def __init__(self):
         # Should use axi.get_base_addr() for extensibility.
@@ -116,7 +116,7 @@ Class OSNTMonitorFilter:
         return add_hex(self.module_base_addr, offset)
 
 
-Class OSNTMonitorStats:
+class OSNTMonitorStats:
 
     def __init__(self):
         # Should use axi.get_base_addr() for extensibility.
@@ -170,7 +170,7 @@ Class OSNTMonitorStats:
     def reg_addr(self, offset):
         return add_hex(self.module_base_addr, offset)
 
-Class OSNTMonitorCutter:
+class OSNTMonitorCutter:
 
     def __init__(self):
         # Should use axi.get_base_addr() for extensibility.
@@ -203,7 +203,7 @@ Class OSNTMonitorCutter:
     def reg_addr(self, offset):
         return add_hex(self.module_base_addr, offset)
 
-Class OSNTMonitorTimer:
+class OSNTMonitorTimer:
 
     def __init__(self):
         # Should use axi.get_base_addr() for extensibility.
