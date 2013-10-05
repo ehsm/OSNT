@@ -41,6 +41,6 @@ def get_base_addr(module_name, path="../../../hw/system.mhs"):
                 return line[line.find("0x"):-1]
     return ""
 
-def add_hex(self, hex1, hex2):
+def add_hex(hex1, hex2):
 
     return hex(int(hex1, 16) + int(hex2, 16))
