@@ -44,3 +44,17 @@ def get_base_addr(module_name, path="../../../hw/system.mhs"):
 def add_hex(hex1, hex2):
 
     return hex(int(hex1, 16) + int(hex2, 16))
+
+def hex2ip(hex1):
+    hex1 = hex(int(hex1, 16) & int("0xffffffff", 16))
+    ip = ""
+    for i in range(4):
+        ip = ip + '.' + str((int(hex1, 16)>>((3-i)*8)) & int("0xff", 16))
+    ip = ip[1:]
+    return ip
+
+def ip2hex(ip):
+    hex1 = 0
+    for tok in ip.split('.'):
+        hex1 = (hex1 << 8) + int(tok)
+    return hex(hex1 & int("0xffffffff", 16))

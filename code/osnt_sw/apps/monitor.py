@@ -37,7 +37,7 @@ class OSNTMonitorFilter:
         self.proto_table = [None] * OSNT_MON_FILTER_NUM_ENTRIES
         self.proto_mask_table = [None] * OSNT_MON_FILTER_NUM_ENTRIES
 
-        self.get_rules()
+        self.clear_rules()
 
     #----------------------------------------
     # Basic regiter operations that do not enforce
@@ -112,6 +112,10 @@ class OSNTMonitorFilter:
         for i in range(OSNT_MON_FILTER_NUM_ENTRIES):
             self.clear_rule(i)
 
+    def synch_rules(self):
+        self.set_rules()
+        self.get_rules()
+
     def reg_addr(self, offset):
         return add_hex(self.module_base_addr, offset)
 
@@ -149,6 +153,9 @@ class OSNTMonitorStats:
     def get_stats(self):
 
         wraxi(self.reg_addr(self.freeze_reg_offset), hex(1))
+        self.time_high = rdaxi(self.reg_addr(self.stats_time_high_reg_offset))
+        self.time_low = rdaxi(self.reg_addr(self.stats_time_low_reg_offset))
+
         for i in range(4):
             self.pkt_cnt[i] = rdaxi(self.reg_addr(self.pkt_cnt_reg_offsets[i]))
             self.byte_cnt[i] = rdaxi(self.reg_addr(self.byte_cnt_reg_offsets[i]))
@@ -156,10 +163,8 @@ class OSNTMonitorStats:
             self.ip_cnt[i] = rdaxi(self.reg_addr(self.ip_cnt_reg_offsets[i]))
             self.udp_cnt[i] = rdaxi(self.reg_addr(self.udp_cnt_reg_offsets[i]))
             self.tcp_cnt[i] = rdaxi(self.reg_addr(self.tcp_cnt_reg_offsets[i]))
-        wraxi(self.reg_addr(self.freeze_reg_offset), hex(0))
 
-        self.time_high = rdaxi(self.reg_addr(self.stats_time_high_reg_offset))
-        self.time_low = rdaxi(self.reg_addr(self.stats_time_low_reg_offset))
+        wraxi(self.reg_addr(self.freeze_reg_offset), hex(0))
 
     def reset(self):
 
@@ -181,6 +186,10 @@ class OSNTMonitorCutter:
         self.words_reg_offset = "0x4"
         self.offs_reg_offset = "0x8"
         self.bytes_reg_offset = "0xc"
+        self.bytes = ""
+        self.enable = ""
+        self.get_status()
+
 
     def enable_cut(self, bytes):
         if bytes <= BYTE_DATA_WIDTH:
@@ -188,7 +197,7 @@ class OSNTMonitorCutter:
 
         words = hex(int(ceil(float(bytes)/BYTE_DATA_WIDTH)) - 2)
         offset = BYTE_DATA_WIDTH - (bytes % BYTE_DATA_WIDTH)
-        tstrb = hex((int("0xffffffff", 16) << offset) & int("0xffffffff", 16))
+        tstrb = hex(int(long(hex((int("0xffffffff", 16) << offset) & int("0xffffffff", 16)), 16)))
 
         wraxi(self.reg_addr(self.words_reg_offset), words)
         wraxi(self.reg_addr(self.offs_reg_offset), tstrb)
@@ -198,6 +207,10 @@ class OSNTMonitorCutter:
 
     def disable_cut(self):
         wraxi(self.reg_addr(self.en_reg_offset), hex(0))
+
+    def get_status(self):
+        self.bytes = rdaxi(self.reg_addr(self.bytes_reg_offset))
+        self.enable = rdaxi(self.reg_addr(self.en_reg_offset))
 
 
     def reg_addr(self, offset):

@@ -1,0 +1,22 @@
+Monitor user program:
+1, Run make to get the user application "monitor".
+
+2, Before running the user application please
+a) make and install the driver in ../driver_monitor and 
+b) mount the debug filesystem with 
+"sudo mount -t debugfs nodev /sys/kernel/debug".
+
+3, Run "sudo ./monitor" to start receiving packets.
+
+
+Monitor GUI:
+1, You would want to install the driver and start ./monitor
+before openning the GUI.
+
+2, To run the GUI you would need to install wxPython. For
+exmaple run "sudo yum install wxPython".
+
+3, Run the GUI with "sudo python monitor_gui.py".
+
+4, There is a filter configuration example file filter.cfg
+in the same folder.

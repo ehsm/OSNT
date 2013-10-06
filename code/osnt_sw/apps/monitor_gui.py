@@ -2,16 +2,28 @@ import os
 from monitor import *
 import wx
 import  wx.lib.scrolledpanel as scrolled
+from axi import *
 
 class MainWindow(wx.Frame):
     def __init__(self):
         wx.Frame.__init__(self, None, wx.ID_ANY, "OSNT Monitor", size=(-1,-1))
+        self.gui_init()
         self.osnt_monitor_filter = OSNTMonitorFilter()
         self.osnt_monitor_stats = OSNTMonitorStats()
         self.osnt_monitor_cutter = OSNTMonitorCutter()
         self.osnt_monitor_timer = OSNTMonitorTimer()
-        self.gui_init()
 
+        # Initialize filter display
+        self.display_filter_rules()
+
+        # Periodically refresh stats
+        self.stats_timer = wx.Timer(self)
+        self.Bind(wx.EVT_TIMER, self.refresh_stats, self.stats_timer)
+        self.stats_timer.Start(1000)
+
+        # Initialize cutter display
+        self.osnt_monitor_cutter.disable_cut()
+        self.display_cutter_status()
 
 
     def gui_init(self):
@@ -134,6 +146,13 @@ class MainWindow(wx.Frame):
         disable_cutter_menu = console_menu.Append(wx.ID_ANY, "Disable Cutter", "Disable Cutter")
         reset_stats_menu = console_menu.Append(wx.ID_ANY, "Reset Stats", "Reset Stats")
         reset_timer_menu = console_menu.Append(wx.ID_ANY, "Reset Timer", "Reset Timer")
+
+        self.Bind(wx.EVT_MENU, self.OnConfigFilter, config_filter_menu)
+        self.Bind(wx.EVT_MENU, self.OnClearFilter, clear_filter_menu)
+        self.Bind(wx.EVT_MENU, self.OnEnableCutter, enable_cutter_menu)
+        self.Bind(wx.EVT_MENU, self.OnDisableCutter, disable_cutter_menu)
+        self.Bind(wx.EVT_MENU, self.OnResetStats, reset_stats_menu)
+        self.Bind(wx.EVT_MENU, self.OnResetTimer, reset_timer_menu)
    
         # Creating the menubar.
         menuBar = wx.MenuBar()
@@ -160,25 +179,95 @@ class MainWindow(wx.Frame):
 
     def display_filter_rules(self):
         for i in range(OSNT_MON_FILTER_NUM_ENTRIES):
-            self.src_ip_txt[i].SetLabel(self.osnt_monitor_filter.src_ip_table[i])
+            self.src_ip_txt[i].SetLabel(hex2ip(self.osnt_monitor_filter.src_ip_table[i]))
+            self.src_ip_mask_txt[i].SetLabel(hex2ip(self.osnt_monitor_filter.src_ip_mask_table[i]))
+            self.dst_ip_txt[i].SetLabel(hex2ip(self.osnt_monitor_filter.dst_ip_table[i]))
+            self.dst_ip_mask_txt[i].SetLabel(hex2ip(self.osnt_monitor_filter.dst_ip_mask_table[i]))
+            self.l4ports_txt[i].SetLabel(self.osnt_monitor_filter.l4ports_table[i])
+            self.l4ports_mask_txt[i].SetLabel(self.osnt_monitor_filter.l4ports_mask_table[i])
+            self.proto_txt[i].SetLabel(self.osnt_monitor_filter.proto_table[i])
+            self.proto_mask_txt[i].SetLabel(self.osnt_monitor_filter.proto_mask_table[i])
         return
 
+    def refresh_stats(self, event):
+        self.osnt_monitor_stats.get_stats()
+        for i in range(4):
+            self.pkt_cnt_txt[i].SetLabel(str(int(self.osnt_monitor_stats.pkt_cnt[i], 16)))
+            self.byte_cnt_txt[i].SetLabel(str(int(self.osnt_monitor_stats.byte_cnt[i], 16)))
+            self.vlan_cnt_txt[i].SetLabel(str(int(self.osnt_monitor_stats.vlan_cnt[i], 16)))
+            self.ip_cnt_txt[i].SetLabel(str(int(self.osnt_monitor_stats.ip_cnt[i], 16)))
+            self.udp_cnt_txt[i].SetLabel(str(int(self.osnt_monitor_stats.udp_cnt[i], 16)))
+            self.tcp_cnt_txt[i].SetLabel(str(int(self.osnt_monitor_stats.tcp_cnt[i], 16)))
+        time_high = int(self.osnt_monitor_stats.time_high, 16)
+        time_low = int(self.osnt_monitor_stats.time_low, 16)
+        time_low = ((time_low * 1000000000) >> 32)/float(1000000000)
+        self.current_time.SetLabel(str(time_high+time_low))
+
+    def display_cutter_status(self):
+        self.osnt_monitor_cutter.get_status()
+        if int(self.osnt_monitor_cutter.enable, 16) == 1:
+            self.cut_to_length.SetLabel(str(int(self.osnt_monitor_cutter.bytes, 16)))
+        else:
+            self.cut_to_length.SetLabel("N/A")
+
     def OnConfigFilter(self, event):
+        dlg = wx.FileDialog(self, "Choose a file", "", "", "*.*", wx.OPEN)
+        if dlg.ShowModal() == wx.ID_OK:
+            self.osnt_monitor_filter.clear_rules()
+            with open(os.path.join(dlg.GetDirectory(), dlg.GetFilename()), 'r') as f:
+                for line in f:
+                    line = line.lstrip()
+                    if len(line) > 0 and line[0] != '#':
+                        rule = line.split()
+                        entry = int(rule[0])
+                        self.osnt_monitor_filter.src_ip_table[entry] = ip2hex(rule[1])
+                        self.osnt_monitor_filter.src_ip_mask_table[entry] = ip2hex(rule[2])
+                        self.osnt_monitor_filter.dst_ip_table[entry] = ip2hex(rule[3])
+                        self.osnt_monitor_filter.dst_ip_mask_table[entry] = ip2hex(rule[4])
+                        self.osnt_monitor_filter.l4ports_table[entry] = rule[5]
+                        self.osnt_monitor_filter.l4ports_mask_table[entry] = rule[6]
+                        self.osnt_monitor_filter.proto_table[entry] = rule[7]
+                        self.osnt_monitor_filter.proto_mask_table[entry] = rule[8]
+        dlg.Destroy()
+        self.osnt_monitor_filter.synch_rules()
+        self.display_filter_rules()
+
+        self.logger.AppendText("Filter Configuration Completed.\n")
         return
 
     def OnClearFilter(self, event):
+        self.osnt_monitor_filter.clear_rules()
+        self.display_filter_rules()
+        self.logger.AppendText("Filter Rules Cleared.\n")
         return
 
     def OnEnableCutter(self, event):
+        dlg = wx.TextEntryDialog(self, "Cut to Length:", "Enable Cutter", "64")
+        if dlg.ShowModal() == wx.ID_OK:
+            length = int(dlg.GetValue())
+            if length > BYTE_DATA_WIDTH:
+                self.osnt_monitor_cutter.enable_cut(length)
+                self.logger.AppendText("Cutter set to length %d bytes.\n" % length)
+            else:
+                self.logger.AppendText("Cutter length has to be greater than 32.\n")
+        dlg.Destroy()
+        self.display_cutter_status()
         return
 
     def OnDisableCutter(self, event):
+        self.osnt_monitor_cutter.disable_cut()
+        self.display_cutter_status()
+        self.logger.AppendText("Cutter disabled.\n")
         return
 
     def OnResetStats(self, event):
+        self.osnt_monitor_stats.reset()
+        self.logger.AppendText("Completed reseting stats.\n")
         return
 
     def OnResetTimer(self, event):
+        self.osnt_monitor_timer.reset_time()
+        self.logger.AppendText("Completed reseting timer.\n")
         return
    
 app = wx.App(False)
