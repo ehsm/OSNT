@@ -256,8 +256,8 @@ int push_enhanced_packet_block(uint64_t port_encoded, uint64_t len, uint64_t tim
     else 
         interface_id = 4;
 
-    //timestamp = ((timestamp>>32)&0xffffffff)*1000000000 + (((timestamp&0xffffffff)*1000000000)>>32);
-    timestamp = timestamp*25/4;
+    timestamp = ((timestamp>>32)&0xffffffff)*1000000000 + (((timestamp&0xffffffff)*1000000000)>>32);
+    //timestamp = timestamp*25/4;
     timestamp_high = (uint32_t)((timestamp>>32)&0xffffffff);
     timestamp_low = (uint32_t)(timestamp&0xffffffff);
 
