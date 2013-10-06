@@ -8,6 +8,9 @@ b) mount the debug filesystem with
 
 3, Run "sudo ./monitor" to start receiving packets.
 
+4, The received packets will be saved in packets.pcapng with
+nanosecond precision. You can open this file with the newest
+version of wireshark.
 
 Monitor GUI:
 1, You would want to install the driver and start ./monitor
