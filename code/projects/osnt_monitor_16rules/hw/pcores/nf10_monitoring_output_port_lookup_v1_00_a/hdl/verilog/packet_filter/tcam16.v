@@ -16,7 +16,7 @@
 // Input file	: tcam.ngc
 // Output file	: tcam.v
 // # of Modules	: 1
-// Design Name	: cam_wrapper
+// Design Name	: tcam16
 // Xilinx        : /opt/Xilinx/13.2/ISE_DS/ISE/
 //             
 // Purpose:    

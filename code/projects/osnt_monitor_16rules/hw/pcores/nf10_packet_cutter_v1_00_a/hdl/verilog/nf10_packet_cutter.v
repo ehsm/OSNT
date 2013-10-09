@@ -6,7 +6,7 @@
  *        nf10_packet_cutter.v
  *
  *  Library:
- *        cstd/pcores/nf10_packet_cutter_v1_00_a
+ *        hw/contrib/pcores/nf10_packet_cutter_v1_00_a
  *
  *  Module:
  *        nf10_packet_cutter

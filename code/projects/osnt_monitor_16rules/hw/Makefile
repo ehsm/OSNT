@@ -6,7 +6,7 @@
 #        Makefile
 #
 #  Project:
-#        reference_switch_lite
+#        osnt_monitor_16rules
 #
 #  Author:
 #        Gianni Anitchi, Muhammad Shahbaz

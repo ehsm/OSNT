@@ -6,7 +6,7 @@
 #        README
 #
 #  Project:
-#        reference_switch
+#        osnt_monitor_16rules
 #
 #  Author:
 #        Gianni Anitchi, Muhammad Shahbaz
@@ -46,6 +46,3 @@ export it to your Xilinx SDK project in order to download the Microblaze
 program to BRAM.
 
 For SDK instructions , please checkout /sw/embedded directory.
-
-For simulation, just run "make sim". Please follow Xilinx iSim
-documentation for more details.

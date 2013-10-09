@@ -1,31 +1,45 @@
-//***************************************************************************//
-//
-//	This confidential and proprietary software may be used only as authorized
-//	by a licensing agreement from Avaz Networks, Inc.
-//
-//     In the event of publication, the following notice is applicable:
-//
-//                  (C) COPYRIGHT 2003-2009 CARE Pvt Ltd.
-//                         ALL RIGHTS RESERVED
-//
-// 	Entire notice above must be reproduced on all authorized copies.
-//
-// Project                    : Multi-10G Networking Platform
-// Module                     :	network_protocol_analyzer
-// Designer                   : CARE
-// Date of creation           : 06-02-10
-// Date of last modifaction   :
-//
-// Description                :	
-//
-// Revision                   :	1.0
-//
-// Revision History
-//
-// Date       Version       Designer      Change         Description
-//
-//
-//***************************************************************************//
+/*******************************************************************************
+ *
+ *  NetFPGA-10G http://www.netfpga.org
+ *
+ *  File:
+ *        packet_analyzer.v
+ *
+ *  Library:
+ *        hw/contrib/pcores/nf10_monitoring_output_port_lookup_v1_00_a
+ *
+ *  Module:
+ *        packet_analyzer
+ *
+ *  Author:
+ *        Muhammad Shahbaz, Gianni Antichi
+ *
+ *  Description:
+ *        Hardwire the hardware interfaces to CPU and vice versa
+ *
+ *  Copyright notice:
+ *        Copyright (C) 2010, 2011 The Board of Trustees of The Leland Stanford
+ *                                 Junior University
+ *
+ *  Licence:
+ *        This file is part of the NetFPGA 10G development base package.
+ *
+ *        This file is free code: you can redistribute it and/or modify it under
+ *        the terms of the GNU Lesser General Public License version 2.1 as
+ *        published by the Free Software Foundation.
+ *
+ *        This package is distributed in the hope that it will be useful, but
+ *        WITHOUT ANY WARRANTY; without even the implied warranty of
+ *        MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *        Lesser General Public License for more details.
+ *
+ *        You should have received a copy of the GNU Lesser General Public
+ *        License along with the NetFPGA source package.  If not, see
+ *        http://www.gnu.org/licenses/.
+ *
+ */
+
+
 `include "defines.vh"
 
 	module packet_analyzer

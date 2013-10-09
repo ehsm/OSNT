@@ -6,7 +6,7 @@
  *        stamp_counter.v
  *
  *  Library:
- *        contrib/pisa/pcores/nf10_timestamp_v1_00_a
+ *        hw/contrib/pisa/pcores/nf10_timestamp_v1_01_a
  *
  *  Module:
  *        stamp_counter

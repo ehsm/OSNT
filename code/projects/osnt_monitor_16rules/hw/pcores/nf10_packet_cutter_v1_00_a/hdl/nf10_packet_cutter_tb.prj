@@ -6,8 +6,8 @@
 --          nf10_packet_cutter_v1_00_a.prj
 --
 --  Description:
---          Gianni Anitchi - project file to list the files necessary to compile the
---                                             nf10_switch_output_port_lookup_v1_10_a module
+--          Gianni Anitchi - project file to list the files necessary to compile the simulation test of
+--                                             nf10_packet_cutter_v1_00_a module
 --
 --
 --  Revision history:

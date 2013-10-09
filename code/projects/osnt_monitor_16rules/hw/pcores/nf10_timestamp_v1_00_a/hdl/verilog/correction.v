@@ -6,7 +6,7 @@
  *        correction.v
  *
  *  Library:
- *        contrib/pisa/pcores/nf10_timestamp_v1_00_a
+ *        hw/contrib/pcores/nf10_timestamp_v1_00_a
  *
  *  Module:
  *        correction

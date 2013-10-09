@@ -3,13 +3,13 @@
 #  NetFPGA-10G http://www.netfpga.org
 #
 #  File:
-#        nf10_switch_output_port_lookup_tb.tcl
+#        nf10_monitoring_output_port_lookup_tb.tcl
 #
 #  Library:
-#        hw/contrib/pcores/nf10_switch_output_port_lookup_v1_00_a
+#        hw/contrib/pcores/nf10_monitoring_output_port_lookup_v1_00_a
 #
 #  Module:
-#        nf10_switch_output_port_lookup.tcl
+#        nf10_monitoring_output_port_lookup.tcl
 #
 #  Author:
 #        Gianni Antichi

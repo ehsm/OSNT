@@ -3,10 +3,10 @@
  *  NetFPGA-10G http://www.netfpga.org
  *
  *  File:
- *        nf10_switch_output_port_lookup_tb.v
+ *        nf10_packet_cutter_tb.v
  *
  *  Library:
- *        hw/contrib/pcores/nf10_switch_output_port_lookup_v1_00_a
+ *        hw/contrib/pcores/nf10_packet_cutter_v1_00_a
  *
  *  Module:
  *        testbench

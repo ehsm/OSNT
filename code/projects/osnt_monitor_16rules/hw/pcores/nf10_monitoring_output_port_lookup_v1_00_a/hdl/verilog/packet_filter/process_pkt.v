@@ -6,7 +6,7 @@
  *        process_pkt.v
  *
  *  Library:
- *        /hw/contrib/pcores/nf10_monitoring_output_port_lookup_v1_10_a
+ *        /hw/contrib/pcores/nf10_monitoring_output_port_lookup_v1_00_a
  *
  *  Module:
  *        process_pkt

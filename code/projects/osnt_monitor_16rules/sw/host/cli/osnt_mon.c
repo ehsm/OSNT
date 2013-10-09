@@ -18,14 +18,12 @@
 #include <sys/ioctl.h>
 #include <stdio.h>
 #include "osnt_mon.h"
-//#include "common/nf_util.h"
 #include "common/nf10util.h"
 
 
 #define DEFAULT_DEV_NAME   "nf10"
 
 /* Global vars */
-//static struct nf_device nf10;
 int nf10;
 
 int main(int argc, char *argv[])
@@ -33,11 +31,6 @@ int main(int argc, char *argv[])
   
   printf("***Welcome to the OSNT Monitoring Command Line Interface***\n");
   printf("type 'help' to obtain the allowed commands\n\n");
-
-//  nf10.device_name = DEFAULT_DEV_NAME;    
-
-//  if(check_iface(&nf10)) exit(1);
-//  if(openDescriptor(&nf10)) exit(1);
 
   nf10 = open("/dev/nf10", O_RDWR);
 
@@ -47,8 +40,6 @@ int main(int argc, char *argv[])
   }
 
   prompt();
-
-//  closeDescriptor(&nf10);
 
   return 0;
 }

@@ -6,13 +6,13 @@
  *        rx_queue.v
  *
  *  Library:
- *        hw/std/pcores/nf10_10g_interface_v1_10_a
+ *        hw/std/pcores/nf10_10g_interface_v1_11_a
  *
  *  Module:
  *        rx_queue
  *
  *  Author:
- *        James Hongyi Zeng
+ *        James Hongyi Zeng, Gianni Antichi
  *
  *  Description:
  *        AXI-MAC converter: RX side
