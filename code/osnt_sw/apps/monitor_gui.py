@@ -35,7 +35,7 @@ class MainWindow(wx.Frame):
         stats_title.SetBackgroundColour('GRAY')
         stats_panel = wx.Panel(self)
         stats_panel.SetBackgroundColour('WHEAT')
-        stats_sizer = wx.GridSizer(5, 7, 10, 10)
+        stats_sizer = wx.GridSizer(5, 9, 10, 10)
         stats_panel.SetSizer(stats_sizer)
         self.pkt_cnt_txt = [None]*4
         self.byte_cnt_txt = [None]*4
@@ -43,13 +43,17 @@ class MainWindow(wx.Frame):
         self.ip_cnt_txt = [None]*4
         self.udp_cnt_txt = [None]*4
         self.tcp_cnt_txt = [None]*4
+        self.pktps_txt = [None]*4
+        self.byteps_txt = [None]*4
         stats_sizer.AddMany([(wx.StaticText(stats_panel, label="Port", style=wx.ALIGN_CENTER), 0, wx.EXPAND),
             (wx.StaticText(stats_panel, label="Pkt Cnt", style=wx.ALIGN_CENTER), 0, wx.EXPAND),
             (wx.StaticText(stats_panel, label="Byte Cnt", style=wx.ALIGN_CENTER), 0, wx.EXPAND),
             (wx.StaticText(stats_panel, label="Vlan Cnt", style=wx.ALIGN_CENTER), 0, wx.EXPAND),
             (wx.StaticText(stats_panel, label="IP Cnt", style=wx.ALIGN_CENTER), 0, wx.EXPAND),
             (wx.StaticText(stats_panel, label="UDP Cnt", style=wx.ALIGN_CENTER), 0, wx.EXPAND),
-            (wx.StaticText(stats_panel, label="TCP Cnt", style=wx.ALIGN_CENTER), 0, wx.EXPAND)])
+            (wx.StaticText(stats_panel, label="TCP Cnt", style=wx.ALIGN_CENTER), 0, wx.EXPAND),
+            (wx.StaticText(stats_panel, label="Pkts/s", style=wx.ALIGN_CENTER), 0, wx.EXPAND),
+            (wx.StaticText(stats_panel, label="Bytes/s", style=wx.ALIGN_CENTER), 0, wx.EXPAND)])
         for i in range(4):
             self.pkt_cnt_txt[i] = wx.StaticText(stats_panel, wx.ID_ANY, label="", style=wx.ALIGN_CENTER)
             self.byte_cnt_txt[i] = wx.StaticText(stats_panel, wx.ID_ANY, label="", style=wx.ALIGN_CENTER)
@@ -57,13 +61,17 @@ class MainWindow(wx.Frame):
             self.ip_cnt_txt[i] = wx.StaticText(stats_panel, wx.ID_ANY, label="", style=wx.ALIGN_CENTER)
             self.udp_cnt_txt[i] = wx.StaticText(stats_panel, wx.ID_ANY, label="", style=wx.ALIGN_CENTER)
             self.tcp_cnt_txt[i] = wx.StaticText(stats_panel, wx.ID_ANY, label="", style=wx.ALIGN_CENTER)
+            self.pktps_txt[i] = wx.StaticText(stats_panel, wx.ID_ANY, label="", style=wx.ALIGN_CENTER)
+            self.byteps_txt[i] = wx.StaticText(stats_panel, wx.ID_ANY, label="", style=wx.ALIGN_CENTER)
             stats_sizer.AddMany([(wx.StaticText(stats_panel, label=str(i), style=wx.ALIGN_CENTER), 0, wx.EXPAND),
                 (self.pkt_cnt_txt[i], 0, wx.EXPAND),
                 (self.byte_cnt_txt[i], 0, wx.EXPAND),
                 (self.vlan_cnt_txt[i], 0, wx.EXPAND),
                 (self.ip_cnt_txt[i], 0, wx.EXPAND),
                 (self.udp_cnt_txt[i], 0, wx.EXPAND),
-                (self.tcp_cnt_txt[i], 0, wx.EXPAND)])
+                (self.tcp_cnt_txt[i], 0, wx.EXPAND),
+                (self.pktps_txt[i], 0, wx.EXPAND),
+                (self.byteps_txt[i], 0, wx.EXPAND)])
 
         # Filter rules display panel
         filter_title = wx.StaticText(self, label="FILTER RULES", style=wx.ALIGN_CENTER)
@@ -179,29 +187,69 @@ class MainWindow(wx.Frame):
 
     def display_filter_rules(self):
         for i in range(OSNT_MON_FILTER_NUM_ENTRIES):
-            self.src_ip_txt[i].SetLabel(hex2ip(self.osnt_monitor_filter.src_ip_table[i]))
-            self.src_ip_mask_txt[i].SetLabel(hex2ip(self.osnt_monitor_filter.src_ip_mask_table[i]))
-            self.dst_ip_txt[i].SetLabel(hex2ip(self.osnt_monitor_filter.dst_ip_table[i]))
-            self.dst_ip_mask_txt[i].SetLabel(hex2ip(self.osnt_monitor_filter.dst_ip_mask_table[i]))
-            self.l4ports_txt[i].SetLabel(self.osnt_monitor_filter.l4ports_table[i])
-            self.l4ports_mask_txt[i].SetLabel(self.osnt_monitor_filter.l4ports_mask_table[i])
-            self.proto_txt[i].SetLabel(self.osnt_monitor_filter.proto_table[i])
-            self.proto_mask_txt[i].SetLabel(self.osnt_monitor_filter.proto_mask_table[i])
+            if (int(self.osnt_monitor_filter.src_ip_table[i], 16) != 0 or
+                    int(self.osnt_monitor_filter.src_ip_mask_table[i], 16) != int("0xffffffff", 16) or
+                    int(self.osnt_monitor_filter.dst_ip_table[i], 16) != 0 or
+                    int(self.osnt_monitor_filter.dst_ip_mask_table[i], 16) != int("0xffffffff", 16) or
+                    int(self.osnt_monitor_filter.l4ports_table[i], 16) != 0 or
+                    int(self.osnt_monitor_filter.l4ports_mask_table[i], 16) != int("0xffffffff", 16) or
+                    int(self.osnt_monitor_filter.proto_table[i], 16) != 0 or
+                    int(self.osnt_monitor_filter.proto_mask_table[i], 16) != int("0xff", 16)):
+
+                self.src_ip_txt[i].SetLabel(hex2ip(self.osnt_monitor_filter.src_ip_table[i]))
+                self.src_ip_mask_txt[i].SetLabel(hex2ip(self.osnt_monitor_filter.src_ip_mask_table[i]))
+                self.dst_ip_txt[i].SetLabel(hex2ip(self.osnt_monitor_filter.dst_ip_table[i]))
+                self.dst_ip_mask_txt[i].SetLabel(hex2ip(self.osnt_monitor_filter.dst_ip_mask_table[i]))
+                self.l4ports_txt[i].SetLabel(self.osnt_monitor_filter.l4ports_table[i])
+                self.l4ports_mask_txt[i].SetLabel(self.osnt_monitor_filter.l4ports_mask_table[i])
+                self.proto_txt[i].SetLabel(self.osnt_monitor_filter.proto_table[i])
+                self.proto_mask_txt[i].SetLabel(self.osnt_monitor_filter.proto_mask_table[i])
+            else:
+                self.src_ip_txt[i].SetLabel("N/A")
+                self.src_ip_mask_txt[i].SetLabel("N/A")
+                self.dst_ip_txt[i].SetLabel("N/A")
+                self.dst_ip_mask_txt[i].SetLabel("N/A")
+                self.l4ports_txt[i].SetLabel("N/A")
+                self.l4ports_mask_txt[i].SetLabel("N/A")
+                self.proto_txt[i].SetLabel("N/A")
+                self.proto_mask_txt[i].SetLabel("N/A")
         return
 
     def refresh_stats(self, event):
         self.osnt_monitor_stats.get_stats()
+
+        time_high = int(self.osnt_monitor_stats.time_high, 16)
+        time_low = int(self.osnt_monitor_stats.time_low, 16)
+        time_low = ((time_low * 1000000000) >> 32)/float(1000000000)
+        time_new = time_high + time_low
+        time_old = self.current_time.GetLabel()
+        if len(time_old) == 0:
+            time_old = 0
+        time_old = float(time_old)
+        time_elapsed = time_new - time_old
+        self.current_time.SetLabel(str(time_new))
+
         for i in range(4):
+            pkt_cnt_old = self.pkt_cnt_txt[i].GetLabel()
+            if len(pkt_cnt_old) == 0:
+                pkt_cnt_old = 0
+            pkt_cnt_old = float(pkt_cnt_old)
+            pkt_cnt_new = int(self.osnt_monitor_stats.pkt_cnt[i], 16)
+            self.pktps_txt[i].SetLabel(str(round((pkt_cnt_new - pkt_cnt_old)/time_elapsed, 3)))
+            byte_cnt_old = self.byte_cnt_txt[i].GetLabel()
+            if len(byte_cnt_old) == 0:
+                byte_cnt_old = 0
+            byte_cnt_old = float(byte_cnt_old)
+            byte_cnt_new = int(self.osnt_monitor_stats.byte_cnt[i], 16)
+            self.byteps_txt[i].SetLabel(str(round((byte_cnt_new - byte_cnt_old)/time_elapsed, 3)))
+
             self.pkt_cnt_txt[i].SetLabel(str(int(self.osnt_monitor_stats.pkt_cnt[i], 16)))
             self.byte_cnt_txt[i].SetLabel(str(int(self.osnt_monitor_stats.byte_cnt[i], 16)))
             self.vlan_cnt_txt[i].SetLabel(str(int(self.osnt_monitor_stats.vlan_cnt[i], 16)))
             self.ip_cnt_txt[i].SetLabel(str(int(self.osnt_monitor_stats.ip_cnt[i], 16)))
             self.udp_cnt_txt[i].SetLabel(str(int(self.osnt_monitor_stats.udp_cnt[i], 16)))
             self.tcp_cnt_txt[i].SetLabel(str(int(self.osnt_monitor_stats.tcp_cnt[i], 16)))
-        time_high = int(self.osnt_monitor_stats.time_high, 16)
-        time_low = int(self.osnt_monitor_stats.time_low, 16)
-        time_low = ((time_low * 1000000000) >> 32)/float(1000000000)
-        self.current_time.SetLabel(str(time_high+time_low))
+
 
     def display_cutter_status(self):
         self.osnt_monitor_cutter.get_status()
