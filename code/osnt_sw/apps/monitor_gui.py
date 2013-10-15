@@ -235,13 +235,13 @@ class MainWindow(wx.Frame):
                 pkt_cnt_old = 0
             pkt_cnt_old = float(pkt_cnt_old)
             pkt_cnt_new = int(self.osnt_monitor_stats.pkt_cnt[i], 16)
-            self.pktps_txt[i].SetLabel(str(round((pkt_cnt_new - pkt_cnt_old)/time_elapsed, 3)))
+            self.pktps_txt[i].SetLabel(translateRate((pkt_cnt_new - pkt_cnt_old)/time_elapsed))
             byte_cnt_old = self.byte_cnt_txt[i].GetLabel()
             if len(byte_cnt_old) == 0:
                 byte_cnt_old = 0
             byte_cnt_old = float(byte_cnt_old)
             byte_cnt_new = int(self.osnt_monitor_stats.byte_cnt[i], 16)
-            self.byteps_txt[i].SetLabel(str(round((byte_cnt_new - byte_cnt_old)/time_elapsed, 3)))
+            self.byteps_txt[i].SetLabel(translateRate((byte_cnt_new - byte_cnt_old)/time_elapsed))
 
             self.pkt_cnt_txt[i].SetLabel(str(int(self.osnt_monitor_stats.pkt_cnt[i], 16)))
             self.byte_cnt_txt[i].SetLabel(str(int(self.osnt_monitor_stats.byte_cnt[i], 16)))
@@ -317,7 +317,18 @@ class MainWindow(wx.Frame):
         self.osnt_monitor_timer.reset_time()
         self.logger.AppendText("Completed reseting timer.\n")
         return
-   
+
+def translateRate(rate):
+
+    if rate >= 1000000000:
+        return str(round(rate/1000000000.0, 3)) + 'G';
+    elif rate >= 1000000:
+        return str(round(rate/1000000.0, 3)) + 'M';
+    elif rate >= 1000:
+        return str(round(rate/1000.0, 3)) + 'K';
+    else:
+        return str(round(rate, 3));
+
 app = wx.App(False)
 frame = MainWindow()
 app.MainLoop()
