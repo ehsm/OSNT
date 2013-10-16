@@ -35,7 +35,7 @@ class MainWindow(wx.Frame):
         stats_title.SetBackgroundColour('GRAY')
         stats_panel = wx.Panel(self)
         stats_panel.SetBackgroundColour('WHEAT')
-        stats_sizer = wx.GridSizer(5, 9, 10, 10)
+        stats_sizer = wx.GridSizer(5, 8, 10, 10)
         stats_panel.SetSizer(stats_sizer)
         self.pkt_cnt_txt = [None]*4
         self.byte_cnt_txt = [None]*4
@@ -47,7 +47,7 @@ class MainWindow(wx.Frame):
         self.byteps_txt = [None]*4
         stats_sizer.AddMany([(wx.StaticText(stats_panel, label="Port", style=wx.ALIGN_CENTER), 0, wx.EXPAND),
             (wx.StaticText(stats_panel, label="Pkt Cnt", style=wx.ALIGN_CENTER), 0, wx.EXPAND),
-            (wx.StaticText(stats_panel, label="Byte Cnt", style=wx.ALIGN_CENTER), 0, wx.EXPAND),
+            #(wx.StaticText(stats_panel, label="Byte Cnt", style=wx.ALIGN_CENTER), 0, wx.EXPAND),
             (wx.StaticText(stats_panel, label="Vlan Cnt", style=wx.ALIGN_CENTER), 0, wx.EXPAND),
             (wx.StaticText(stats_panel, label="IP Cnt", style=wx.ALIGN_CENTER), 0, wx.EXPAND),
             (wx.StaticText(stats_panel, label="UDP Cnt", style=wx.ALIGN_CENTER), 0, wx.EXPAND),
@@ -57,6 +57,7 @@ class MainWindow(wx.Frame):
         for i in range(4):
             self.pkt_cnt_txt[i] = wx.StaticText(stats_panel, wx.ID_ANY, label="", style=wx.ALIGN_CENTER)
             self.byte_cnt_txt[i] = wx.StaticText(stats_panel, wx.ID_ANY, label="", style=wx.ALIGN_CENTER)
+            self.byte_cnt_txt[i].Hide()
             self.vlan_cnt_txt[i] = wx.StaticText(stats_panel, wx.ID_ANY, label="", style=wx.ALIGN_CENTER)
             self.ip_cnt_txt[i] = wx.StaticText(stats_panel, wx.ID_ANY, label="", style=wx.ALIGN_CENTER)
             self.udp_cnt_txt[i] = wx.StaticText(stats_panel, wx.ID_ANY, label="", style=wx.ALIGN_CENTER)
@@ -65,7 +66,7 @@ class MainWindow(wx.Frame):
             self.byteps_txt[i] = wx.StaticText(stats_panel, wx.ID_ANY, label="", style=wx.ALIGN_CENTER)
             stats_sizer.AddMany([(wx.StaticText(stats_panel, label=str(i), style=wx.ALIGN_CENTER), 0, wx.EXPAND),
                 (self.pkt_cnt_txt[i], 0, wx.EXPAND),
-                (self.byte_cnt_txt[i], 0, wx.EXPAND),
+                #(self.byte_cnt_txt[i], 0, wx.EXPAND),
                 (self.vlan_cnt_txt[i], 0, wx.EXPAND),
                 (self.ip_cnt_txt[i], 0, wx.EXPAND),
                 (self.udp_cnt_txt[i], 0, wx.EXPAND),
@@ -235,13 +236,23 @@ class MainWindow(wx.Frame):
                 pkt_cnt_old = 0
             pkt_cnt_old = float(pkt_cnt_old)
             pkt_cnt_new = int(self.osnt_monitor_stats.pkt_cnt[i], 16)
-            self.pktps_txt[i].SetLabel(translateRate((pkt_cnt_new - pkt_cnt_old)/time_elapsed))
+            if pkt_cnt_new >= pkt_cnt_old:
+                pkt_cnt = pkt_cnt_new - pkt_cnt_old;
+            else:
+                pkt_cnt = pkt_cnt_new + ((1<<32) - pkt_cnt_old);
+
+            self.pktps_txt[i].SetLabel(translateRate(pkt_cnt/time_elapsed))
             byte_cnt_old = self.byte_cnt_txt[i].GetLabel()
             if len(byte_cnt_old) == 0:
                 byte_cnt_old = 0
             byte_cnt_old = float(byte_cnt_old)
             byte_cnt_new = int(self.osnt_monitor_stats.byte_cnt[i], 16)
-            self.byteps_txt[i].SetLabel(translateRate((byte_cnt_new - byte_cnt_old)/time_elapsed))
+            if byte_cnt_new >= byte_cnt_old:
+                byte_cnt = byte_cnt_new - byte_cnt_old;
+            else:
+                byte_cnt = byte_cnt_new + ((1<<32) - byte_cnt_old);
+
+            self.byteps_txt[i].SetLabel(translateRate(byte_cnt/time_elapsed))
 
             self.pkt_cnt_txt[i].SetLabel(str(int(self.osnt_monitor_stats.pkt_cnt[i], 16)))
             self.byte_cnt_txt[i].SetLabel(str(int(self.osnt_monitor_stats.byte_cnt[i], 16)))
