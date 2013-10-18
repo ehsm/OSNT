@@ -330,7 +330,7 @@ if __name__=="__main__":
         poissonEngines[iface].generate(10)
         pcaps.update({iface : iface+'.cap'})
 
-    pcaps = {'nf0' : 'test1.cap'}
+    pcaps = {'nf0' : 'nf0.cap'}
 
     for iface, rl in rateLimiters.iteritems():
         rl.set_rate(0)
