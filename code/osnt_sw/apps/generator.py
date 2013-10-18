@@ -327,11 +327,13 @@ if __name__=="__main__":
         rateLimiters.update({iface : OSNTRateLimiter(iface)})
         delays.update({iface : OSNTDelay(iface)})
         poissonEngines.update({iface : Poisson_Engine(iface, 1000, 1500)})
-        poissonEngines[iface].generate(100)
+        poissonEngines[iface].generate(10)
         pcaps.update({iface : iface+'.cap'})
 
+    pcaps = {'nf0' : 'test1.cap'}
+
     for iface, rl in rateLimiters.iteritems():
-        rl.set_rate(10)
+        rl.set_rate(0)
         rl.set_enable(True)
         rl.set_reset(False)
         rl.print_status()
@@ -339,8 +341,8 @@ if __name__=="__main__":
     print ""
 
     for iface, d in delays.iteritems():
-        d.set_delay(10)
-        d.set_enable(True)
+        d.set_delay(0)
+        d.set_enable(False)
         d.set_reset(False)
         d.set_use_reg(False)
         d.print_status()
@@ -348,19 +350,16 @@ if __name__=="__main__":
     print ""
 
     pcap_engine = OSNTGeneratorPcapEngine()
-    pcap_engine.set_reset(True)
-    pcap_engine.set_replay_cnt(0)
+    pcap_engine.set_reset(False)
     pcap_engine.set_begin_replay(False)
+    pcap_engine.set_replay_cnt(4)
     pcap_engine.print_status()
 
-    pcap_engine.set_reset(False)
-    pcap_engine.set_replay_cnt(0)
-    pcap_engine.set_begin_replay(False)
     pcap_engine.load_pcap(pcaps)
     pcap_engine.print_status()
 
+    pcap_engine.set_reset(True)
     pcap_engine.set_reset(False)
-    pcap_engine.set_replay_cnt(1)
     pcap_engine.set_begin_replay(True)
     pcap_engine.print_status()
 
