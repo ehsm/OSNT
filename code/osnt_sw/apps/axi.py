@@ -58,3 +58,13 @@ def ip2hex(ip):
     for tok in ip.split('.'):
         hex1 = (hex1 << 8) + int(tok)
     return hex(hex1 & int("0xffffffff", 16))
+
+# get one bit of value, both int
+def get_bit(value, bit):
+    return ((value & (2**bit)) >> bit)
+
+def set_bit(value, bit):
+    return (value | (2**bit))
+
+def clear_bit(value, bit):
+    return (value & (int("0xffffffff", 16) - 2**bit))
