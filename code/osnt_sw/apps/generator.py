@@ -93,7 +93,7 @@ class OSNTGeneratorPcapEngine:
 
         memory_high_addr = 0
         for pkt_out in pkts_out:
-            sendp(pkt_out[1], iface=pkt_out[0])
+            sendp(pkt_out[1], iface=pkt_out[0], verbose=False)
             words = int(ceil(len(pkt_out[1])/16))
             memory_high_addr = memory_high_addr + words + (words%2) + 2
 
