@@ -6,7 +6,6 @@
 #include <stdint.h>
 #include <signal.h>
 #include <stdlib.h>
-#include <pcap.h>
 
 #define PAGE_SIZE 4096
 
@@ -23,8 +22,7 @@
 int cmd_file;
 int rx_dne_file;
 int rx_buff_file;
-pcap_t *pd;
-pcap_dumper_t *pdumper;
+FILE *pcap;
 
 uint64_t rx_dne_head = 0;
 uint64_t rx_pkt_head = 0;
@@ -43,11 +41,296 @@ void sig_handler(int signo)
         close(cmd_file);
         close(rx_dne_file);
         close(rx_buff_file);
-        pcap_close(pd);
-        pcap_dump_close(pdumper);
+        fclose(pcap);
 
         exit(0);
     }
+}
+
+int push_section_header_block()
+{
+    uint32_t block_type = 0x0a0d0d0a;
+    uint32_t block_len = 28;
+    uint32_t magic = 0x1a2b3c4d;
+    uint16_t major = 1;
+    uint16_t minor = 0;
+    uint64_t section_len = 0xffffffffffffffffULL;
+
+    if(pcap == NULL)
+    {
+        perror("pcap file not open");
+        return -1;
+    }
+
+    if(fwrite(&block_type, 4, 1, pcap) != 1)
+    {
+        perror("pcap write error");
+        return -1;
+    }
+
+    if(fwrite(&block_len, 4, 1, pcap) != 1)
+    {
+        perror("pcap write error");
+        return -1;
+    }
+
+    if(fwrite(&magic, 4, 1, pcap) != 1)
+    {
+        perror("pcap write error");
+        return -1;
+    }
+
+    if(fwrite(&major, 2, 1, pcap) != 1)
+    {
+        perror("pcap write error");
+        return -1;
+    }
+
+    if(fwrite(&minor, 2, 1, pcap) != 1)
+    {
+        perror("pcap write error");
+        return -1;
+    }
+
+    if(fwrite(&section_len, 8, 1, pcap) != 1)
+    {
+        perror("pcap write error");
+        return -1;
+    }
+
+    if(fwrite(&block_len, 4, 1, pcap) != 1)
+    {
+        perror("pcap write error");
+        return -1;
+    }
+
+    return 0;
+}
+
+int push_interface_description_block(char *name)
+{
+    uint32_t block_type = 1;
+    uint32_t block_len;
+    uint16_t link_type = 1;
+    uint16_t reserved = 0;
+    uint32_t snap_len = 65535;
+    uint16_t opt_code_name = 2;
+    uint16_t opt_len_name;
+    uint16_t opt_code_tsresol = 9;
+    uint16_t opt_len_tsresol = 1;
+    uint32_t opt_tsresol = 9;
+    uint16_t opt_code_end = 0;
+    uint16_t opt_len_end = 0;
+
+    uint32_t padding_len;
+    uint32_t padding = 0;
+
+    opt_len_name = strlen(name) + 1;
+    block_len = 36 + ((opt_len_name - 1)/4 + 1)*4;
+    padding_len = ((opt_len_name - 1)/4 + 1)*4 - opt_len_name;
+
+    if(pcap == NULL)
+    {
+        perror("pcap file not open");
+        return -1;
+    }
+
+    if(fwrite(&block_type, 4, 1, pcap) != 1)
+    {
+        perror("pcap write error");
+        return -1;
+    }
+
+    if(fwrite(&block_len, 4, 1, pcap) != 1)
+    {
+        perror("pcap write error");
+        return -1;
+    }
+
+    if(fwrite(&link_type, 2, 1, pcap) != 1)
+    {
+        perror("pcap write error");
+        return -1;
+    }
+
+    if(fwrite(&reserved, 2, 1, pcap) != 1)
+    {
+        perror("pcap write error");
+        return -1;
+    }
+
+    if(fwrite(&snap_len, 4, 1, pcap) != 1)
+    {
+        perror("pcap write error");
+        return -1;
+    }
+
+    if(fwrite(&opt_code_name, 2, 1, pcap) != 1)
+    {
+        perror("pcap write error");
+        return -1;
+    }
+
+    if(fwrite(&opt_len_name, 2, 1, pcap) != 1)
+    {
+        perror("pcap write error");
+        return -1;
+    }
+
+    if(fwrite(name, opt_len_name, 1, pcap) != 1)
+    {
+        perror("pcap write error");
+        return -1;
+    }
+
+    if(padding_len != 0)
+    {
+        if(fwrite(&padding, padding_len, 1, pcap) != 1)
+        {
+            perror("pcap write error");
+            return -1;
+        }
+    }
+
+    if(fwrite(&opt_code_tsresol, 2, 1, pcap) != 1)
+    {
+        perror("pcap write error");
+        return -1;
+    }
+
+    if(fwrite(&opt_len_tsresol, 2, 1, pcap) != 1)
+    {
+        perror("pcap write error");
+        return -1;
+    }
+
+    if(fwrite(&opt_tsresol, 4, 1, pcap) != 1)
+    {
+        perror("pcap write error");
+        return -1;
+    }
+
+    if(fwrite(&opt_code_end, 2, 1, pcap) != 1)
+    {
+        perror("pcap write error");
+        return -1;
+    }
+
+    if(fwrite(&opt_len_end, 2, 1, pcap) != 1)
+    {
+        perror("pcap write error");
+        return -1;
+    }
+
+    if(fwrite(&block_len, 4, 1, pcap) != 1)
+    {
+        perror("pcap write error");
+        return -1;
+    }
+
+    return 0;
+}
+
+int push_enhanced_packet_block(uint64_t port_encoded, uint64_t len, uint64_t timestamp)
+{
+    uint32_t block_type = 6;
+    uint32_t block_len;
+    uint32_t interface_id;
+    uint32_t timestamp_high;
+    uint32_t timestamp_low;
+    uint32_t captured_len = (uint32_t)len;
+    uint32_t packet_len = (uint32_t)len;
+    uint32_t padding_len = ((len-1)/4 + 1)*4 - len;
+    uint64_t padding = 0;
+
+    block_len = 32 + ((len-1)/4 + 1)*4;
+
+    if(port_encoded & 0x0200)
+        interface_id = 0;
+    else if(port_encoded & 0x0800)
+        interface_id = 1;
+    else if(port_encoded & 0x2000)
+        interface_id = 2;
+    else if(port_encoded & 0x8000)
+        interface_id = 3;
+    else 
+        interface_id = 4;
+
+    timestamp = ((timestamp>>32)&0xffffffff)*1000000000 + (((timestamp&0xffffffff)*1000000000)>>32);
+    //timestamp = timestamp*25/4;
+    timestamp_high = (uint32_t)((timestamp>>32)&0xffffffff);
+    timestamp_low = (uint32_t)(timestamp&0xffffffff);
+
+    if(pcap == NULL)
+    {
+        perror("pcap file not open");
+        return -1;
+    }
+
+    if(fwrite(&block_type, 4, 1, pcap) != 1)
+    {
+        perror("pcap write error");
+        return -1;
+    }
+
+    if(fwrite(&block_len, 4, 1, pcap) != 1)
+    {
+        perror("pcap write error");
+        return -1;
+    }
+
+    if(fwrite(&interface_id, 4, 1, pcap) != 1)
+    {
+        perror("pcap write error");
+        return -1;
+    }
+
+    if(fwrite(&timestamp_high, 4, 1, pcap) != 1)
+    {
+        perror("pcap write error");
+        return -1;
+    }
+
+    if(fwrite(&timestamp_low, 4, 1, pcap) != 1)
+    {
+        perror("pcap write error");
+        return -1;
+    }
+
+    if(fwrite(&captured_len, 4, 1, pcap) != 1)
+    {
+        perror("pcap write error");
+        return -1;
+    }
+
+    if(fwrite(&packet_len, 4, 1, pcap) != 1)
+    {
+        perror("pcap write error");
+        return -1;
+    }
+
+    if(fwrite(rx_buff+rx_buff_head, len, 1, pcap) != 1)
+    {
+        perror("pcap write error");
+        return -1;
+    }
+
+    if(padding_len != 0)
+    {
+        if(fwrite(&padding, padding_len, 1, pcap) != 1)
+        {
+            perror("pcap write error");
+            return -1;
+        }
+    }
+
+    if(fwrite(&block_len, 4, 1, pcap) != 1)
+    {
+        perror("pcap write error");
+        return -1;
+    }
+
+    return 0;
 }
 
 int main ( int argc, char **argv )
@@ -66,8 +349,6 @@ int main ( int argc, char **argv )
     uint64_t rx_pkt_mask = 0x0000ffffULL;
     uint64_t rx_buff_mask = 0xffffULL;
 
-    struct pcap_pkthdr pcap_pkt_header;
-
     signal(SIGINT, sig_handler);
 
     cmd_file = open("/dev/nf10", O_RDWR);
@@ -85,6 +366,12 @@ int main ( int argc, char **argv )
     rx_buff_file = open("/sys/kernel/debug/nf10_rx_buff_mmap", O_RDWR);
     if(rx_buff_file < 0) {
         perror("nf10_rx_buff_mmap");
+        goto error_out;
+    }
+
+    pcap = fopen("packets.pcapng", "wb");
+    if(pcap == NULL) {
+        perror("cannot open packets.pcapng");
         goto error_out;
     }
 
@@ -110,8 +397,29 @@ int main ( int argc, char **argv )
         goto error_out;
     }
 
-    pd = pcap_open_dead(DLT_RAW, 65535);
-    pdumper = pcap_dump_open(pd, "packets.cap");
+    if(push_section_header_block() < 0){
+        goto error_out;
+    }
+
+    if(push_interface_description_block("nf0") < 0){
+        goto error_out;
+    }
+
+    if(push_interface_description_block("nf1") < 0){
+        goto error_out;
+    }
+
+    if(push_interface_description_block("nf2") < 0){
+        goto error_out;
+    }
+
+    if(push_interface_description_block("nf3") < 0){
+        goto error_out;
+    }
+
+    if(push_interface_description_block("unknown") < 0){
+        goto error_out;
+    }
 
     while(1){
         rx_int = *(((uint64_t*)rx_dne) + rx_dne_head/8);
@@ -126,16 +434,14 @@ int main ( int argc, char **argv )
 
             *(((uint64_t*)rx_dne) + rx_dne_head/8) = 0xffffffffffffffffULL;
 
+            if(push_enhanced_packet_block(port_encoded, len, timestamp)<0)
+            {
+                goto error_out;
+            }
 
             rx_dne_head = ((rx_dne_head + 64) & rx_dne_mask);
             rx_buff_head = ((rx_buff_head + ((len-1)/64 + 1)*64) & rx_buff_mask);
             rx_pkt_head = ((rx_pkt_head + ((len-1)/64 + 1)*64) & rx_pkt_mask);
-
-            pcap_pkt_header.ts.tv_sec = ((timestamp>>32)&0xffffffff);
-            pcap_pkt_header.ts.tv_nsec = (((timestamp&0xffffffff)*1000000000)>>32);
-            pcap_pkt_header.caplen = len;
-            pcap_pkt_header.len = len;
-            pcap_dump(pdumper, &pcap_pkt_header, rx_buff+rx_buff_head);
 
             if(ioctl(cmd_file, NF10_IOCTL_CMD_SET_RX_DNE_HEAD, rx_dne_head) < 0){
                 perror("nf10 set rx dne head failed");
@@ -161,8 +467,7 @@ error_out:
     close(cmd_file);
     close(rx_dne_file);
     close(rx_buff_file);
-    pcap_close(pd);
-    pcap_dump_close(pdumper);
+    fclose(pcap);	
     return -1;
 }
 
