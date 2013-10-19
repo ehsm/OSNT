@@ -350,17 +350,19 @@ if __name__=="__main__":
     print ""
 
     pcap_engine = OSNTGeneratorPcapEngine()
-    pcap_engine.set_reset(False)
-    pcap_engine.set_begin_replay(False)
-    pcap_engine.set_replay_cnt(4)
-    pcap_engine.print_status()
 
-    pcap_engine.load_pcap(pcaps)
-    pcap_engine.print_status()
+    for i in range(1000):
+        pcap_engine.set_reset(False)
+        pcap_engine.set_begin_replay(False)
+        pcap_engine.set_replay_cnt(4)
+        #pcap_engine.print_status()
 
-    pcap_engine.set_reset(True)
-    pcap_engine.set_reset(False)
-    pcap_engine.set_begin_replay(True)
-    pcap_engine.print_status()
+        pcap_engine.load_pcap(pcaps)
+        #pcap_engine.print_status()
+
+        pcap_engine.set_reset(True)
+        pcap_engine.set_reset(False)
+        pcap_engine.set_begin_replay(True)
+        #pcap_engine.print_status()
 
     
