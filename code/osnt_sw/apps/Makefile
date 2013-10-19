@@ -42,6 +42,6 @@ all:
 	gcc -march=core2 -o stats stats.c
 	gcc -march=core2 -o rdaxi rdaxi.c
 	gcc -march=core2 -o wraxi wraxi.c
-	gcc -march=core2 -o monitor monitor.c
+	gcc monitor.c -o monitor -lpcap
 clean:
 	rm stats rdaxi wraxi monitor

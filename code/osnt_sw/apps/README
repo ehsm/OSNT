@@ -1,4 +1,6 @@
 Monitor user program:
+0, Compile and install ../libpcap_patched
+
 1, Run make to get the user application "monitor".
 
 2, Before running the user application please
