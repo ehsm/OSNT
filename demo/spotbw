@@ -1,0 +1,110 @@
+#!/usr/bin/perl -w
+
+# Convert data of the form:
+#   854971958.169549 128.232.4.24.5001 > 128.232.0.114.5001: udp 1472 (DF)
+# into spot bandwidth meansurements. Suggested use:
+#  tcpdump -qnttl <filter_expr> | spotbw 200ms
+
+$bucketsize = 0.2;  # 200ms buckets
+
+# regexp for lines we want to account:
+$PARSEFMT='^([\d.]+) .* (\d+)(: $|( \(DF\))?( \[tos 0x[0-9a-f]+\])?( \[ttl \d+\])?( \(frag \d+:\d+@\d+\+?\))? ?$)';
+#' <- blame emacs
+
+# if the above regexp doesn't match, this isn't a problem as long as
+# it matches the following:
+$IGNFMT='^([\d.]+) .* \(frag \d+:\d+@\d+\+?\)( \(DF\))?$';
+#'
+
+$progname = `basename $0`;
+chop($progname);
+
+$|=1;
+
+sub usage
+{
+    print <<EOT ;
+usage: $progname [ <bucketsize> ]
+	Reads the output of 'tcpdump -qnttl', printing the current time
+	and bandwidth achieved to stdout.  The bandwidth is measured
+	over the time period <bucketsize>, which defaults to $bucketsize
+	seconds if unspecified.
+EOT
+    exit 1;
+}
+
+&usage if ($#ARGV != -1 && $#ARGV != 0);
+
+if ($#ARGV == 0)
+{
+    $bucketsize = shift;
+}
+
+# timebase unchanged for now
+$base = 0;
+
+# prime the pipe
+$_ = <>;
+if (!/$PARSEFMT/)
+{
+    warn "format error at line $.: `$_'\n";
+    exit;
+}
+else
+{
+    $start = $1;
+    $n = $2;
+    $here = $now = $start; # start at the epoch
+#    print ":$_";
+#    print ":$n\n";
+#    print ":$start\n";
+}
+$_ = <>;
+if (!/$PARSEFMT/)
+{
+    warn "format error at line $.: `$_'\n";
+    exit;
+}
+else
+{
+    $end = $1;
+#    $newbytes = $2;
+}
+
+
+while(1)
+{
+    $now += $bucketsize;
+    $nbytes=0;
+
+    # sum log entries until we get to $now
+    while($now > $here)
+    {
+	$nbytes += $n;
+	$here += $end - $start;
+
+line:	$_ = <>;
+	exit 0 if (!defined($_));
+#	print "::$_";
+#	print "endcc: $endcc,  startcc: $startcc  here:$here\n";
+	if (!/$PARSEFMT/)
+	{
+	    # skip silently
+	    goto line if (/$IGNFMT/);
+	    chop;
+	    warn "format error at line $.: `$_'\n";
+	    goto line;
+	}
+	else
+	{
+	    $start = $end;
+	    $end = $1;
+	    $n = $2;
+#	    print "::n=$n\n";
+	}
+    }
+
+    # print Mbps
+    printf "%.2f ", ($now - $base);
+    printf "%.5f\n", ($nbytes * 8 / ($bucketsize * 1000000));
+}
