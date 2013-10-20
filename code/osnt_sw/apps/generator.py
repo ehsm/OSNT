@@ -78,6 +78,8 @@ class OSNTGeneratorPcapEngine:
 
         pkts_out = []
 
+        memory_high_addr = 0
+
         while(not finished):
             finished = True
             tmin = float('inf')
@@ -89,15 +91,14 @@ class OSNTGeneratorPcapEngine:
                         tmin = pkts[iface][index[iface]].time
             if not finished:
                 pkts_out.append((iface_tmp, pkts[iface_tmp][index[iface_tmp]]))
+                words = int(ceil(len(pkts[iface_tmp][index[iface_tmp]])/16))
+                memory_high_addr = memory_high_addr + words + (words%2) + 2
                 index[iface_tmp] = index[iface_tmp] + 1
 
-        memory_high_addr = 0
+        self.set_memory_high_addr(memory_high_addr)
+
         for pkt_out in pkts_out:
             sendp(pkt_out[1], iface=pkt_out[0], verbose=False)
-            words = int(ceil(len(pkt_out[1])/16))
-            memory_high_addr = memory_high_addr + words + (words%2) + 2
-
-        self.set_memory_high_addr(memory_high_addr)
 
     def get_memory_high_addr(self):
         value = rdaxi(self.reg_addr(self.memory_high_addr_reg_offset))
@@ -322,16 +323,29 @@ if __name__=="__main__":
     poissonEngines = {}
     pcaps = {}
 
+    # instantiate rate limiters and delay modules for 4 interfaces
     for i in range(4):
+        # interface
         iface = 'nf'+str(i)
+        # add rate limiter for that interface
         rateLimiters.update({iface : OSNTRateLimiter(iface)})
+        # add delay module for that interface
         delays.update({iface : OSNTDelay(iface)})
+        # generate *poisson engine* for that interface. This means 1000 pkts/second, 1500B packets
         poissonEngines.update({iface : Poisson_Engine(iface, 1000, 1500)})
+        # generate some number of packets
         poissonEngines[iface].generate(10)
+        # correlate generated packets with iterface
         pcaps.update({iface : iface+'.cap'})
 
-    pcaps = {'nf0' : 'nf0.cap'}
+    # here actually we are discarding the generated poission packets, just add custom pcap files here
+    pcaps = {'nf0' : 'nf0.cap'#,
+             #'nf1' : 'nf1.cap',
+             #'nf2' : 'nf2.cap',
+             #'nf3' : 'nf3.cap'
+            }
 
+    # configure rate limiters
     for iface, rl in rateLimiters.iteritems():
         rl.set_rate(0)
         rl.set_enable(True)
@@ -340,6 +354,7 @@ if __name__=="__main__":
         
     print ""
 
+    # configure delay modules
     for iface, d in delays.iteritems():
         d.set_delay(0)
         d.set_enable(False)
@@ -349,14 +364,21 @@ if __name__=="__main__":
         
     print ""
 
+    # instantiate pcap engine
     pcap_engine = OSNTGeneratorPcapEngine()
 
+    # Shahbaz: change number of loops to 1. The loop is for Adam.
+    # uncomment print_status() as your wish.
+    # the current steps should be the same as you described in the email.
     for i in range(1000):
         pcap_engine.set_reset(False)
         pcap_engine.set_begin_replay(False)
         pcap_engine.set_replay_cnt(4)
         #pcap_engine.print_status()
 
+        # This will load packets for all 4 ports and set mem hight addr.
+        # packet order is decided by their timestamp. So we need comparable timestamp across
+        # all pcap files.
         pcap_engine.load_pcap(pcaps)
         #pcap_engine.print_status()
 
