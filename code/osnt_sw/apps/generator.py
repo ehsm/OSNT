@@ -334,7 +334,7 @@ if __name__=="__main__":
         # generate *poisson engine* for that interface. This means 1000 pkts/second, 1500B packets
         poissonEngines.update({iface : Poisson_Engine(iface, 1000, 1500)})
         # generate some number of packets
-        poissonEngines[iface].generate(10)
+        poissonEngines[iface].generate(2)
         # correlate generated packets with iterface
         pcaps.update({iface : iface+'.cap'})
 
@@ -370,11 +370,13 @@ if __name__=="__main__":
     # Shahbaz: change number of loops to 1. The loop is for Adam.
     # uncomment print_status() as your wish.
     # the current steps should be the same as you described in the email.
-    for i in range(1000):
+    for i in range(1):
+	pcap_engine.set_reset(True)
+	pcap_engine.print_status()
         pcap_engine.set_reset(False)
         pcap_engine.set_begin_replay(False)
-        pcap_engine.set_replay_cnt(4)
-        #pcap_engine.print_status()
+        pcap_engine.set_replay_cnt(1)
+        pcap_engine.print_status()
 
         # This will load packets for all 4 ports and set mem hight addr.
         # packet order is decided by their timestamp. So we need comparable timestamp across
@@ -383,8 +385,9 @@ if __name__=="__main__":
         #pcap_engine.print_status()
 
         pcap_engine.set_reset(True)
+	pcap_engine.print_status()
         pcap_engine.set_reset(False)
         pcap_engine.set_begin_replay(True)
-        #pcap_engine.print_status()
+        pcap_engine.print_status()
 
     
