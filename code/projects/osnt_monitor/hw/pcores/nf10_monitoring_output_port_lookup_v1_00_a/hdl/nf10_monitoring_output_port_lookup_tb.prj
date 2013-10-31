@@ -1,0 +1,58 @@
+------------------------------------------------------------------------
+--
+--  NETFPGA-10G www.netfpga.org
+--
+--  Module:
+--          nf10_monitoring_output_port_lookup_v1_00_a.prj
+--
+--  Description:
+--          Gianni Anitchi - project file to list the files necessary to compile the simulation infrastructure for
+--                                             nf10_monitoring_output_port_lookup_v1_00_a module
+--
+--
+--  Revision history:
+--
+--
+--  Known issues:
+--          None
+--
+--
+--  Library: library dependencies
+--
+------------------------------------------------------------------------
+
+verilog work "verilog/nf10_monitoring_output_port_lookup.v"
+verilog work "verilog/core_monitoring.v"
+verilog work "verilog/packet_analyzer/network_protocol_combinations/ETH_IPv4_TCPnUDP.v"
+verilog work "verilog/packet_analyzer/network_protocol_combinations/ETH_VLAN_IPv4_TCPnUDP.v"
+verilog work "verilog/packet_analyzer/network_protocol_combinations/WHEN_NO_HIT.v"
+verilog work "verilog/packet_analyzer/packet_monitor.v"
+verilog work "verilog/packet_analyzer/packet_analyzer.v"
+verilog work "verilog/packet_analyzer/multistage_priority_mux.v"
+verilog work "verilog/packet_filter/process_pkt.v"
+verilog work "verilog/packet_filter/tcam16.v"
+verilog work "verilog/stats_handler/stats_handler.v"
+verilog work "verilog/nf10_monitoring_output_port_lookup_tb.v"
+verilog work "../../nf10_timestamp_v1_00_a/hdl/verilog/correction.v"
+verilog work "../../nf10_timestamp_v1_00_a/hdl/verilog/stamp_counter.v"
+verilog work "../../nf10_timestamp_v1_00_a/hdl/verilog/nf10_timestamp.v"
+verilog work "../../../../../../lib/hw/std/pcores/nf10_bram_output_queues_v1_00_a/hdl/verilog/fallthrough_small_fifo_v2.v"
+verilog work "../../../../../../lib/hw/std/pcores/nf10_bram_output_queues_v1_00_a/hdl/verilog/small_fifo_v3.v"
+verilog work "../../../../../../lib/hw/std/pcores/nf10_bram_output_queues_v1_00_a/hdl/verilog/nf10_bram_output_queues.v"
+verilog work "../../../../../../lib/hw/std/pcores/nf10_input_arbiter_v1_00_a/hdl/verilog/fallthrough_small_fifo_v2.v"
+verilog work "../../../../../../lib/hw/std/pcores/nf10_input_arbiter_v1_00_a/hdl/verilog/small_fifo_v3.v"
+verilog work "../../../../../../lib/hw/std/pcores/nf10_input_arbiter_v1_00_a/hdl/verilog/nf10_input_arbiter.v"
+vhdl    work "../../../../../../lib/hw/std/pcores/nf10_proc_common_v1_00_a/hdl/vhdl/axi_lite_ipif_2bars.vhd"
+vhdl    work "../../../../../../lib/hw/std/pcores/nf10_proc_common_v1_00_a/hdl/vhdl/axi_lite_ipif_1bar.vhd"
+verilog work "../../../../../../lib/hw/std/pcores/nf10_proc_common_v1_00_a/hdl/verilog/fallthrough_small_fifo_v2.v"
+verilog work "../../../../../../lib/hw/std/pcores/nf10_proc_common_v1_00_a/hdl/verilog/small_fifo_v3.v"
+verilog work "../../../../../../lib/hw/std/pcores/nf10_proc_common_v1_00_a/hdl/verilog/ipif_regs.v"
+verilog work "../../../../../../lib/hw/std/pcores/nf10_proc_common_v1_00_a/hdl/verilog/ipif_table_regs.v"
+vhdl	proc_common_v3_00_a	 "../../../../../../lib/hw/xilinx/pcores/proc_common_v3_00_a/hdl/vhdl/proc_common_pkg.vhd"
+vhdl    proc_common_v3_00_a      "../../../../../../lib/hw/xilinx/pcores/proc_common_v3_00_a/hdl/vhdl/pselect_f.vhd"
+vhdl    proc_common_v3_00_a      "../../../../../../lib/hw/xilinx/pcores/proc_common_v3_00_a/hdl/vhdl/ipif_pkg.vhd"
+vhdl    proc_common_v3_00_a      "../../../../../../lib/hw/xilinx/pcores/proc_common_v3_00_a/hdl/vhdl/family_support.vhd"
+vhdl    proc_common_v3_00_a      "../../../../../../lib/hw/xilinx/pcores/proc_common_v3_00_a/hdl/vhdl/counter_f.vhd"
+vhdl    axi_lite_ipif_v1_01_a "/opt/Xilinx/13.4/ISE_DS/EDK/hw/XilinxProcessorIPLib/pcores/axi_lite_ipif_v1_01_a/hdl/vhdl/slave_attachment.vhd"
+vhdl    axi_lite_ipif_v1_01_a "/opt/Xilinx/13.4/ISE_DS/EDK/hw/XilinxProcessorIPLib/pcores/axi_lite_ipif_v1_01_a/hdl/vhdl/address_decoder.vhd"
+vhdl    axi_lite_ipif_v1_01_a "/opt/Xilinx/13.4/ISE_DS/EDK/hw/XilinxProcessorIPLib/pcores/axi_lite_ipif_v1_01_a/hdl/vhdl/axi_lite_ipif.vhd"
