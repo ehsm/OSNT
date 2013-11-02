@@ -29,7 +29,7 @@
  *        published by the Free Software Foundation.
  *
  *        This package is distributed in the hope that it will be useful, but
- *        WITHOUT ANY WARRANTY; without even the implied warranty of
+ *        WITHOUT ANY WARRANTY; without even the implqied warranty of
  *        MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  *        Lesser General Public License for more details.
  *
@@ -38,6 +38,10 @@
  *        http://www.gnu.org/licenses/.
  *
  */
+
+// TODO:
+// (1) Optimize the code using generate
+// (2) Add per queue (correct) enable/disbale support
 
 `uselib lib=unisims_ver
 `uselib lib=proc_common_v3_00_a
@@ -55,7 +59,9 @@ module nf10_pcap_replay_uengine
   parameter C_S_AXIS_DATA_WIDTH  = 256,
   parameter C_M_AXIS_TUSER_WIDTH = 128,
   parameter C_S_AXIS_TUSER_WIDTH = 128,
-  parameter QDR_NUM_CHIPS        = 3,
+	parameter C_NUM_QUEUES         = 4,
+	parameter DST_PORT_POS         = 24,
+  parameter QDR_NUM_CHIPS        = 2,
   parameter QDR_DATA_WIDTH       = 36,
   parameter QDR_ADDR_WIDTH       = 19,
   parameter QDR_BW_WIDTH         = 4,
@@ -64,12 +70,10 @@ module nf10_pcap_replay_uengine
 	parameter QDR_BURST_LENGTH     = 4,
 	parameter QDR_CLK_PERIOD       = 4000,
 	parameter REPLAY_COUNT_WIDTH   = 32,
-  parameter SIM_ONLY             = 0
+  parameter SIM_ONLY             = 1
 )
 (
   // Clock and Reset
-  input                                           axi_aresetn,
-  
   input 										  										dcm_locked,
 
   input                                           qdr_clk,
@@ -98,12 +102,33 @@ module nf10_pcap_replay_uengine
   output                                          s_axi_awready,
 
   // Master Stream Ports (interface to data path)
-  output     [C_M_AXIS_DATA_WIDTH-1:0]            m_axis_tdata,
-  output     [((C_M_AXIS_DATA_WIDTH/8))-1:0]      m_axis_tstrb,
-  output     [C_M_AXIS_TUSER_WIDTH-1:0]           m_axis_tuser,
-  output                                          m_axis_tvalid,
-  input                                           m_axis_tready,
-  output                                          m_axis_tlast,
+  output     [C_M_AXIS_DATA_WIDTH-1:0]            m_axis_tdata_0,
+  output     [((C_M_AXIS_DATA_WIDTH/8))-1:0]      m_axis_tstrb_0,
+  output     [C_M_AXIS_TUSER_WIDTH-1:0]           m_axis_tuser_0,
+  output                                          m_axis_tvalid_0,
+  input                                           m_axis_tready_0,
+  output                                          m_axis_tlast_0,
+	
+  output     [C_M_AXIS_DATA_WIDTH-1:0]            m_axis_tdata_1,
+  output     [((C_M_AXIS_DATA_WIDTH/8))-1:0]      m_axis_tstrb_1,
+  output     [C_M_AXIS_TUSER_WIDTH-1:0]           m_axis_tuser_1,
+  output                                          m_axis_tvalid_1,
+  input                                           m_axis_tready_1,
+  output                                          m_axis_tlast_1,
+	
+  output     [C_M_AXIS_DATA_WIDTH-1:0]            m_axis_tdata_2,
+  output     [((C_M_AXIS_DATA_WIDTH/8))-1:0]      m_axis_tstrb_2,
+  output     [C_M_AXIS_TUSER_WIDTH-1:0]           m_axis_tuser_2,
+  output                                          m_axis_tvalid_2,
+  input                                           m_axis_tready_2,
+  output                                          m_axis_tlast_2,
+	
+  output     [C_M_AXIS_DATA_WIDTH-1:0]            m_axis_tdata_3,
+  output     [((C_M_AXIS_DATA_WIDTH/8))-1:0]      m_axis_tstrb_3,
+  output     [C_M_AXIS_TUSER_WIDTH-1:0]           m_axis_tuser_3,
+  output                                          m_axis_tvalid_3,
+  input                                           m_axis_tready_3,
+  output                                          m_axis_tlast_3,
 
   // Slave Stream Ports (interface to RX queues)
   input      [C_S_AXIS_DATA_WIDTH-1:0]            s_axis_tdata,
@@ -113,7 +138,7 @@ module nf10_pcap_replay_uengine
   output                                          s_axis_tready,
   input                                           s_axis_tlast,
 
-  // QDR Memory Interface
+  // QDR Memory Interface (Each Chip is of 9MB)
   input      [(QDR_DATA_WIDTH)-1:0]               qdr_q_0,
   input      [QDR_CQ_WIDTH-1:0]                   qdr_cq_0,
   input      [QDR_CQ_WIDTH-1:0]                   qdr_cq_n_0,
@@ -161,21 +186,45 @@ module nf10_pcap_replay_uengine
 );
 
   // -- Internal Parameters
-  localparam NUM_RW_REGS = 3;
-  localparam NUM_WO_REGS = 1;
-  localparam NUM_RO_REGS = 1;
+  localparam NUM_RW_REGS = 21;
+  localparam NUM_WO_REGS = 0;
+  localparam NUM_RO_REGS = 0;
 
   // -- Signals
 	wire																						axi_aclk;
+	wire																						axi_aresetn;
+	
   wire [NUM_RW_REGS*C_S_AXI_DATA_WIDTH-1:0]   		rw_regs;
 
   wire                                            sw_rst;
-	wire [QDR_ADDR_WIDTH-1:0]  											mem_addr_high;
-	wire [REPLAY_COUNT_WIDTH-1:0]										replay_count;
-	wire																						start_replay;	
+	
+	wire [QDR_ADDR_WIDTH-1:0]  											q0_addr_low;
+	wire [QDR_ADDR_WIDTH-1:0]  											q0_addr_high;
+	wire [QDR_ADDR_WIDTH-1:0]  											q1_addr_low;
+	wire [QDR_ADDR_WIDTH-1:0]  											q1_addr_high;
+	wire [QDR_ADDR_WIDTH-1:0]  											q2_addr_low;
+	wire [QDR_ADDR_WIDTH-1:0]  											q2_addr_high;
+	wire [QDR_ADDR_WIDTH-1:0]  											q3_addr_low;
+	wire [QDR_ADDR_WIDTH-1:0]  											q3_addr_high;
+	                                              	
+	wire 																						q0_enable;
+	wire 																						q1_enable;
+	wire 																						q2_enable;
+	wire 																						q3_enable;
+	                                              	
+	wire [REPLAY_COUNT_WIDTH-1:0]										q0_replay_count;
+	wire [REPLAY_COUNT_WIDTH-1:0]										q1_replay_count;
+	wire [REPLAY_COUNT_WIDTH-1:0]										q2_replay_count;
+	wire [REPLAY_COUNT_WIDTH-1:0]										q3_replay_count;
+	                                              	
+	wire 																						q0_start_replay;
+	wire 																						q1_start_replay;
+	wire 																						q2_start_replay;
+	wire 																						q3_start_replay;
 	
 	// -- Assignments
 	assign		axi_aclk  =  s_axi_aclk;
+	assign    axi_aresetn = s_axi_aresetn;
 
   // -- AXILITE Registers
   axi_lite_regs
@@ -193,41 +242,107 @@ module nf10_pcap_replay_uengine
   )
     axi_lite_regs_1bar_inst
   (
-    .s_axi_aclk      (s_axi_aclk),
-    .s_axi_aresetn   (s_axi_aresetn),
-    .s_axi_awaddr    (s_axi_awaddr),
-    .s_axi_awvalid   (s_axi_awvalid),
-    .s_axi_wdata     (s_axi_wdata),
-    .s_axi_wstrb     (s_axi_wstrb),
-    .s_axi_wvalid    (s_axi_wvalid),
-    .s_axi_bready    (s_axi_bready),
-    .s_axi_araddr    (s_axi_araddr),
-    .s_axi_arvalid   (s_axi_arvalid),
-    .s_axi_rready    (s_axi_rready),
-    .s_axi_arready   (s_axi_arready),
-    .s_axi_rdata     (s_axi_rdata),
-    .s_axi_rresp     (s_axi_rresp),
-    .s_axi_rvalid    (s_axi_rvalid),
-    .s_axi_wready    (s_axi_wready),
-    .s_axi_bresp     (s_axi_bresp),
-    .s_axi_bvalid    (s_axi_bvalid),
-    .s_axi_awready   (s_axi_awready),
-
-    .rw_regs         (rw_regs),
-		.rw_defaults     ({NUM_RW_REGS*C_S_AXI_DATA_WIDTH{1'b0}}), /*{32'd2, 32'd32, 32'b10}),*/ 
-		.wo_regs         (),
-		.wo_defaults     ({NUM_WO_REGS*C_S_AXI_DATA_WIDTH{1'b0}}),
-		.ro_regs         ()
+    .s_axi_aclk      			(s_axi_aclk),
+    .s_axi_aresetn   			(s_axi_aresetn),
+    .s_axi_awaddr    			(s_axi_awaddr),
+    .s_axi_awvalid   			(s_axi_awvalid),
+    .s_axi_wdata     			(s_axi_wdata),
+    .s_axi_wstrb     			(s_axi_wstrb),
+    .s_axi_wvalid    			(s_axi_wvalid),
+    .s_axi_bready    			(s_axi_bready),
+    .s_axi_araddr    			(s_axi_araddr),
+    .s_axi_arvalid   			(s_axi_arvalid),
+    .s_axi_rready    			(s_axi_rready),
+    .s_axi_arready   			(s_axi_arready),
+    .s_axi_rdata     			(s_axi_rdata),
+    .s_axi_rresp     			(s_axi_rresp),
+    .s_axi_rvalid    			(s_axi_rvalid),
+    .s_axi_wready    			(s_axi_wready),
+    .s_axi_bresp     			(s_axi_bresp),
+    .s_axi_bvalid    			(s_axi_bvalid),
+    .s_axi_awready   			(s_axi_awready),
+                     			
+    .rw_regs         			(rw_regs),
+		.rw_defaults     			(/*{NUM_RW_REGS*C_S_AXI_DATA_WIDTH{1'b0}}*/
+													 {
+														 {31'b0, 1'b1}, // q3_enable
+														 {31'b0, 1'b1},
+														 {31'b0, 1'b1},
+														 {31'b0, 1'b1},
+														  
+														 {32'd64},
+													   {32'd48},
+														 {32'd48},
+														 {32'd32},
+														 {32'd32},
+														 {32'd16},
+														 {32'd16},
+														 {32'd0},
+														  
+														 {32'd10},
+														 {32'd10},
+														 {32'd10},
+														 {32'd10},
+														  
+														 {31'b0, 1'b0},
+														 {31'b0, 1'b0},
+														 {31'b0, 1'b0},
+														 {31'b0, 1'b0},
+													   
+														 {31'b0, 1'b0} // sw_rst
+													 }
+													), 
+		.wo_regs         			(),
+		.wo_defaults     			({NUM_WO_REGS*C_S_AXI_DATA_WIDTH{1'b0}}),
+		.ro_regs         			()
   );
   
 
   // -- Register assignments
-
-  assign sw_rst          = rw_regs[(C_S_AXI_DATA_WIDTH*0)+0];
-	assign start_replay    = rw_regs[(C_S_AXI_DATA_WIDTH*0)+1];
 	
-	assign mem_addr_high   = rw_regs[(C_S_AXI_DATA_WIDTH*1)+QDR_ADDR_WIDTH-1:(C_S_AXI_DATA_WIDTH*1)]; // Contains the packet size + tuser header i.e., 32 --> for packet size of 3*256 --> (3+1)*2*interfaces = 4*2*4 = 32  
-	assign replay_count    = rw_regs[(C_S_AXI_DATA_WIDTH*2)+REPLAY_COUNT_WIDTH-1:(C_S_AXI_DATA_WIDTH*2)]; 
+	// --- DEBUG LOIGC - TEMPORARY
+	reg [31:0] debug_counter;
+	reg 			 debug_enable;
+	
+	always @ (posedge s_axi_aclk) begin
+		if(!s_axi_aresetn || sw_rst) begin
+			debug_counter  <= 0;
+			debug_enable 	 <= 0;
+		end
+		else begin
+			debug_counter  <= debug_counter + 1;
+			
+			if (debug_counter == 5001)
+				debug_enable   <= 1;
+		end
+	end
+	// --- DEBUG LOIGC - TEMPORARY
+
+  assign sw_rst          = rw_regs[(C_S_AXI_DATA_WIDTH*0)+1-1:(C_S_AXI_DATA_WIDTH*0)];
+	                         
+	assign q0_start_replay = debug_enable; // rw_regs[(C_S_AXI_DATA_WIDTH*1)+1-1:(C_S_AXI_DATA_WIDTH*1)];
+	assign q1_start_replay = debug_enable; // rw_regs[(C_S_AXI_DATA_WIDTH*2)+1-1:(C_S_AXI_DATA_WIDTH*2)];
+	assign q2_start_replay = debug_enable; // rw_regs[(C_S_AXI_DATA_WIDTH*3)+1-1:(C_S_AXI_DATA_WIDTH*3)];
+	assign q3_start_replay = debug_enable; // rw_regs[(C_S_AXI_DATA_WIDTH*4)+1-1:(C_S_AXI_DATA_WIDTH*4)];
+	                         
+  assign q0_replay_count = rw_regs[(C_S_AXI_DATA_WIDTH*5)+REPLAY_COUNT_WIDTH-1:(C_S_AXI_DATA_WIDTH*5)];
+	assign q1_replay_count = rw_regs[(C_S_AXI_DATA_WIDTH*6)+REPLAY_COUNT_WIDTH-1:(C_S_AXI_DATA_WIDTH*6)];
+	assign q2_replay_count = rw_regs[(C_S_AXI_DATA_WIDTH*7)+REPLAY_COUNT_WIDTH-1:(C_S_AXI_DATA_WIDTH*7)];
+	assign q3_replay_count = rw_regs[(C_S_AXI_DATA_WIDTH*8)+REPLAY_COUNT_WIDTH-1:(C_S_AXI_DATA_WIDTH*8)]; 
+	                         
+	assign q0_addr_low   	 = rw_regs[(C_S_AXI_DATA_WIDTH*9)+QDR_ADDR_WIDTH-1:(C_S_AXI_DATA_WIDTH*9)]; 
+	assign q0_addr_high  	 = rw_regs[(C_S_AXI_DATA_WIDTH*10)+QDR_ADDR_WIDTH-1:(C_S_AXI_DATA_WIDTH*10)]; 
+	assign q1_addr_low   	 = rw_regs[(C_S_AXI_DATA_WIDTH*11)+QDR_ADDR_WIDTH-1:(C_S_AXI_DATA_WIDTH*11)]; 
+	assign q1_addr_high  	 = rw_regs[(C_S_AXI_DATA_WIDTH*12)+QDR_ADDR_WIDTH-1:(C_S_AXI_DATA_WIDTH*12)]; 
+	assign q2_addr_low   	 = rw_regs[(C_S_AXI_DATA_WIDTH*13)+QDR_ADDR_WIDTH-1:(C_S_AXI_DATA_WIDTH*13)]; 
+	assign q2_addr_high  	 = rw_regs[(C_S_AXI_DATA_WIDTH*14)+QDR_ADDR_WIDTH-1:(C_S_AXI_DATA_WIDTH*14)]; 
+	assign q3_addr_low   	 = rw_regs[(C_S_AXI_DATA_WIDTH*15)+QDR_ADDR_WIDTH-1:(C_S_AXI_DATA_WIDTH*15)]; 
+	assign q3_addr_high  	 = rw_regs[(C_S_AXI_DATA_WIDTH*16)+QDR_ADDR_WIDTH-1:(C_S_AXI_DATA_WIDTH*16)]; 
+	                         
+	assign q0_enable			 = rw_regs[(C_S_AXI_DATA_WIDTH*17)+1-1:(C_S_AXI_DATA_WIDTH*17)];
+	assign q1_enable			 = rw_regs[(C_S_AXI_DATA_WIDTH*18)+1-1:(C_S_AXI_DATA_WIDTH*18)];
+	assign q2_enable			 = rw_regs[(C_S_AXI_DATA_WIDTH*19)+1-1:(C_S_AXI_DATA_WIDTH*19)];
+	assign q3_enable			 = rw_regs[(C_S_AXI_DATA_WIDTH*20)+1-1:(C_S_AXI_DATA_WIDTH*20)];
 
   // -- Pcap Replay uEngine
   pcap_replay_uengine #
@@ -261,12 +376,33 @@ module nf10_pcap_replay_uengine
 		.qdr_clk_270				  ( qdr_clk_270 ),
 
     // Master Stream Ports (interface to data path)
-	  .m_axis_tdata         ( m_axis_tdata ),
-    .m_axis_tstrb         ( m_axis_tstrb ),
-    .m_axis_tuser         ( m_axis_tuser ),
-    .m_axis_tvalid        ( m_axis_tvalid ),
-    .m_axis_tready        ( m_axis_tready ),
-    .m_axis_tlast         ( m_axis_tlast ),
+	  .m_axis_tdata_0       ( m_axis_tdata_0 ),
+    .m_axis_tstrb_0       ( m_axis_tstrb_0 ),
+    .m_axis_tuser_0       ( m_axis_tuser_0 ),
+    .m_axis_tvalid_0      ( m_axis_tvalid_0 ),
+    .m_axis_tready_0      ( m_axis_tready_0 ),
+    .m_axis_tlast_0       ( m_axis_tlast_0 ),
+		
+	  .m_axis_tdata_1       ( m_axis_tdata_1 ),
+    .m_axis_tstrb_1       ( m_axis_tstrb_1 ),
+    .m_axis_tuser_1       ( m_axis_tuser_1 ),
+    .m_axis_tvalid_1      ( m_axis_tvalid_1 ),
+    .m_axis_tready_1      ( m_axis_tready_1 ),
+    .m_axis_tlast_1       ( m_axis_tlast_1 ),
+		
+	  .m_axis_tdata_2       ( m_axis_tdata_2 ),
+    .m_axis_tstrb_2       ( m_axis_tstrb_2 ),
+    .m_axis_tuser_2       ( m_axis_tuser_2 ),
+    .m_axis_tvalid_2      ( m_axis_tvalid_2 ),
+    .m_axis_tready_2      ( m_axis_tready_2 ),
+    .m_axis_tlast_2       ( m_axis_tlast_2 ),
+	
+	  .m_axis_tdata_3       ( m_axis_tdata_3 ),
+    .m_axis_tstrb_3       ( m_axis_tstrb_3 ),
+    .m_axis_tuser_3       ( m_axis_tuser_3 ),
+    .m_axis_tvalid_3      ( m_axis_tvalid_3 ),
+    .m_axis_tready_3      ( m_axis_tready_3 ),
+    .m_axis_tlast_3       ( m_axis_tlast_3 ),
 
     // Slave Stream Ports (interface to RX queues)
     .s_axis_tdata         ( s_axis_tdata ),
@@ -323,9 +459,29 @@ module nf10_pcap_replay_uengine
 	  .qdr_masterbank_sel_2 ( qdr_masterbank_sel_2 ),
 
     // Misc
-		.mem_addr_high				(mem_addr_high),
-		.replay_count					(replay_count),
-		.start_replay					(start_replay),
+		.q0_addr_low					( q0_addr_low ),
+		.q0_addr_high					( q0_addr_high ),
+		.q1_addr_low					( q1_addr_low ),
+		.q1_addr_high					( q1_addr_high ),
+		.q2_addr_low					( q2_addr_low ),
+		.q2_addr_high					( q2_addr_high ),
+		.q3_addr_low					( q3_addr_low ),
+		.q3_addr_high					( q3_addr_high ),
+		
+		.q0_replay_count			( q0_replay_count ),
+		.q1_replay_count			( q1_replay_count ),
+		.q2_replay_count			( q2_replay_count ),
+		.q3_replay_count			( q3_replay_count ),
+		
+		.q0_start_replay			( q0_start_replay ),
+		.q1_start_replay			( q1_start_replay ),
+		.q2_start_replay			( q2_start_replay ),
+		.q3_start_replay			( q3_start_replay ),
+		
+		.q0_enable						( q0_enable ),
+		.q1_enable						( q1_enable ),
+		.q2_enable						( q2_enable ),
+		.q3_enable						( q3_enable ),
 		
     .sw_rst               ( sw_rst )
   );

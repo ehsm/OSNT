@@ -44,7 +44,7 @@ module fifo_to_axis
     //Master AXI Stream Data Width
     parameter C_M_AXIS_DATA_WIDTH  = 256,
     parameter C_M_AXIS_TUSER_WIDTH = 128,
-    parameter FIFO_DATA_WIDTH      = 72
+    parameter FIFO_DATA_WIDTH      = 144
 )
 (
     // Global Ports
@@ -56,6 +56,7 @@ module fifo_to_axis
     input                                           fifo_wr_en,
     input [FIFO_DATA_WIDTH-1:0]                     fifo_din,
     output                                          fifo_full,
+    output                                          fifo_prog_full,		
 
     // AXI Stream Ports
     output reg [C_M_AXIS_DATA_WIDTH-1:0]            m_axis_tdata,
@@ -109,13 +110,14 @@ module fifo_to_axis
   endgenerate
 
   // -- Modules and Logic
-  xil_async_fifo #(.DOUT_WIDTH(C_M_AXIS_PACKED_DATA_WIDTH), .DIN_WIDTH(FIFO_DATA_WIDTH), .DEPTH(16))
+  xil_async_fifo #(.DOUT_WIDTH(C_M_AXIS_PACKED_DATA_WIDTH), .DIN_WIDTH(FIFO_DATA_WIDTH))
     async_fifo_inst
       ( .din          (fifo_din),
         .wr_en        (fifo_wr_en),
         .rd_en        (fifo_rd_en),
         .dout         (fifo_dout_packed),
         .full         (fifo_full),
+				.prog_full		(fifo_prog_full),
         .empty        (fifo_empty),
         .rst          (!axi_aresetn || sw_rst),
         .wr_clk       (fifo_clk),
@@ -137,8 +139,9 @@ module fifo_to_axis
 
     case (state)
       RD_TUSER_BITS: begin
-        if (!fifo_empty) begin //TDATA_WIDTH > TUSER_WIDTH
-          axis_tuser_c = fifo_dout[C_M_AXIS_TUSER_WIDTH-1:0];
+        if (!fifo_empty) begin 
+					// Note: Assuming that TDATA_WIDTH > TUSER_WIDTH
+          axis_tuser_c = fifo_dout[C_M_AXIS_TUSER_WIDTH-1:0]; 
           fifo_rd_en = 1;
 
           next_state = RD_PKT_BITS;
@@ -173,6 +176,6 @@ module fifo_to_axis
       axis_tuser_r <= axis_tuser_c;
     end
   end
-
+	
 endmodule
 

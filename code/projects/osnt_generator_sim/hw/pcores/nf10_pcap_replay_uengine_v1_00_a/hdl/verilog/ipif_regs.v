@@ -6,7 +6,7 @@
  *        ipif_regs.v
  *
  *  Library:
- *        std/pcores/nf10_proc_common_v1_00_a
+ *        std/pcores/nf10_pcap_replay_uengine_v1_00_a
  *
  *  Module:
  *        ipif_regs
@@ -70,11 +70,11 @@
    output                                              IP2Bus_Error,
    
    // -- Register ports
-   output    [NUM_WO_REGS*C_S_AXI_DATA_WIDTH : 0]    wo_regs,
-   input     [NUM_WO_REGS*C_S_AXI_DATA_WIDTH : 0]    wo_defaults,
-   output    [NUM_RW_REGS*C_S_AXI_DATA_WIDTH : 0]    rw_regs,
-   input     [NUM_RW_REGS*C_S_AXI_DATA_WIDTH : 0]    rw_defaults,
-   input     [NUM_RO_REGS*C_S_AXI_DATA_WIDTH : 0]    ro_regs
+   output    [NUM_WO_REGS*C_S_AXI_DATA_WIDTH : 0]    	 wo_regs,
+   input     [NUM_WO_REGS*C_S_AXI_DATA_WIDTH : 0]      wo_defaults,
+   output    [NUM_RW_REGS*C_S_AXI_DATA_WIDTH : 0]      rw_regs,
+   input     [NUM_RW_REGS*C_S_AXI_DATA_WIDTH : 0]      rw_defaults,
+   input     [NUM_RO_REGS*C_S_AXI_DATA_WIDTH : 0]      ro_regs
  );
 
     function integer log2;
@@ -96,69 +96,68 @@
    genvar i;
    integer j;
    
-   wire [C_S_AXI_DATA_WIDTH-1 : 0] reg_file_rd_port  [0 : NUM_RW_REGS+NUM_RO_REGS-1];
-   reg  [C_S_AXI_DATA_WIDTH-1 : 0] reg_file_wr_port  [0 : NUM_WO_REGS+NUM_RW_REGS-1];
-   wire [C_S_AXI_DATA_WIDTH-1 : 0] reg_file_defaults [0 : NUM_WO_REGS+NUM_RW_REGS-1];
+   wire [C_S_AXI_DATA_WIDTH-1 : 0] reg_file_rd_port  [0 : NUM_RW_REGS+NUM_RO_REGS];
+   reg  [C_S_AXI_DATA_WIDTH-1 : 0] reg_file_wr_port  [0 : NUM_WO_REGS+NUM_RW_REGS];
+   wire [C_S_AXI_DATA_WIDTH-1 : 0] reg_file_defaults [0 : NUM_WO_REGS+NUM_RW_REGS];
    
-   generate	 
+ generate	 
 	 // Unpacking Write Only registers
 	 if (NUM_WO_REGS > 0)       
 	   for (i=0; i<NUM_WO_REGS; i=i+1) begin : WO
 	     assign wo_regs[C_S_AXI_DATA_WIDTH*(i+1)-1 : C_S_AXI_DATA_WIDTH*i] = reg_file_wr_port[i];
-             assign reg_file_defaults[i] = wo_defaults[C_S_AXI_DATA_WIDTH*(i+1)-1 : C_S_AXI_DATA_WIDTH*i];
+       assign reg_file_defaults[i] = wo_defaults[C_S_AXI_DATA_WIDTH*(i+1)-1 : C_S_AXI_DATA_WIDTH*i];
 	   end
 
 	 // Unpacking Read Write registers
 	 if (NUM_RW_REGS > 0)       
 	   for (i=0; i<NUM_RW_REGS; i=i+1) begin : RW
 	     assign rw_regs[C_S_AXI_DATA_WIDTH*(i+1)-1 : C_S_AXI_DATA_WIDTH*i] = reg_file_wr_port[NUM_WO_REGS+i];
-		 assign reg_file_rd_port[i] = reg_file_wr_port[NUM_WO_REGS+i];
-             assign reg_file_defaults[NUM_WO_REGS+i] = rw_defaults[C_S_AXI_DATA_WIDTH*(i+1)-1 : C_S_AXI_DATA_WIDTH*i];
+		   assign reg_file_rd_port[i] = reg_file_wr_port[NUM_WO_REGS+i];
+       assign reg_file_defaults[NUM_WO_REGS+i] = rw_defaults[C_S_AXI_DATA_WIDTH*(i+1)-1 : C_S_AXI_DATA_WIDTH*i];
 	   end
 
-     // Unpacking Read Only registers
-     if (NUM_RO_REGS > 0)       
+   // Unpacking Read Only registers
+   if (NUM_RO_REGS > 0)       
 	   for (i=0; i<NUM_RO_REGS; i=i+1) begin : RO
 	     assign reg_file_rd_port[NUM_RW_REGS+i] = ro_regs[C_S_AXI_DATA_WIDTH*(i+1)-1 : C_S_AXI_DATA_WIDTH*i];
-           end
-   endgenerate
+     end
+ endgenerate
  
-   // -- Implementation
-   
+ 	 // -- Implementation
    assign IP2Bus_Error = 1'b0;
    
    // SW writes
    always @ (posedge Bus2IP_Clk) begin
      if (~Bus2IP_Resetn) begin
-	   for (j=0; j<(NUM_WO_REGS+NUM_RW_REGS); j=j+1) 
-	     reg_file_wr_port[j] <= reg_file_defaults[j];
+	     for (j=0; j<(NUM_WO_REGS+NUM_RW_REGS); j=j+1) 
+	       reg_file_wr_port[j] <= reg_file_defaults[j];
 	   
-	   IP2Bus_WrAck <= 1'b0;
-	 end
-	 else begin
-	   IP2Bus_WrAck <= 1'b0;
-	   
-	   if (Bus2IP_CS && !Bus2IP_RNW && Bus2IP_Addr[addr_width_msb-1:addr_width_lsb] < (NUM_WO_REGS+NUM_RW_REGS)) begin
-	     reg_file_wr_port[Bus2IP_Addr[addr_width_msb-1:addr_width_lsb]] <= Bus2IP_Data;
-		 IP2Bus_WrAck <= 1'b1;
+	     IP2Bus_WrAck <= 1'b0;
 	   end
-	 end
+	   else begin
+	     IP2Bus_WrAck <= 1'b0;
+	   
+	     if (Bus2IP_CS && !Bus2IP_RNW && Bus2IP_Addr[addr_width_msb-1:addr_width_lsb] < (NUM_WO_REGS+NUM_RW_REGS)) begin
+	       reg_file_wr_port[Bus2IP_Addr[addr_width_msb-1:addr_width_lsb]] <= Bus2IP_Data;
+		     IP2Bus_WrAck <= 1'b1;
+	     end
+	   end
    end
    
    // SW reads
    always @ (posedge Bus2IP_Clk) begin
      if (~Bus2IP_Resetn) begin
-	   IP2Bus_Data <= {C_S_AXI_DATA_WIDTH{1'b0}};
-	   IP2Bus_RdAck <= 1'b0;
-	 end
-	 else begin
-	   IP2Bus_RdAck <= 1'b0;
-	   
-	   if (Bus2IP_CS && Bus2IP_RNW && Bus2IP_Addr[addr_width_msb-1:addr_width_lsb] >= (NUM_WO_REGS)) begin
-	     IP2Bus_Data <= reg_file_rd_port[Bus2IP_Addr[addr_width_msb-1:addr_width_lsb]-NUM_WO_REGS];
-		 IP2Bus_RdAck <= 1'b1;
+	     IP2Bus_Data <= {C_S_AXI_DATA_WIDTH{1'b0}};
+	     IP2Bus_RdAck <= 1'b0;
 	   end
-	 end
+	   else begin
+	     IP2Bus_RdAck <= 1'b0;
+	   
+	     if (Bus2IP_CS && Bus2IP_RNW && Bus2IP_Addr[addr_width_msb-1:addr_width_lsb] >= (NUM_WO_REGS)) begin
+	       IP2Bus_Data <= reg_file_rd_port[Bus2IP_Addr[addr_width_msb-1:addr_width_lsb]-NUM_WO_REGS];
+		     IP2Bus_RdAck <= 1'b1;
+	     end
+	   end
    end
     
  endmodule 

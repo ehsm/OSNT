@@ -79,9 +79,9 @@ for i in range(4):
 
 # PCI interface
 with open( os.path.join( script_dir, 'dma_0_stim.axi' ), 'w' ) as f:
-    axitools.axis_dump( pkts, f, 256, 1e-9 )
+    axitools.axis_dump( pkts*4, f, 256, 1e-9 )
 with open( os.path.join( script_dir, 'dma_0_expected.axi' ), 'w' ) as f:
-    axitools.axis_dump( pkts, f, 256, 1e-9 )
+    axitools.axis_dump( pkts*4, f, 256, 1e-9 )
 # 10g interfaces
 for i in range(4):
     # replace source port
@@ -90,4 +90,4 @@ for i in range(4):
     with open( os.path.join( script_dir, 'nf10_10g_interface_%d_stim.axi' % i ), 'w' ) as f:
         axitools.axis_dump( pkts, f, 256, 1e-9 )
     with open( os.path.join( script_dir, 'nf10_10g_interface_%d_expected.axi' % i ), 'w' ) as f:
-        axitools.axis_dump( pkts[0]*2, f, 256, 1e-9 )
+        axitools.axis_dump( pkts[i]*40, f, 256, 1e-9 )

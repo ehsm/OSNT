@@ -30,7 +30,7 @@
  *
  *        This package is distributed in the hope that it will be useful, but
  *        WITHOUT ANY WARRANTY; without even the implied warranty of
- *        MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *        MERCHANTABILITY or FITNESS FOR A PARTICULAqR PURPOSE.  See the GNU
  *        Lesser General Public License for more details.
  *
  *        You should have received a copy of the GNU Lesser General Public
@@ -38,6 +38,10 @@
  *        http://www.gnu.org/licenses/.
  *
  */
+
+
+// TODO: 
+// (1) Add support for the third SRAM
 
 module pcap_replay_uengine
 #(
@@ -47,6 +51,8 @@ module pcap_replay_uengine
     parameter C_M_AXIS_TUSER_WIDTH = 128,
     parameter C_S_AXIS_TUSER_WIDTH = 128,
     parameter C_S_AXI_DATA_WIDTH   = 32,
+	  parameter C_NUM_QUEUES 				 = 4,
+		parameter DST_PORT_POS         = 24,
     parameter QDR_NUM_CHIPS        = 3,
     parameter QDR_DATA_WIDTH       = 36,
     parameter QDR_ADDR_WIDTH       = 19,
@@ -70,12 +76,33 @@ module pcap_replay_uengine
     input                                           qdr_clk_270,
 
     // Master Stream Ports (interface to data path)
-    output     [C_M_AXIS_DATA_WIDTH-1:0]            m_axis_tdata,
-    output     [((C_M_AXIS_DATA_WIDTH/8))-1:0]      m_axis_tstrb,
-    output     [C_M_AXIS_TUSER_WIDTH-1:0]           m_axis_tuser,
-    output                                          m_axis_tvalid,
-    input                                           m_axis_tready,
-    output                                          m_axis_tlast,
+    output     [C_M_AXIS_DATA_WIDTH-1:0]            m_axis_tdata_0,
+    output     [((C_M_AXIS_DATA_WIDTH/8))-1:0]      m_axis_tstrb_0,
+    output     [C_M_AXIS_TUSER_WIDTH-1:0]           m_axis_tuser_0,
+    output                                          m_axis_tvalid_0,
+    input                                           m_axis_tready_0,
+    output                                          m_axis_tlast_0,
+		
+    output     [C_M_AXIS_DATA_WIDTH-1:0]            m_axis_tdata_1,
+    output     [((C_M_AXIS_DATA_WIDTH/8))-1:0]      m_axis_tstrb_1,
+    output     [C_M_AXIS_TUSER_WIDTH-1:0]           m_axis_tuser_1,
+    output                                          m_axis_tvalid_1,
+    input                                           m_axis_tready_1,
+    output                                          m_axis_tlast_1,
+		
+    output     [C_M_AXIS_DATA_WIDTH-1:0]            m_axis_tdata_2,
+    output     [((C_M_AXIS_DATA_WIDTH/8))-1:0]      m_axis_tstrb_2,
+    output     [C_M_AXIS_TUSER_WIDTH-1:0]           m_axis_tuser_2,
+    output                                          m_axis_tvalid_2,
+    input                                           m_axis_tready_2,
+    output                                          m_axis_tlast_2,
+		
+    output     [C_M_AXIS_DATA_WIDTH-1:0]            m_axis_tdata_3,
+    output     [((C_M_AXIS_DATA_WIDTH/8))-1:0]      m_axis_tstrb_3,
+    output     [C_M_AXIS_TUSER_WIDTH-1:0]           m_axis_tuser_3,
+    output                                          m_axis_tvalid_3,
+    input                                           m_axis_tready_3,
+    output                                          m_axis_tlast_3,
 
     // Slave Stream Ports (interface to RX queues)
     input [C_S_AXIS_DATA_WIDTH-1:0]            			s_axis_tdata,
@@ -131,10 +158,31 @@ module pcap_replay_uengine
     output                                     			qdr_r_n_2,
     input 					                 								qdr_masterbank_sel_2,
                                                   	
-		// Misc                                         	
-		input [QDR_ADDR_WIDTH-1:0]  										mem_addr_high,
-		input	[REPLAY_COUNT_WIDTH-1:0]									replay_count,
-		input																						start_replay,	
+		// Misc
+		input [QDR_ADDR_WIDTH-1:0]  										q0_addr_low,
+		input [QDR_ADDR_WIDTH-1:0]  										q0_addr_high,
+		input [QDR_ADDR_WIDTH-1:0]  										q1_addr_low,
+		input [QDR_ADDR_WIDTH-1:0]  										q1_addr_high,
+		input [QDR_ADDR_WIDTH-1:0]  										q2_addr_low,
+		input [QDR_ADDR_WIDTH-1:0]  										q2_addr_high,
+		input [QDR_ADDR_WIDTH-1:0]  										q3_addr_low,
+		input [QDR_ADDR_WIDTH-1:0]  										q3_addr_high,
+		
+		input	[REPLAY_COUNT_WIDTH-1:0]									q0_replay_count,
+		input	[REPLAY_COUNT_WIDTH-1:0]									q1_replay_count,
+		input	[REPLAY_COUNT_WIDTH-1:0]									q2_replay_count,
+		input	[REPLAY_COUNT_WIDTH-1:0]									q3_replay_count,
+		
+		input																						q0_start_replay,
+		input																						q1_start_replay,
+		input																						q2_start_replay,
+		input																						q3_start_replay,
+		
+		input																						q0_enable,
+		input																						q1_enable,
+		input																						q2_enable,
+		input																						q3_enable,
+		
     input                                      			sw_rst
 );	
 
@@ -151,128 +199,158 @@ module pcap_replay_uengine
 
   // -- Internal Parameters
   localparam IODELAY_GRP = "IODELAY_MIG";
-
+	
   // -- Signals
   
   genvar i;
 	
 	wire qdr_clk_180;
-	wire usr_rst, usr_rst_180, usr_rst_200, usr_rst_270;
+	wire user_rst, user_rst_180, user_rst_200, user_rst_270;
   wire idelay_ctrl_rdy;
 	
-  wire                                       fifo_wr_rd_en;
-  wire [QDR_NUM_CHIPS*QDR_DATA_WIDTH*2-1:0]  fifo_wr_data;
-  wire                                       fifo_wr_empty;
-	
-  wire                                       fifo_rd_wr_en;
-  wire [QDR_NUM_CHIPS*QDR_DATA_WIDTH*2-1:0]  fifo_rd_data;
-  wire                                       fifo_rd_full;
-	
-	wire                    									 user_ad_w_n;
-  wire		                 									 user_d_w_n;
-	wire [QDR_NUM_CHIPS-1:0]									 user_wr_full;
-  wire [QDR_ADDR_WIDTH-1:0]  								 user_ad_wr;
-  wire [QDR_BW_WIDTH-1:0]    								 user_bwh_n;
-  wire [QDR_BW_WIDTH-1:0]    								 user_bwl_n;
-  wire [QDR_NUM_CHIPS*QDR_DATA_WIDTH-1:0]  	 user_dwl;
-  wire [QDR_NUM_CHIPS*QDR_DATA_WIDTH-1:0]  	 user_dwh;
-	
-	wire																			 user_r_n;
-	wire [QDR_NUM_CHIPS-1:0]									 user_rd_full;
-	wire [QDR_ADDR_WIDTH-1:0]  								 user_ad_rd;
-	wire [QDR_NUM_CHIPS-1:0]									 user_qr_valid;
-  wire [QDR_NUM_CHIPS*QDR_DATA_WIDTH-1:0]  	 user_qrl;
-  wire [QDR_NUM_CHIPS*QDR_DATA_WIDTH-1:0]  	 user_qrh;
-	
-  wire [QDR_NUM_CHIPS*QDR_DATA_WIDTH-1:0]    qdr_q;
-  wire [QDR_NUM_CHIPS*QDR_CQ_WIDTH-1:0]      qdr_cq;
-  wire [QDR_NUM_CHIPS*QDR_CQ_WIDTH-1:0]      qdr_cq_n;
-  wire [QDR_NUM_CHIPS*QDR_CLK_WIDTH-1:0]     qdr_c;
-  wire [QDR_NUM_CHIPS*QDR_CLK_WIDTH-1:0]     qdr_c_n;
-  wire [QDR_NUM_CHIPS-1:0]                   qdr_dll_off_n;
-  wire [QDR_NUM_CHIPS*QDR_CLK_WIDTH-1:0]     qdr_k;
-  wire [QDR_NUM_CHIPS*QDR_CLK_WIDTH-1:0]     qdr_k_n;
-  wire [QDR_NUM_CHIPS*QDR_ADDR_WIDTH-1:0]    qdr_sa;
-  wire [QDR_NUM_CHIPS*QDR_BW_WIDTH-1:0]      qdr_bw_n;
-  wire [QDR_NUM_CHIPS-1:0]                   qdr_w_n;
-  wire [QDR_NUM_CHIPS*QDR_DATA_WIDTH-1:0]    qdr_d;
-  wire [QDR_NUM_CHIPS-1:0]            			 qdr_r_n;
-	
-	wire [QDR_NUM_CHIPS-1:0] 									 cal_done;
+  wire                                       								 			fifo_wr_rd_en;
+  wire [QDR_NUM_CHIPS*QDR_DATA_WIDTH*2-1:0]  								 			fifo_wr_data;
+	wire [log2(C_NUM_QUEUES)-1:0]  						 								 			fifo_wr_qid;
+  wire                                       								 			fifo_wr_empty;
+	                                           								 
+  wire                    								 									 			q0_fifo_rd_wr_en;
+  wire [QDR_NUM_CHIPS*(QDR_DATA_WIDTH*(QDR_BURST_LENGTH/2))-1:0] 	q0_fifo_rd_data;
+  wire                                 										 	 			q0_fifo_rd_full;
+	wire                                 										 	 			q0_fifo_rd_prog_full;
+  wire                    								 									 			q1_fifo_rd_wr_en;
+  wire [QDR_NUM_CHIPS*(QDR_DATA_WIDTH*(QDR_BURST_LENGTH/2))-1:0] 	q1_fifo_rd_data;
+  wire                                 										 	 			q1_fifo_rd_full;
+	wire                                 										 	 			q1_fifo_rd_prog_full;
+  wire                    								 									 			q2_fifo_rd_wr_en;
+  wire [QDR_NUM_CHIPS*(QDR_DATA_WIDTH*(QDR_BURST_LENGTH/2))-1:0] 	q2_fifo_rd_data;
+  wire                                 										 	 			q2_fifo_rd_full;
+	wire                                 										 	 			q2_fifo_rd_prog_full;
+  wire                    								 									 			q3_fifo_rd_wr_en;
+  wire [QDR_NUM_CHIPS*(QDR_DATA_WIDTH*(QDR_BURST_LENGTH/2))-1:0] 	q3_fifo_rd_data;
+  wire                                 										 	 			q3_fifo_rd_full;
+	wire                                 										 	 			q3_fifo_rd_prog_full;
+	                                                           
+	wire                    									 								 			user_ad_w_n;
+  wire		                 									 								 			user_d_w_n;
+	wire [QDR_NUM_CHIPS-1:0]									 								 			user_wr_full;
+  wire [QDR_ADDR_WIDTH-1:0]  								 								 			user_ad_wr;
+  wire [QDR_BW_WIDTH-1:0]    								 								 			user_bwh_n;
+  wire [QDR_BW_WIDTH-1:0]    								 								 			user_bwl_n;
+  wire [QDR_NUM_CHIPS*QDR_DATA_WIDTH-1:0]  	 								 			user_dwl;
+  wire [QDR_NUM_CHIPS*QDR_DATA_WIDTH-1:0]  	 								 			user_dwh;
+	                                                           			
+	wire																			 								 			user_r_n;
+	wire [QDR_NUM_CHIPS-1:0]									 								 			user_rd_full;
+	wire [QDR_ADDR_WIDTH-1:0]  								 								 			user_ad_rd;
+	wire [QDR_NUM_CHIPS-1:0]									 								 			user_qr_valid;
+  wire [QDR_NUM_CHIPS*QDR_DATA_WIDTH-1:0]  	 								 			user_qrl;
+  wire [QDR_NUM_CHIPS*QDR_DATA_WIDTH-1:0]  	 								 			user_qrh;
+	                                                           			
+  wire [QDR_NUM_CHIPS*QDR_DATA_WIDTH-1:0]    								 			qdr_q;
+  wire [QDR_NUM_CHIPS*QDR_CQ_WIDTH-1:0]      								 			qdr_cq;
+  wire [QDR_NUM_CHIPS*QDR_CQ_WIDTH-1:0]      								 			qdr_cq_n;
+  wire [QDR_NUM_CHIPS*QDR_CLK_WIDTH-1:0]     								 			qdr_c;
+  wire [QDR_NUM_CHIPS*QDR_CLK_WIDTH-1:0]     								 			qdr_c_n;
+  wire [QDR_NUM_CHIPS-1:0]                   								 			qdr_dll_off_n;
+  wire [QDR_NUM_CHIPS*QDR_CLK_WIDTH-1:0]     								 			qdr_k;
+  wire [QDR_NUM_CHIPS*QDR_CLK_WIDTH-1:0]     								 			qdr_k_n;
+  wire [QDR_NUM_CHIPS*QDR_ADDR_WIDTH-1:0]    								 			qdr_sa;
+  wire [QDR_NUM_CHIPS*QDR_BW_WIDTH-1:0]      								 			qdr_bw_n;
+  wire [QDR_NUM_CHIPS-1:0]                   								 			qdr_w_n;
+  wire [QDR_NUM_CHIPS*QDR_DATA_WIDTH-1:0]    								 			qdr_d;
+  wire [QDR_NUM_CHIPS-1:0]            			 								 			qdr_r_n;
+	                                                           			
+	wire [QDR_NUM_CHIPS-1:0] 									 								 			cal_done;
 	
 	// -- Assignments
 
-	assign qdr_q                                               = {qdr_q_2, qdr_q_1, qdr_q_0};
-	assign qdr_cq                                              = {qdr_cq_2, qdr_cq_1, qdr_cq_0};
-	assign qdr_cq_n                                            = {qdr_cq_n_2, qdr_cq_n_1, qdr_cq_n_0};
-  assign {qdr_c_2, qdr_c_1, qdr_c_0}                         = qdr_c;
-	assign {qdr_c_n_2, qdr_c_n_1, qdr_c_n_0}                   = qdr_c_n;
-	assign {qdr_dll_off_n_2, qdr_dll_off_n_1, qdr_dll_off_n_0} = qdr_dll_off_n;
-  assign {qdr_k_2, qdr_k_1, qdr_k_0}                         = qdr_k;
-	assign {qdr_k_n_2, qdr_k_n_1, qdr_k_n_0}                   = qdr_k_n;
-  assign {qdr_sa_2, qdr_sa_1, qdr_sa_0}                      = qdr_sa;
-  assign {qdr_bw_n_2, qdr_bw_n_1, qdr_bw_n_0}                = qdr_bw_n;
-  assign {qdr_w_n_2, qdr_w_n_1, qdr_w_n_0}                   = qdr_w_n;
-  assign {qdr_d_2, qdr_d_1, qdr_d_0}                         = qdr_d;
-  assign {qdr_r_n_2, qdr_r_n_1, qdr_r_n_0}                   = qdr_r_n;
-	
+	assign qdr_q                                               			= {qdr_q_2,    qdr_q_1,    qdr_q_0};
+	assign qdr_cq                                              			= {qdr_cq_2,   qdr_cq_1,   qdr_cq_0};
+	assign qdr_cq_n                                            			= {qdr_cq_n_2, qdr_cq_n_1, qdr_cq_n_0};
+  assign {qdr_c_2,         qdr_c_1,         qdr_c_0}         			= qdr_c;
+	assign {qdr_c_n_2,       qdr_c_n_1,       qdr_c_n_0}       			= qdr_c_n;
+	assign {qdr_dll_off_n_2, qdr_dll_off_n_1, qdr_dll_off_n_0} 			= qdr_dll_off_n;
+  assign {qdr_k_2,         qdr_k_1,         qdr_k_0}         			= qdr_k;
+	assign {qdr_k_n_2,       qdr_k_n_1,       qdr_k_n_0}       			= qdr_k_n;
+  assign {qdr_sa_2,        qdr_sa_1,        qdr_sa_0}        			= qdr_sa;
+  assign {qdr_bw_n_2,      qdr_bw_n_1,      qdr_bw_n_0}      			= qdr_bw_n;
+  assign {qdr_w_n_2,       qdr_w_n_1,       qdr_w_n_0}       			= qdr_w_n;
+  assign {qdr_d_2,         qdr_d_1,         qdr_d_0}         			= qdr_d;
+  assign {qdr_r_n_2,       qdr_r_n_1,       qdr_r_n_0}       			= qdr_r_n;
 
   // -- Modules and Logic
 
   axis_to_fifo #(
-    .C_S_AXIS_DATA_WIDTH  (C_S_AXIS_DATA_WIDTH),
-    .C_S_AXIS_TUSER_WIDTH (C_S_AXIS_TUSER_WIDTH),
-    .FIFO_DATA_WIDTH      (QDR_NUM_CHIPS*QDR_DATA_WIDTH*2) // x2 for both low and high value
-  )
-     axis_to_fifo_inst
-  (
-    .axi_aclk             (axi_aclk),
-    .axi_aresetn          (axi_aresetn),
-    .fifo_clk             (qdr_clk),
-
-    .s_axis_tdata         (s_axis_tdata),
-    .s_axis_tstrb         (s_axis_tstrb),
-    .s_axis_tuser         (s_axis_tuser),
-    .s_axis_tvalid        (s_axis_tvalid),
-    .s_axis_tready        (s_axis_tready),
-    .s_axis_tlast         (s_axis_tlast),
-
-    .fifo_rd_en           (fifo_wr_rd_en),
-    .fifo_dout            (fifo_wr_data),
-    .fifo_empty           (fifo_wr_empty),
-
-    .sw_rst               (sw_rst)
+    .C_S_AXIS_DATA_WIDTH  		(C_S_AXIS_DATA_WIDTH),
+    .C_S_AXIS_TUSER_WIDTH 		(C_S_AXIS_TUSER_WIDTH),
+    .FIFO_DATA_WIDTH      		(QDR_NUM_CHIPS*(QDR_DATA_WIDTH*(QDR_BURST_LENGTH/2))),
+		.NUM_QUEUES								(C_NUM_QUEUES),
+		.DST_PORT_POS							(DST_PORT_POS)
+  )                       		
+     axis_to_fifo_inst    		
+  (                       		
+    .axi_aclk             		(axi_aclk),
+    .axi_aresetn          		(axi_aresetn),
+    .fifo_clk             		(qdr_clk),
+                          		
+    .s_axis_tdata         		(s_axis_tdata),
+    .s_axis_tstrb         		(s_axis_tstrb),
+    .s_axis_tuser         		(s_axis_tuser),
+    .s_axis_tvalid        		(s_axis_tvalid),
+    .s_axis_tready        		(s_axis_tready),
+    .s_axis_tlast         		(s_axis_tlast),
+                          		
+    .fifo_rd_en           		(fifo_wr_rd_en),
+    .fifo_dout            		(fifo_wr_data),
+		.fifo_dout_qid						(fifo_wr_qid),
+    .fifo_empty           		(fifo_wr_empty),
+                          		
+    .sw_rst               		(sw_rst)
   );
 
 	fifo_to_mem #(
-    .FIFO_DATA_WIDTH      (QDR_NUM_CHIPS*QDR_DATA_WIDTH*2),
-		.MEM_ADDR_WIDTH       (QDR_ADDR_WIDTH),
-		.MEM_DATA_WIDTH       (QDR_NUM_CHIPS*QDR_DATA_WIDTH),
-		.MEM_BW_WIDTH         (QDR_BW_WIDTH),
-		.MEM_BURST_LENGTH			(QDR_BURST_LENGTH)    
+    .FIFO_DATA_WIDTH      		(QDR_NUM_CHIPS*(QDR_DATA_WIDTH*(QDR_BURST_LENGTH/2))),
+		.NUM_QUEUES								(C_NUM_QUEUES),
+		.MEM_ADDR_WIDTH       		(QDR_ADDR_WIDTH),
+		.MEM_DATA_WIDTH       		(QDR_NUM_CHIPS*QDR_DATA_WIDTH),
+		.MEM_BW_WIDTH         		(QDR_BW_WIDTH),
+		.MEM_BURST_LENGTH					(QDR_BURST_LENGTH)    
 	)
 	  fifo_to_mem_inst
 	(
-	    .clk								(qdr_clk),
-			.rst								(usr_rst),
-
-	    .fifo_rd_en					(fifo_wr_rd_en),
-	    .fifo_data					(fifo_wr_data),
-	    .fifo_empty					(fifo_wr_empty),
-		
-	    .mem_ad_w_n					(user_ad_w_n),
-	    .mem_d_w_n					(user_d_w_n),
-			.mem_wr_full				(&user_wr_full),
-	    .mem_ad_wr					(user_ad_wr),
-	    .mem_bwh_n					(user_bwh_n),
-	    .mem_bwl_n					(user_bwl_n),
-	    .mem_dwl						(user_dwl),
-	    .mem_dwh						(user_dwh),
+	    .clk										(qdr_clk),
+			.rst										(user_rst),
+                          		
+	    .fifo_rd_en							(fifo_wr_rd_en),
+	    .fifo_data							(fifo_wr_data),
+			.fifo_qid								(fifo_wr_qid),
+	    .fifo_empty							(fifo_wr_empty),
+		                      		
+	    .mem_ad_w_n							(user_ad_w_n),
+	    .mem_d_w_n							(user_d_w_n),
+			.mem_wr_full						(&user_wr_full),
+	    .mem_ad_wr							(user_ad_wr),
+	    .mem_bwh_n							(user_bwh_n),
+	    .mem_bwl_n							(user_bwl_n),
+	    .mem_dwl								(user_dwl),
+	    .mem_dwh								(user_dwh),
+			                    		
+			.q0_addr_low						(q0_addr_low),
+			.q0_addr_high						(q0_addr_high),
+			.q1_addr_low					  (q1_addr_low),
+			.q1_addr_high						(q1_addr_high),
+			.q2_addr_low						(q2_addr_low),
+			.q2_addr_high						(q2_addr_high),
+			.q3_addr_low						(q3_addr_low),
+			.q3_addr_high						(q3_addr_high),
 			
-			.mem_addr_high			(mem_addr_high),
-
-	    .sw_rst							(sw_rst),
-			.cal_done						(&cal_done)
+			.q0_enable							(q0_enable),
+			.q1_enable							(q1_enable),
+			.q2_enable							(q2_enable),
+			.q3_enable							(q3_enable),
+                          		
+	    .sw_rst									(sw_rst),
+			.cal_done								(&cal_done)
 	);
 	
   generate
@@ -293,14 +371,14 @@ module pcap_replay_uengine
         .MEMORY_WIDTH           (QDR_DATA_WIDTH),
         .SIM_ONLY								(SIM_ONLY)	
 			)
-      	_controller
+      	_inst
       (
         .clk0                   (qdr_clk),
         .clk180                 (qdr_clk_180),
         .clk270                 (qdr_clk_270),
-        .user_rst_0							(usr_rst),
-        .user_rst_180						(usr_rst_180),
-        .user_rst_270						(usr_rst_270),
+        .user_rst_0							(user_rst),
+        .user_rst_180						(user_rst_180),
+        .user_rst_270						(user_rst_270),
 				
         .user_ad_w_n            (user_ad_w_n),
         .user_ad_wr             (user_ad_wr),
@@ -364,10 +442,10 @@ module pcap_replay_uengine
   (
    	.sys_rst_n              (axi_aresetn),
    	.locked                 (dcm_locked),
-   	.user_rst_0             (usr_rst),
-   	.user_rst_180           (usr_rst_180),
-   	.user_rst_270           (usr_rst_270),
-   	.user_rst_200           (usr_rst_200),
+   	.user_rst_0             (user_rst),
+   	.user_rst_180           (user_rst_180),
+   	.user_rst_270           (user_rst_270),
+   	.user_rst_200           (user_rst_200),
    	.idelay_ctrl_rdy        (idelay_ctrl_rdy),
    	.clk0                   (qdr_clk),
    	.clk180                 (qdr_clk_180),
@@ -380,12 +458,12 @@ module pcap_replay_uengine
   )
 	  u_qdrii_idelay_ctrl
   (
-    .user_rst_200    (usr_rst_200),
+    .user_rst_200    (user_rst_200),
     .idelay_ctrl_rdy (idelay_ctrl_rdy),
     .clk200          (qdr_clk_200)
   );
 	
-  // TODO: add calibration state machine 
+  // TODO: add calibration state machine (not sure if needed)
 
   (* KEEP = "TRUE" *) wire [QDR_NUM_CHIPS-1:0] qdr_masterbank_sel /*synthesis syn_keep = 1 */;
 	(* KEEP = "TRUE" *) wire [QDR_NUM_CHIPS-1:0] qdr_masterbank_sel_o /*synthesis syn_keep = 1 */;
@@ -405,60 +483,187 @@ module pcap_replay_uengine
 	endgenerate
 	
 	mem_to_fifo #(
-    .FIFO_DATA_WIDTH      (QDR_NUM_CHIPS*QDR_DATA_WIDTH*2),
+		.NUM_QUEUES     			(C_NUM_QUEUES),
+    .FIFO_DATA_WIDTH      (QDR_NUM_CHIPS*(QDR_DATA_WIDTH*(QDR_BURST_LENGTH/2))),
 		.MEM_ADDR_WIDTH       (QDR_ADDR_WIDTH),
 		.MEM_DATA_WIDTH       (QDR_NUM_CHIPS*QDR_DATA_WIDTH),
 		.MEM_BW_WIDTH         (QDR_BW_WIDTH),
-		.MEM_BURST_LENGTH			(QDR_BURST_LENGTH)    
+		.MEM_BURST_LENGTH			(QDR_BURST_LENGTH),    
+		.REPLAY_COUNT_WIDTH   (REPLAY_COUNT_WIDTH)
 	)
 		mem_to_fifo_inst
 	(
-    .clk								(qdr_clk),
-		.rst								(usr_rst),
-	
-	  .mem_r_n						(user_r_n),
-		.mem_rd_full				(&user_rd_full),
-	  .mem_ad_rd					(user_ad_rd),
-		.mem_qr_valid				(&user_qr_valid),
-	  .mem_qrl						(user_qrl),
-	  .mem_qrh						(user_qrh),
-	    
-	  .fifo_wr_en					(fifo_rd_wr_en),
-	  .fifo_data					(fifo_rd_data),
-	  .fifo_full					(fifo_rd_full),
-	    
-		.mem_addr_high			(mem_addr_high),
-		.replay_count				(replay_count),
-		.start_replay				(start_replay),
-			
-	  .sw_rst							(sw_rst),
-		.cal_done						(&cal_done)
+    .clk									(qdr_clk),
+		.rst									(user_rst),
+	                      	
+	  .mem_r_n							(user_r_n),
+		.mem_rd_full					(&user_rd_full),
+	  .mem_ad_rd						(user_ad_rd),
+		.mem_qr_valid					(&user_qr_valid),
+	  .mem_qrl							(user_qrl),
+	  .mem_qrh							(user_qrh),
+	                      	
+	  .q0_fifo_wr_en				(q0_fifo_rd_wr_en),
+	  .q0_fifo_data					(q0_fifo_rd_data),
+	  .q0_fifo_full					(q0_fifo_rd_full),
+		.q0_fifo_prog_full		(q0_fifo_rd_prog_full),
+	  
+		.q1_fifo_wr_en				(q1_fifo_rd_wr_en),
+	  .q1_fifo_data					(q1_fifo_rd_data),
+	  .q1_fifo_full					(q1_fifo_rd_full),
+		.q1_fifo_prog_full		(q1_fifo_rd_prog_full),
+	  
+		.q2_fifo_wr_en				(q2_fifo_rd_wr_en),
+	  .q2_fifo_data					(q2_fifo_rd_data),
+	  .q2_fifo_full					(q2_fifo_rd_full),
+		.q2_fifo_prog_full		(q2_fifo_rd_prog_full),
+	  
+		.q3_fifo_wr_en				(q3_fifo_rd_wr_en),
+	  .q3_fifo_data					(q3_fifo_rd_data),
+	  .q3_fifo_full					(q3_fifo_rd_full),
+		.q3_fifo_prog_full		(q3_fifo_rd_prog_full),
+	                      	
+		.q0_addr_low			  	(q0_addr_low),
+		.q0_addr_high					(q0_addr_high),
+		.q1_addr_low			  	(q1_addr_low),
+		.q1_addr_high					(q1_addr_high),
+		.q2_addr_low			  	(q2_addr_low),
+		.q2_addr_high					(q2_addr_high),
+		.q3_addr_low			  	(q3_addr_low),
+		.q3_addr_high					(q3_addr_high),
+		                    	
+		.q0_replay_count			(q0_replay_count),
+		.q1_replay_count			(q1_replay_count),
+		.q2_replay_count			(q2_replay_count),
+		.q3_replay_count			(q3_replay_count),
+		                    	
+		.q0_start_replay			(q0_start_replay),
+		.q1_start_replay			(q1_start_replay),
+		.q2_start_replay			(q2_start_replay),
+		.q3_start_replay			(q3_start_replay),
+		                    	
+		.q0_enable						(q0_enable),
+		.q1_enable						(q1_enable),
+		.q2_enable						(q2_enable),
+		.q3_enable						(q3_enable),
+			                  	
+	  .sw_rst								(sw_rst),
+		.cal_done							(&cal_done)
 	);
 	
-  fifo_to_axis #(
-    .C_M_AXIS_DATA_WIDTH  (C_M_AXIS_DATA_WIDTH),
-    .C_M_AXIS_TUSER_WIDTH (C_M_AXIS_TUSER_WIDTH),
-    .FIFO_DATA_WIDTH      (QDR_NUM_CHIPS*QDR_DATA_WIDTH*2)
-  )
-    fifo_to_axis_inst
-  (
-    .axi_aclk             (axi_aclk),
-    .axi_aresetn          (axi_aresetn),
-    .fifo_clk             (qdr_clk),
+  generate
+    if (C_NUM_QUEUES > 0) begin : _q0	
+  		fifo_to_axis #(
+  		  .C_M_AXIS_DATA_WIDTH  (C_M_AXIS_DATA_WIDTH),
+  		  .C_M_AXIS_TUSER_WIDTH (C_M_AXIS_TUSER_WIDTH),
+  		  .FIFO_DATA_WIDTH      (QDR_NUM_CHIPS*(QDR_DATA_WIDTH*(QDR_BURST_LENGTH/2)))
+  		)
+  		  _inst
+  		(
+  		  .axi_aclk             (axi_aclk),
+  		  .axi_aresetn          (axi_aresetn),
+  		  .fifo_clk             (qdr_clk),
+				
+  		  .fifo_wr_en           (q0_fifo_rd_wr_en),
+  		  .fifo_din             (q0_fifo_rd_data),
+  		  .fifo_full            (q0_fifo_rd_full),
+				.fifo_prog_full       (q0_fifo_rd_prog_full),
+  		
+  		  .m_axis_tdata         (m_axis_tdata_0),
+  		  .m_axis_tstrb         (m_axis_tstrb_0),
+  		  .m_axis_tuser         (m_axis_tuser_0),
+  		  .m_axis_tvalid        (m_axis_tvalid_0),
+  		  .m_axis_tready        (m_axis_tready_0),
+  		  .m_axis_tlast         (m_axis_tlast_0),
+  		
+  		  .sw_rst               (sw_rst)
+  		);
+		end
 		
-    .fifo_wr_en           (fifo_rd_wr_en),
-    .fifo_din             (fifo_rd_data),
-    .fifo_full            (fifo_rd_full),
-
-    .m_axis_tdata         (m_axis_tdata),
-    .m_axis_tstrb         (m_axis_tstrb),
-    .m_axis_tuser         (m_axis_tuser),
-    .m_axis_tvalid        (m_axis_tvalid),
-    .m_axis_tready        (m_axis_tready),
-    .m_axis_tlast         (m_axis_tlast),
-
-    .sw_rst               (sw_rst)
-  );
+    if (C_NUM_QUEUES > 1) begin : _q1	
+  		fifo_to_axis #(
+  		  .C_M_AXIS_DATA_WIDTH  (C_M_AXIS_DATA_WIDTH),
+  		  .C_M_AXIS_TUSER_WIDTH (C_M_AXIS_TUSER_WIDTH),
+  		  .FIFO_DATA_WIDTH      (QDR_NUM_CHIPS*(QDR_DATA_WIDTH*(QDR_BURST_LENGTH/2)))
+  		)
+  		  _inst
+  		(
+  		  .axi_aclk             (axi_aclk),
+  		  .axi_aresetn          (axi_aresetn),
+  		  .fifo_clk             (qdr_clk),
+				
+  		  .fifo_wr_en           (q1_fifo_rd_wr_en),
+  		  .fifo_din             (q1_fifo_rd_data),
+  		  .fifo_full            (q1_fifo_rd_full),
+				.fifo_prog_full       (q1_fifo_rd_prog_full),
+  		
+  		  .m_axis_tdata         (m_axis_tdata_1),
+  		  .m_axis_tstrb         (m_axis_tstrb_1),
+  		  .m_axis_tuser         (m_axis_tuser_1),
+  		  .m_axis_tvalid        (m_axis_tvalid_1),
+  		  .m_axis_tready        (m_axis_tready_1),
+  		  .m_axis_tlast         (m_axis_tlast_1),
+  		
+  		  .sw_rst               (sw_rst)
+  		);
+		end
+		
+    if (C_NUM_QUEUES > 2) begin : _q2	
+  		fifo_to_axis #(
+  		  .C_M_AXIS_DATA_WIDTH  (C_M_AXIS_DATA_WIDTH),
+  		  .C_M_AXIS_TUSER_WIDTH (C_M_AXIS_TUSER_WIDTH),
+  		  .FIFO_DATA_WIDTH      (QDR_NUM_CHIPS*(QDR_DATA_WIDTH*(QDR_BURST_LENGTH/2)))
+  		)
+  		  _inst
+  		(
+  		  .axi_aclk             (axi_aclk),
+  		  .axi_aresetn          (axi_aresetn),
+  		  .fifo_clk             (qdr_clk),
+				
+  		  .fifo_wr_en           (q2_fifo_rd_wr_en),
+  		  .fifo_din             (q2_fifo_rd_data),
+  		  .fifo_full            (q2_fifo_rd_full),
+				.fifo_prog_full       (q2_fifo_rd_prog_full),
+  		
+  		  .m_axis_tdata         (m_axis_tdata_2),
+  		  .m_axis_tstrb         (m_axis_tstrb_2),
+  		  .m_axis_tuser         (m_axis_tuser_2),
+  		  .m_axis_tvalid        (m_axis_tvalid_2),
+  		  .m_axis_tready        (m_axis_tready_2),
+  		  .m_axis_tlast         (m_axis_tlast_2),
+  		
+  		  .sw_rst               (sw_rst)
+  		);
+		end
+		
+    if (C_NUM_QUEUES > 3) begin : _q3	
+  		fifo_to_axis #(
+  		  .C_M_AXIS_DATA_WIDTH  (C_M_AXIS_DATA_WIDTH),
+  		  .C_M_AXIS_TUSER_WIDTH (C_M_AXIS_TUSER_WIDTH),
+  		  .FIFO_DATA_WIDTH      (QDR_NUM_CHIPS*(QDR_DATA_WIDTH*(QDR_BURST_LENGTH/2)))
+  		)
+  		  _inst
+  		(
+  		  .axi_aclk             (axi_aclk),
+  		  .axi_aresetn          (axi_aresetn),
+  		  .fifo_clk             (qdr_clk),
+				
+  		  .fifo_wr_en           (q3_fifo_rd_wr_en),
+  		  .fifo_din             (q3_fifo_rd_data),
+  		  .fifo_full            (q3_fifo_rd_full),
+				.fifo_prog_full       (q3_fifo_rd_prog_full),
+  		
+  		  .m_axis_tdata         (m_axis_tdata_3),
+  		  .m_axis_tstrb         (m_axis_tstrb_3),
+  		  .m_axis_tuser         (m_axis_tuser_3),
+  		  .m_axis_tvalid        (m_axis_tvalid_3),
+  		  .m_axis_tready        (m_axis_tready_3),
+  		  .m_axis_tlast         (m_axis_tlast_3),
+  		
+  		  .sw_rst               (sw_rst)
+  		);
+		end
+	endgenerate
 
 endmodule
 

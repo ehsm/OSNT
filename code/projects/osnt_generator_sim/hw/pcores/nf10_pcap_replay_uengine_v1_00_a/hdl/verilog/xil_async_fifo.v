@@ -41,9 +41,8 @@
 
 module xil_async_fifo
 #(
-    parameter DIN_WIDTH  = 256,
-    parameter DEPTH   = 16,
-    parameter DOUT_WIDTH = 64
+    parameter DIN_WIDTH  = 288,
+    parameter DOUT_WIDTH = 144
 )
 (
     input                      rst,
@@ -52,19 +51,16 @@ module xil_async_fifo
     input [DIN_WIDTH-1:0]  		 din,
     input                      rd_clk,
     input                      rd_en,
-    output [DOUT_WIDTH-1:0] dout,
+    output [DOUT_WIDTH-1:0]		 dout,
     output                     full,
+    output                     prog_full,
     output                     empty
 );
-
-  // -- Local Params
-  //localparam WR_DEPTH = (WR_DATA_WIDTH >= RD_DATA_WIDTH) ? DEPTH : (RD_DATA_WIDTH/WR_DATA_WIDTH)*DEPTH;
-  //localparam RD_DEPTH = (WR_DATA_WIDTH >= RD_DATA_WIDTH) ? (WR_DATA_WIDTH/RD_DATA_WIDTH)*DEPTH : DEPTH;
 
   // -- Modules and Logic
 	
   generate 
-	  if (DIN_WIDTH==288 && DOUT_WIDTH==144) begin: _fifo_288_to_144
+	  if (DIN_WIDTH==288 && DOUT_WIDTH==144) begin: _fifo_288_to_144_fwft
 			fifo_generator_v8_4_288_to_144 _inst (
 		  	.rst(rst), // input rst
 		 	 	.wr_clk(wr_clk), // input wr_clk
@@ -77,8 +73,21 @@ module xil_async_fifo
 		  	.empty(empty) // output empty
 			);
 		end
-		else if (DIN_WIDTH==144 && DOUT_WIDTH==288) begin: _fifo_144_to_288
-			fifo_generator_v8_4_144_to_288 _inst (
+		else if (DIN_WIDTH==4 && DOUT_WIDTH==2) begin: _fifo_4_to_2_fwft
+			fifo_generator_v8_4_4_to_2_fwft _inst (
+		  	.rst(rst), // input rst
+		 	 	.wr_clk(wr_clk), // input wr_clk
+		  	.rd_clk(rd_clk), // input rd_clk
+		  	.din(din), // input [287 : 0] din
+		  	.wr_en(wr_en), // input wr_en
+		  	.rd_en(rd_en), // input rd_en
+		  	.dout(dout), // output [287 : 0] dout
+		  	.full(full), // output full
+		  	.empty(empty) // output empty
+			);
+		end
+		else if (DIN_WIDTH==144 && DOUT_WIDTH==288) begin: _fifo_144_to_288_fwft
+			fifo_generator_v8_4_144_to_288_fwft _inst (
 	  		.rst(rst), // input rst
 	 	 		.wr_clk(wr_clk), // input wr_clk
 	  		.rd_clk(rd_clk), // input rd_clk
@@ -87,6 +96,7 @@ module xil_async_fifo
 	  		.rd_en(rd_en), // input rd_en
 	  		.dout(dout), // output [287 : 0] dout
 	  		.full(full), // output full
+		  	.prog_full(prog_full), // output prog_full
 	  		.empty(empty) // output empty
 			);
 		end
