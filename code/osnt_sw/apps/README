@@ -1,27 +1,37 @@
 Monitor user program:
-0, Compile and install ../libpcap_patched
+0 - Compile and install the libpcap patch.
+	0.a download and untar the libpcap-1.0.0
+		0.a.a wget http://www.tcpdump.org/release/libpcap-1.0.0.tar.gz
+		0.a.b tar xvf libpcap-1.0.0.tar.gz
+	0.b apply the patch
+		0.b.a patch -p0 <libpcap-nano.patch
+	0.c compile and install the nanosecond libpcap
+		0.c.a ./configure
+		0.c.b make
+		0.c.c make shared
+		0.c.d make install-shared
 
-1, Run make to get the user application "monitor".
+1 - Run make in apps directory to get the user application "monitor".
 
-2, Before running the user application please
-a) make and install the driver in ../driver_monitor and 
-b) mount the debug filesystem with 
-"sudo mount -t debugfs nodev /sys/kernel/debug".
+2 - Before running the user application please
+	2.a make and install the driver in driver_monitor
+	2.b mount the debug filesystem
+		2.b.a sudo mount -t debugfs nodev /sys/kernel/debug
 
-3, Run "sudo ./monitor" to start receiving packets.
-
-4, The received packets will be saved in packets.pcapng with
-nanosecond precision. You can open this file with the newest
-version of wireshark.
+3 - Run the monitor app to record the received packets
+	2.a if you want to save the received packets in PCAP version run:
+		2.a.a LD_PRELOAD=/usr/local/lib/libpcap-nano.so.1.0.0 ./monitor_pcap - t pcap
+		2.a.b packets will be saved in different PCAP files depending on the interface
+	2.b if you want to save the received packets in PCAPng version run:
+		2.b.a LD_PRELOAD=/usr/local/lib/libpcap-nano.so.1.0.0 ./monitor_pcap - t pcapng
+		2.b.b packets will be saved in a unique trace regardless the interface they are received (PCAPng format allows to store input interface informations)
 
 Monitor GUI:
-1, You would want to install the driver and start ./monitor
-before openning the GUI.
+0 - Install wxPython:
+	0.a sudo yum install wxPython
 
-2, To run the GUI you would need to install wxPython. For
-exmaple run "sudo yum install wxPython".
+1 - Before opening the GUI, please make sure that driver is loaded and monitor app is up and running.
 
-3, Run the GUI with "sudo python monitor_gui.py".
-
-4, There is a filter configuration example file filter.cfg
-in the same folder.
+2 - Launch the GUI
+	2.a sudo python monitor_gui.py
+	2.b there is a filter configuration example file filter.cfg in the same folder
