@@ -21,19 +21,23 @@ RATE_LIMITER_BASE_ADDR = {"nf0" : "0x77e00000",
 class OSNTGeneratorPcapEngine:
 
     def __init__(self):
-        self.control_reg_offset = "0x4"
-        self.memory_high_addr_reg_offset = "0x8"
-        self.replay_cnt_reg_offset = "0xc"
-        self.reset_bit = 0
-        self.begin_replay_bit = 1
+
+        self.reset_reg_offset = "0x0"
+        self.begin_replay_reg_offsets = ["0x4", "0x8", "0xC", "0x10"]
+        self.replay_cnt_reg_offsets = ["0x14", "0x18", "0x1C", "0x20"]
+        self.mem_addr_low_reg_offsets = ["0x24", "0x2C", "0x34", "0x3C"]
+        self.mem_addr_high_reg_offsets = ["0x28", "0x30", "0x38", "0x40"]
+        self.enable_reg_offsets = ["0x44", "0x48", "0x4C", "0x50"]
 
         # use axi.get_base_addr for better extensibility
         self.module_base_addr = PCAP_ENGINE_BASE_ADDR;
 
         self.reset = False
-        self.begin_replay = False
-        self.replay_cnt = 0
-        self.memory_high_addr = 0
+        self.begin_replay = [False, False, False, False]
+        self.replay_cnt = [0, 0, 0, 0]
+        self.mem_addr_low = [0, 0, 0, 0]
+        self.mem_addr_high = [0, 0, 0, 0]
+        self.enable = [False, False, False, False]
 
         self.get_reset()
         self.get_begin_replay()
@@ -41,10 +45,9 @@ class OSNTGeneratorPcapEngine:
         self.get_memory_high_addr()
 
     def get_reset(self):
-        value = rdaxi(self.reg_addr(self.control_reg_offset))
+        value = rdaxi(self.reg_addr(self.reset_reg_offset))
         value = int(value, 16)
-        reset = get_bit(value, self.reset_bit)
-        if reset == 0:
+        if value == 0:
             self.reset = False
         else:
             self.reset = True
@@ -52,100 +55,130 @@ class OSNTGeneratorPcapEngine:
     #Reset the module. reset is boolean.
     def set_reset(self, reset):
 
-        value = rdaxi(self.reg_addr(self.control_reg_offset))
-        value = int(value, 16)
         if(reset):
-            value = set_bit(value, self.reset_bit)
+            value = 1
         else:
-            value = clear_bit(value, self.reset_bit)
+            value = 0
 
-        wraxi(self.reg_addr(self.control_reg_offset), hex(value))
-        sleep(0.01)
+        wraxi(self.reg_addr(self.reset_reg_offset), hex(value))
         self.get_reset()
 
     def load_pcap(self, pcaps):
+
+        # reset
+        self.set_reset(True)
+        self.set_reset(False)
+
+        # read packets in and set memory boundary
+        # TODO: check overflow
         pkts = {}
-        index = {}
-
-        finished = True
-
+        self.mem_addr_low = [0, 0, 0, 0]
+        self.mem_addr_high = [0, 0, 0, 0]
+        self.enable = [False, False, False, False]
+        self.begin_replay = [False, False, False, False]
         for i in range(4):
             if ('nf'+str(i)) in pcaps:
+                self.enable[i] = True
+                self.begin_replay[i] = True
+                mem_addr_high = 0
                 pkts.update({'nf'+str(i): rdpcap(pcaps['nf'+str(i)])})
-                index.update({'nf'+str(i): 0})
-                if len(pkts['nf'+str(i)]) > 0:
-                    finished = False
+                for pkt in pkts['nf'+str(i)]:
+                    mem_addr_high = mem_addr_high + ceil(len(pkt)/float(32)) + 1
+                self.mem_addr_high[i] = self.mem_addr_low[i] + mem_addr_high
+                if i != 3:
+                    self.mem_addr_low[i+1] = self.mem_addr_high[i]
+            else:
+                self.mem_addr_high[i] = self.mem_addr_low[i]
+                if i != 3:
+                    self.mem_addr_low[i+1] = self.mem_addr_high[i] 
 
-        pkts_out = []
+        self.set_mem_addr_low()
+        self.set_mem_addr_high()
+        self.set_enable()
 
-        memory_high_addr = 0
+        # send packets
+        for iface in pkts:
+            for pkt in pkts[iface]:
+                sendp(pkt, iface=iface, verbose=False)
 
-        while(not finished):
-            finished = True
-            tmin = float('inf')
-            for iface in pkts:
-                if(index[iface] < len(pkts[iface])):
-                    finished = False
-                    if(pkts[iface][index[iface]].time < tmin):
-                        iface_tmp = iface
-                        tmin = pkts[iface][index[iface]].time
-            if not finished:
-                pkts_out.append((iface_tmp, pkts[iface_tmp][index[iface_tmp]]))
-                words = int(ceil(len(pkts[iface_tmp][index[iface_tmp]])/16))
-                memory_high_addr = memory_high_addr + words + (words%2) + 2
-                index[iface_tmp] = index[iface_tmp] + 1
+        # set replay cnt
+        self.set_replay_cnt()
 
-        self.set_memory_high_addr(memory_high_addr)
+        # set begin replay
+        self.set_begin_replay()
 
-        for pkt_out in pkts_out:
-            sendp(pkt_out[1], iface=pkt_out[0], verbose=False)
+    def get_mem_addr_low(self):
+        for i in range(4):
+            value = rdaxi(self.reg_addr(self.mem_addr_low_reg_offsets[i]))
+            self.mem_addr_low[i] = int(value, 16)
 
-    def get_memory_high_addr(self):
-        value = rdaxi(self.reg_addr(self.memory_high_addr_reg_offset))
-        self.memory_high_addr = int(value, 16)
+    def set_mem_addr_low(self):
+        for i in range(4):
+            wraxi(self.reg_addr(self.mem_addr_low_reg_offsets[i]), hex(self.mem_addr_low[i]))
+        self.get_mem_addr_low()
 
-    def set_memory_high_addr(self, memory_high_addr):
-        wraxi(self.reg_addr(self.memory_high_addr_reg_offset), hex(memory_high_addr))
-        sleep(0.01)
-        self.get_memory_high_addr()
+    def get_mem_addr_high(self):
+        for i in range(4):
+            value = rdaxi(self.reg_addr(self.mem_addr_high_reg_offsets[i]))
+            self.mem_addr_high[i] = int(value, 16)
 
+    def set_mem_addr_high(self):
+        for i in range(4):
+            wraxi(self.reg_addr(self.mem_addr_high_reg_offsets[i]), hex(self.mem_addr_high[i]))
+        self.get_mem_addr_high()
 
     def get_replay_cnt(self):
-        replay_cnt = rdaxi(self.reg_addr(self.replay_cnt_reg_offset))
-        self.replay_cnt = int(replay_cnt, 16)
+        for i in range(4):
+            replay_cnt = rdaxi(self.reg_addr(self.replay_cnt_reg_offsets[i]))
+            self.replay_cnt[i] = int(replay_cnt, 16)
 
     #replay_cnt is an integer
-    def set_replay_cnt(self, replay_cnt):
-        wraxi(self.reg_addr(self.replay_cnt_reg_offset), hex(replay_cnt))
-        sleep(0.01)
+    def set_replay_cnt(self):
+        for i in range(4):
+            wraxi(self.reg_addr(self.replay_cnt_reg_offsets[i]), hex(self.replay_cnt[i]))
         self.get_replay_cnt()
 
     def get_begin_replay(self):
-        value = rdaxi(self.reg_addr(self.control_reg_offset))
-        value = int(value, 16)
-        begin_replay = get_bit(value, self.begin_replay_bit)
-        if begin_replay == 0:
-            self.begin_replay = False
-        else:
-            self.begin_replay = True
+        for i in range(4):
+            value = rdaxi(self.reg_addr(self.begin_replay_reg_offsets[i]))
+            value = int(value, 16)
+            if value == 0:
+                self.begin_replay[i] = False
+            else:
+                self.begin_replay[i] = True
 
-    def set_begin_replay(self, begin):
-        value = rdaxi(self.reg_addr(self.control_reg_offset))
-        value = int(value, 16)
-        if(begin):
-            value = set_bit(value, self.begin_replay_bit)
-        else:
-            value = clear_bit(value, self.begin_replay_bit)
-        wraxi(self.reg_addr(self.control_reg_offset), hex(value))
-        sleep(0.01)
+    def set_begin_replay(self):
+        for i in range(4):
+            if(self.begin_replay[i]):
+                value = 1
+            else:
+                value = 0
+            wraxi(self.reg_addr(self.begin_replay_reg_offsets[i]), hex(value))
         self.get_begin_replay()
+
+    def get_enable(self):
+        for i in range(4):
+            value = rdaxi(self.reg_addr(self.enable_offsets[i]))
+            value = int(value, 16)
+            if value == 0:
+                self.enable[i] = False
+            else:
+                self.enable[i] = True
+
+    def set_enable(self):
+        for i in range(4):
+            if(self.enable[i]):
+                value = 1
+            else:
+                value = 0
+            wraxi(self.reg_addr(self.enable_reg_offsets[i]), hex(value))
+        self.get_enable()
 
     def reg_addr(self, offset):
         return add_hex(self.module_base_addr, offset)
 
     def print_status(self):
-        print 'pcap_engine reset: '+str(self.reset)+' begin: '+str(self.begin_replay)+' replay_cnt: '+str(self.replay_cnt)+' memory_high_addr: '+str(self.memory_high_addr)
-
+        print "To be added."
 
 class OSNTRateLimiter:
 
@@ -366,28 +399,6 @@ if __name__=="__main__":
 
     # instantiate pcap engine
     pcap_engine = OSNTGeneratorPcapEngine()
+    pcap_engine.replay_cnt = [1, 2, 3, 4]
+    pcap_engine.load_pcap(pcaps)
 
-    # Shahbaz: change number of loops to 1. The loop is for Adam.
-    # uncomment print_status() as your wish.
-    # the current steps should be the same as you described in the email.
-    for i in range(1):
-	pcap_engine.set_reset(True)
-	pcap_engine.print_status()
-        pcap_engine.set_reset(False)
-        pcap_engine.set_begin_replay(False)
-        pcap_engine.set_replay_cnt(1)
-        pcap_engine.print_status()
-
-        # This will load packets for all 4 ports and set mem hight addr.
-        # packet order is decided by their timestamp. So we need comparable timestamp across
-        # all pcap files.
-        pcap_engine.load_pcap(pcaps)
-        #pcap_engine.print_status()
-
-        pcap_engine.set_reset(True)
-	pcap_engine.print_status()
-        pcap_engine.set_reset(False)
-        pcap_engine.set_begin_replay(True)
-        pcap_engine.print_status()
-
-    
