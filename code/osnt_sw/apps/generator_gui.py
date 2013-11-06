@@ -8,6 +8,7 @@ class MainWindow(wx.Frame):
     def __init__(self):
         wx.Frame.__init__(self, None, wx.ID_ANY, "OSNT Generator", size=(-1,-1))
 
+        self.pcaps = {}
         self.rate_limiters = [None]*4
         self.delays = [None]*4
         for i in range(4):
@@ -17,6 +18,7 @@ class MainWindow(wx.Frame):
 
         self.pcap_engine = OSNTGeneratorPcapEngine()
         self.gui_init()
+        self.readings_init()
 
     def gui_init(self):
 
@@ -142,6 +144,34 @@ class MainWindow(wx.Frame):
         self.SetAutoLayout(1)
         self.sizer.Fit(self)
         self.Show()
+
+    def readings_init(self):
+        for i in range(4):
+            self.replay_cnt_input[i].SetValue(self.pcap_engine.replay_cnt[i])
+            self.mem_addr_low_txt[i].SetLabel(hex(self.pcap_engine.mem_addr_low[i]))
+            self.mem_addr_high_txt[i].SetLabel(hex(self.pcap_engine.mem_addr_high[i]))
+            self.rate_txt[i].SetLabel(str(self.rate_limiters[i].rate))
+            self.rate_limiter_enable_toggle.SetValue(self.rate_limiters[i].enable)
+            self.rate_limiter_reset_toggle.SetValue(self.rate_limiters[i].reset)
+            self.delay_txt[i].SetLabel(str(self.delays[i].delay))
+            self.delay_enable_toggle.SetValue(self.delays[i].enable)
+            self.delay_reset_toggle.SetValue(self.delays[i].reset)
+            self.delay_use_reg_toggle.SetValue(self.delays[i].use_reg)
+
+    def on_start_replay(self, event):
+        self.pcap_engine.load_pcap(self.pcaps)
+        for i in range(4):
+            self.replay_cnt_input[i].SetValue(self.pcap_engine.replay_cnt[i])
+            self.mem_addr_low_txt[i].SetLabel(hex(self.pcap_engine.mem_addr_low[i]))
+            self.mem_addr_high_txt[i].SetLabel(hex(self.pcap_engine.mem_addr_high[i]))
+
+    def on_select_pcap_file(self, event):
+        button = event.GetEventObject()
+        iface = int(button.GetName())
+        dlg = wx.FileDialog(self, "Choose a file", "", "", "*.cap", wx.OPEN)
+        if dlg.ShowModal() == wx.ID_OK:
+           self.pcaps['nf'+str(iface)] = os.path.join(dlg.GetDirectory(), dlg.GetFilename())
+        self.pcap_file_btn[iface].SetLabel(dlg.GetFilename())
 
     def on_replay_cnt_change(self, event):
         spin_ctrl = event.GetEventObject()

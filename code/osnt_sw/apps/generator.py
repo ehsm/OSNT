@@ -42,7 +42,9 @@ class OSNTGeneratorPcapEngine:
         self.get_reset()
         self.get_begin_replay()
         self.get_replay_cnt()
-        self.get_memory_high_addr()
+        self.get_mem_addr_low()
+        self.get_mem_addr_high()
+        self.get_enable()
 
     def get_reset(self):
         value = rdaxi(self.reg_addr(self.reset_reg_offset))
