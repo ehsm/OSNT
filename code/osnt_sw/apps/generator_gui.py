@@ -7,6 +7,15 @@ from axi import *
 class MainWindow(wx.Frame):
     def __init__(self):
         wx.Frame.__init__(self, None, wx.ID_ANY, "OSNT Generator", size=(-1,-1))
+
+        self.rate_limiters = [None]*4
+        self.delays = [None]*4
+        for i in range(4):
+            iface = 'nf' + str(i)
+            self.rate_limiters[i] = OSNTRateLimiter(iface)
+            self.delays[i] = OSNTDelay(iface)
+
+        self.pcap_engine = OSNTGeneratorPcapEngine()
         self.gui_init()
 
     def gui_init(self):
@@ -31,8 +40,8 @@ class MainWindow(wx.Frame):
             (wx.StaticText(pcap_panel, label="Mem_addr_low", style=wx.ALIGN_CENTER), 0, wx.EXPAND),
             (wx.StaticText(pcap_panel, label="Mem_addr_high", style=wx.ALIGN_CENTER), 0, wx.EXPAND)])
         for i in range(4):
-            self.pcap_file_btn[i] = wx.Button(pcap_panel, wx.ID_ANY, "Select Pcap File", style=wx.ALIGN_CENTER)
-            self.replay_cnt_input[i] = wx.SpinCtrl(pcap_panel, value='0', min=0, style=wx.ALIGN_CENTER)
+            self.pcap_file_btn[i] = wx.Button(pcap_panel, wx.ID_ANY, "Select Pcap File", style=wx.ALIGN_CENTER, name=str(i))
+            self.replay_cnt_input[i] = wx.SpinCtrl(pcap_panel, value='0', min=0, style=wx.ALIGN_CENTER, name=str(i))
             self.mem_addr_low_txt[i] = wx.StaticText(pcap_panel, wx.ID_ANY, label='0', style=wx.ALIGN_CENTER)
             self.mem_addr_high_txt[i] = wx.StaticText(pcap_panel, wx.ID_ANY, label='0', style=wx.ALIGN_CENTER)
             pcap_sizer.AddMany([(wx.StaticText(pcap_panel, label=str(i), style=wx.ALIGN_CENTER), 0, wx.EXPAND),
@@ -59,10 +68,10 @@ class MainWindow(wx.Frame):
             (wx.StaticText(rate_limiter_panel, label="Enable", style=wx.ALIGN_CENTER), 0, wx.EXPAND),
             (wx.StaticText(rate_limiter_panel, label="Reset", style=wx.ALIGN_CENTER), 0, wx.EXPAND)])
         for i in range(4):
-            self.rate_input[i] = wx.SpinCtrl(rate_limiter_panel, value='0', min=0, style=wx.ALIGN_CENTER)
+            self.rate_input[i] = wx.SpinCtrl(rate_limiter_panel, value='0', min=0, style=wx.ALIGN_CENTER, name=str(i))
             self.rate_txt[i] = wx.StaticText(rate_limiter_panel, wx.ID_ANY, label='0', style=wx.ALIGN_CENTER)
-            self.rate_limiter_enable_toggle[i] = wx.ToggleButton(rate_limiter_panel, wx.ID_ANY, label="Enable", style=wx.ALIGN_CENTER)
-            self.rate_limiter_reset_toggle[i] = wx.ToggleButton(rate_limiter_panel, wx.ID_ANY, label="Reset", style=wx.ALIGN_CENTER)
+            self.rate_limiter_enable_toggle[i] = wx.ToggleButton(rate_limiter_panel, wx.ID_ANY, label="Enable", style=wx.ALIGN_CENTER, name=str(i))
+            self.rate_limiter_reset_toggle[i] = wx.ToggleButton(rate_limiter_panel, wx.ID_ANY, label="Reset", style=wx.ALIGN_CENTER, name=str(i))
             rate_limiter_sizer.AddMany([(wx.StaticText(rate_limiter_panel, label=str(i), style=wx.ALIGN_CENTER), 0, wx.EXPAND),
                 (self.rate_input[i], 0, wx.EXPAND),
                 (self.rate_txt[i], 0, wx.EXPAND),
@@ -89,11 +98,11 @@ class MainWindow(wx.Frame):
             (wx.StaticText(delay_panel, label="Enable", style=wx.ALIGN_CENTER), 0, wx.EXPAND),
             (wx.StaticText(delay_panel, label="Reset", style=wx.ALIGN_CENTER), 0, wx.EXPAND)])
         for i in range(4):
-            self.use_reg_toggle[i] = wx.ToggleButton(delay_panel, wx.ID_ANY, label="Use Reg", style=wx.ALIGN_CENTER)
-            self.delay_input[i] = wx.SpinCtrl(delay_panel, value='0', min=0, style=wx.ALIGN_CENTER)
+            self.use_reg_toggle[i] = wx.ToggleButton(delay_panel, wx.ID_ANY, label="Use Reg", style=wx.ALIGN_CENTER, name=str(i))
+            self.delay_input[i] = wx.SpinCtrl(delay_panel, value='0', min=0, style=wx.ALIGN_CENTER, name=str(i))
             self.delay_txt[i] = wx.StaticText(delay_panel, wx.ID_ANY, label='0', style=wx.ALIGN_CENTER)
-            self.delay_enable_toggle[i] = wx.ToggleButton(delay_panel, wx.ID_ANY, label="Enable", style=wx.ALIGN_CENTER)
-            self.delay_reset_toggle[i] = wx.ToggleButton(delay_panel, wx.ID_ANY, label="Reset", style=wx.ALIGN_CENTER)
+            self.delay_enable_toggle[i] = wx.ToggleButton(delay_panel, wx.ID_ANY, label="Enable", style=wx.ALIGN_CENTER, name=str(i))
+            self.delay_reset_toggle[i] = wx.ToggleButton(delay_panel, wx.ID_ANY, label="Reset", style=wx.ALIGN_CENTER, name=str(i))
             delay_sizer.AddMany([(wx.StaticText(delay_panel, label=str(i), style=wx.ALIGN_CENTER), 0, wx.EXPAND),
                 (self.use_reg_toggle[i], 0, wx.EXPAND),
                 (self.delay_input[i], 0, wx.EXPAND),
@@ -133,6 +142,68 @@ class MainWindow(wx.Frame):
         self.SetAutoLayout(1)
         self.sizer.Fit(self)
         self.Show()
+
+    def on_replay_cnt_change(self, event):
+        spin_ctrl = event.GetEventObject()
+        iface = int(spin_ctrl.GetName())
+        replay_cnt = spin_ctrl.GetValue()
+        self.pcap_engine.replay_cnt[iface] = replay_cnt
+
+    def on_rate_change(self, event):
+        spin_ctrl = event.GetEventObject()
+        iface = int(spin_ctrl.GetName())
+        rate = spin_ctrl.GetValue()
+        self.rate_limiters[iface].set_rate(rate)
+        # This value is read back from hardware
+        self.rate_txt[iface].SetLabel(str(self.rate_limiters[iface].rate))
+
+    def on_rate_limiter_enable(self, event):
+        button = event.GetEventObject()
+        iface = int(button.GetName())
+        enable = button.GetValue()
+        self.rate_limiters[iface].set_enable(enable)
+        # This value is read back from hardware
+        button.SetValue(self.rate_limiters[iface].enable)
+
+    def on_rate_limiter_reset(self, event):
+        button = event.GetEventObject()
+        iface = int(button.GetName())
+        reset = button.GetValue()
+        self.rate_limiters[iface].set_reset(reset)
+        # This value is read back from hardware
+        button.SetValue(self.rate_limiters[iface].reset)
+
+    def on_delay_change(self, event):
+        spin_ctrl = event.GetEventObject()
+        iface = int(spin_ctrl.GetName())
+        delay = spin_ctrl.GetValue()
+        self.delays[iface].set_delay(delay)
+        # This value is read back from hardware
+        self.delay_txt[iface].SetLabel(str(self.delays[iface].delay))
+
+    def on_delay_enable(self, event):
+        button = event.GetEventObject()
+        iface = int(button.GetName())
+        enable = button.GetValue()
+        self.delays[iface].set_enable(enable)
+        # This value is read back from hardware
+        button.SetValue(self.delays[iface].enable)
+
+    def on_delay_reset(self, event):
+        button = event.GetEventObject()
+        iface = int(button.GetName())
+        reset = button.GetValue()
+        self.delays[iface].set_reset(enable)
+        # This value is read back from hardware
+        button.SetValue(self.delays[iface].reset)
+
+    def on_delay_use_reg(self, event):
+        button = event.GetEventObject()
+        iface = int(button.GetName())
+        use_reg = button.GetValue()
+        self.delays[iface].set_use_reg(use_reg)
+        # This value is read back from hardware
+        button.SetValue(self.delays[iface].use_reg)
 
 
 app = wx.App(False)
