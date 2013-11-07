@@ -17,6 +17,11 @@ class MainWindow(wx.Frame):
             self.delays[i] = OSNTDelay(iface)
 
         self.pcap_engine = OSNTGeneratorPcapEngine()
+
+        self.delay_header_extractor = OSNTDelayHeaderExtractor()
+        self.delay_header_extractor.set_reset(False)
+        self.delay_header_extractor.set_enable(True)
+
         self.gui_init()
         self.readings_init()
 
@@ -121,13 +126,26 @@ class MainWindow(wx.Frame):
 
         # Setting up the menu.
         console_menu = wx.Menu()
-        config_filter_menu = console_menu.Append(wx.ID_ANY, "Start Replay", "Start Replay")
+        start_replay_menu = console_menu.Append(wx.ID_ANY, "Start Replay", "Start Replay")
    
         # Creating the menubar.
         menuBar = wx.MenuBar()
         menuBar.Append(console_menu, "&Console")
         self.SetMenuBar(menuBar)  # Adding the MenuBar to the Frame content.
-   
+
+        self.Bind(wx.EVT_MENU, self.on_start_replay, start_replay_menu)
+        for i in range(4):
+            self.Bind(wx.EVT_BUTTON, self.on_select_pcap_file, self.pcap_file_btn[i])
+            self.Bind(wx.EVT_SPINCTRL, self.on_replay_cnt_change, self.replay_cnt_input[i])
+            self.Bind(wx.EVT_SPINCTRL, self.on_rate_change, self.rate_input[i])
+            self.Bind(wx.EVT_TOGGLEBUTTON, self.on_rate_limiter_enable, self.rate_limiter_enable_toggle[i])
+            self.Bind(wx.EVT_TOGGLEBUTTON, self.on_rate_limiter_reset, self.rate_limiter_reset_toggle[i])
+            self.Bind(wx.EVT_TOGGLEBUTTON, self.on_delay_use_reg, self.use_reg_toggle[i])
+            self.Bind(wx.EVT_SPINCTRL, self.on_delay_change, self.delay_input[i])
+            self.Bind(wx.EVT_TOGGLEBUTTON, self.on_delay_enable, self.delay_enable_toggle[i])
+            self.Bind(wx.EVT_TOGGLEBUTTON, self.on_delay_reset, self.delay_reset_toggle[i])
+
+ 
         # Use some sizers to see layout options
         self.sizer = wx.BoxSizer(wx.VERTICAL)
         self.sizer.Add(pcap_title, 0.5, wx.EXPAND)
@@ -151,12 +169,16 @@ class MainWindow(wx.Frame):
             self.mem_addr_low_txt[i].SetLabel(hex(self.pcap_engine.mem_addr_low[i]))
             self.mem_addr_high_txt[i].SetLabel(hex(self.pcap_engine.mem_addr_high[i]))
             self.rate_txt[i].SetLabel(str(self.rate_limiters[i].rate))
-            self.rate_limiter_enable_toggle.SetValue(self.rate_limiters[i].enable)
-            self.rate_limiter_reset_toggle.SetValue(self.rate_limiters[i].reset)
+            self.rate_limiter_enable_toggle[i].SetValue(self.rate_limiters[i].enable)
+            self.rate_limiter_reset_toggle[i].SetValue(self.rate_limiters[i].reset)
             self.delay_txt[i].SetLabel(str(self.delays[i].delay))
-            self.delay_enable_toggle.SetValue(self.delays[i].enable)
-            self.delay_reset_toggle.SetValue(self.delays[i].reset)
-            self.delay_use_reg_toggle.SetValue(self.delays[i].use_reg)
+            self.delay_enable_toggle[i].SetValue(self.delays[i].enable)
+            self.delay_reset_toggle[i].SetValue(self.delays[i].reset)
+            self.use_reg_toggle[i].SetValue(self.delays[i].use_reg)
+        self.log(self.delay_header_extractor.get_status())
+
+    def log(self, text):
+        self.logger.AppendText(text+'\n')
 
     def on_start_replay(self, event):
         self.pcap_engine.load_pcap(self.pcaps)
@@ -223,7 +245,7 @@ class MainWindow(wx.Frame):
         button = event.GetEventObject()
         iface = int(button.GetName())
         reset = button.GetValue()
-        self.delays[iface].set_reset(enable)
+        self.delays[iface].set_reset(reset)
         # This value is read back from hardware
         button.SetValue(self.delays[iface].reset)
 

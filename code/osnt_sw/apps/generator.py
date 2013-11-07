@@ -14,9 +14,94 @@ INTER_PKT_DELAY_BASE_ADDR = {"nf0" : "0x76600000",
                              "nf3" : "0x76600030"}
 
 RATE_LIMITER_BASE_ADDR = {"nf0" : "0x77e00000",
-                          "nf1" : "0x77e00010",
-                          "nf2" : "0x77e00020",
-                          "nf3" : "0x77e00030"}
+                          "nf1" : "0x77e0000C",
+                          "nf2" : "0x77e00018",
+                          "nf3" : "0x77e00024"}
+
+DELAY_HEADER_EXTRACTOR_BASE_ADDR = "0x76e00000"
+
+class DelayField(LongField):
+
+    def __init__(self, name, default):
+        LongField.__init__(self, name, default)
+
+    def i2m(self, pkt, x):
+        x = '{0:016x}'.format(x)
+        x = x.decode('hex')
+        x = x[::-1]
+        x = x + ('00'*(32-8)).decode('hex')
+        return x
+
+    def m2i(self, pkt, x):
+        x = x[:8]
+        x = x[::-1]
+        x = x.encode('hex')
+        return int(x, 16)
+
+    def addfield(self, pkt, s, val):
+        return s+self.i2m(pkt, val)
+
+    def getfield(self, pkt, s):
+        return s[32:], self.m2i(pkt, s[:32])
+
+class DelayHeader(Packet):
+    fields_desc = [
+          DelayField("delay", 0)
+          ]
+
+class OSNTDelayHeaderExtractor:
+
+    def __init__(self):
+        self.module_base_addr = DELAY_HEADER_EXTRACTOR_BASE_ADDR
+
+        self.reset_reg_offset = "0x0"
+        self.enable_reg_offset = "0x4"
+
+        self.enable = False
+        self.reset = False
+
+        self.get_enable()
+        self.get_reset()
+
+    def get_status(self):
+        return 'OSNTDelayHeaderExtractor: Enable: '+str(self.enable)+' Reset: '+str(self.reset)
+
+    def get_reset(self):
+        value = rdaxi(self.reg_addr(self.reset_reg_offset))
+        value = int(value, 16)
+        if value == 0:
+            self.reset = False
+        else:
+            self.reset = True
+
+    #Reset the module. reset is boolean.
+    def set_reset(self, reset):
+        if(reset):
+            value = 1
+        else:
+            value = 0
+
+        wraxi(self.reg_addr(self.reset_reg_offset), hex(value))
+        self.get_reset()
+
+    def get_enable(self):
+        value = rdaxi(self.reg_addr(self.enable_reg_offset))
+        value = int(value, 16)
+        if value == 0:
+            self.enable = False
+        else:
+            self.enable = True
+
+    def set_enable(self, enable):
+        if enable:
+            value = 1
+        else:
+            value = 0
+        wraxi(self.reg_addr(self.enable_reg_offset), hex(value))
+        self.get_enable()
+
+    def reg_addr(self, offset):
+        return add_hex(self.module_base_addr, offset)
 
 class OSNTGeneratorPcapEngine:
 
@@ -100,7 +185,11 @@ class OSNTGeneratorPcapEngine:
 
         # send packets
         for iface in pkts:
-            for pkt in pkts[iface]:
+            time = [pkt.time for pkt in pkts[iface]]
+            delay = [int((time[i+1]-time[i])*DATAPATH_FREQUENCY) for i in range(len(time)-1)]
+            delay = [0] + delay
+            for i in range(len(pkts[iface])):
+                pkt = DelayHeader(delay=delay[i])/pkts[iface][i]
                 sendp(pkt, iface=iface, verbose=False)
 
         # set replay cnt
@@ -116,7 +205,7 @@ class OSNTGeneratorPcapEngine:
 
     def set_mem_addr_low(self):
         for i in range(4):
-            wraxi(self.reg_addr(self.mem_addr_low_reg_offsets[i]), hex(self.mem_addr_low[i]))
+            wraxi(self.reg_addr(self.mem_addr_low_reg_offsets[i]), hex(int(self.mem_addr_low[i])))
         self.get_mem_addr_low()
 
     def get_mem_addr_high(self):
@@ -126,7 +215,7 @@ class OSNTGeneratorPcapEngine:
 
     def set_mem_addr_high(self):
         for i in range(4):
-            wraxi(self.reg_addr(self.mem_addr_high_reg_offsets[i]), hex(self.mem_addr_high[i]))
+            wraxi(self.reg_addr(self.mem_addr_high_reg_offsets[i]), hex(int(self.mem_addr_high[i])))
         self.get_mem_addr_high()
 
     def get_replay_cnt(self):
@@ -160,7 +249,7 @@ class OSNTGeneratorPcapEngine:
 
     def get_enable(self):
         for i in range(4):
-            value = rdaxi(self.reg_addr(self.enable_offsets[i]))
+            value = rdaxi(self.reg_addr(self.enable_reg_offsets[i]))
             value = int(value, 16)
             if value == 0:
                 self.enable[i] = False
@@ -188,9 +277,8 @@ class OSNTRateLimiter:
         self.iface = iface
         self.module_base_addr = RATE_LIMITER_BASE_ADDR[iface]
         self.rate_reg_offset = "0x8"
-        self.control_reg_offset = "0x4"
-        self.reset_bit = 0
-        self.enable_bit = 1
+        self.reset_reg_offset = "0x0"
+        self.enable_reg_offset = "0x4"
 
         self.rate = 0
         self.enable = False
@@ -211,41 +299,35 @@ class OSNTRateLimiter:
         self.get_rate()
 
     def get_enable(self):
-        value = rdaxi(self.reg_addr(self.control_reg_offset))
+        value = rdaxi(self.reg_addr(self.enable_reg_offset))
         value = int(value, 16)
-        enable = get_bit(value, self.enable_bit)
-        if enable == 0:
+        if value == 0:
             self.enable = False
         else:
             self.enable = True
 
     def set_enable(self, enable):
-        value = rdaxi(self.reg_addr(self.control_reg_offset))
-        value = int(value, 16)
         if enable:
-            value = set_bit(value, self.enable_bit)
+            value = 1
         else:
-            value = clear_bit(value, self.enable_bit)
-        wraxi(self.reg_addr(self.control_reg_offset), hex(value))
+            value = 0
+        wraxi(self.reg_addr(self.enable_reg_offset), hex(value))
         self.get_enable()
 
     def get_reset(self):
-        value = rdaxi(self.reg_addr(self.control_reg_offset))
+        value = rdaxi(self.reg_addr(self.reset_reg_offset))
         value = int(value, 16)
-        reset = get_bit(value, self.reset_bit)
-        if reset == 0:
+        if value == 0:
             self.reset = False;
         else:
             self.reset = True;
 
     def set_reset(self, reset):
-        value = rdaxi(self.reg_addr(self.control_reg_offset))
-        value = int(value, 16)
         if reset:
-            value = set_bit(value, self.reset_bit)
+            value = 1
         else:
-            value = clear_bit(value, self.reset_bit)
-        wraxi(self.reg_addr(self.control_reg_offset), hex(value))
+            value = 0
+        wraxi(self.reg_addr(self.reset_reg_offset), hex(value))
         self.get_reset()
 
     def reg_addr(self, offset):
@@ -259,11 +341,10 @@ class OSNTDelay:
     def __init__(self, iface):
         self.iface = iface
         self.module_base_addr = INTER_PKT_DELAY_BASE_ADDR[iface]
-        self.control_reg_offset = "0x4"
-        self.delay_reg_offset = "0x8"
-        self.reset_bit = 0
-        self.enable_bit = 1
-        self.use_reg_bit = 2
+        self.delay_reg_offset = "0xc"
+        self.reset_reg_offset = "0x0"
+        self.enable_reg_offset = "0x4"
+        self.use_reg_reg_offset = "0x8"
 
         self.enable = False
         self.use_reg = False
@@ -277,41 +358,35 @@ class OSNTDelay:
         self.get_reset()
 
     def get_enable(self):
-        value = rdaxi(self.reg_addr(self.control_reg_offset))
+        value = rdaxi(self.reg_addr(self.enable_reg_offset))
         value = int(value, 16)
-        enable = get_bit(value, self.enable_bit)
-        if enable == 0:
+        if value == 0:
             self.enable = False;
         else:
             self.enable = True;
 
     def set_enable(self, enable):
-        value = rdaxi(self.reg_addr(self.control_reg_offset))
-        value = int(value, 16)
         if enable:
-            value = set_bit(value, self.enable_bit)
+            value = 1
         else:
-            value = clear_bit(value, self.enable_bit)
-        wraxi(self.reg_addr(self.control_reg_offset), hex(value))
+            value = 0
+        wraxi(self.reg_addr(self.enable_reg_offset), hex(value))
         self.get_enable()
 
     def get_use_reg(self):
-        value = rdaxi(self.reg_addr(self.control_reg_offset))
+        value = rdaxi(self.reg_addr(self.use_reg_reg_offset))
         value = int(value, 16)
-        use_reg = get_bit(value, self.use_reg_bit)
-        if use_reg == 0:
+        if value == 0:
             self.use_reg = False;
         else:
             self.use_reg = True;
 
     def set_use_reg(self, use_reg):
-        value = rdaxi(self.reg_addr(self.control_reg_offset))
-        value = int(value, 16)
         if use_reg:
-            value = set_bit(value, self.use_reg_bit)
+            value = 1
         else:
-            value = clear_bit(value, self.use_reg_bit)
-        wraxi(self.reg_addr(self.control_reg_offset), hex(value))
+            value = 0
+        wraxi(self.reg_addr(self.use_reg_reg_offset), hex(value))
         self.get_use_reg()
 
     # delay is stored as an integer value
@@ -325,22 +400,19 @@ class OSNTDelay:
         self.get_delay()
 
     def get_reset(self):
-        value = rdaxi(self.reg_addr(self.control_reg_offset))
+        value = rdaxi(self.reg_addr(self.reset_reg_offset))
         value = int(value, 16)
-        reset = get_bit(value, self.reset_bit)
-        if reset == 0:
+        if value == 0:
             self.reset = False;
         else:
             self.reset = True;
 
     def set_reset(self, reset):
-        value = rdaxi(self.reg_addr(self.control_reg_offset))
-        value = int(value, 16)
         if reset:
-            value = set_bit(value, self.reset_bit)
+            value = 1
         else:
-            value = clear_bit(value, self.reset_bit)
-        wraxi(self.reg_addr(self.control_reg_offset), hex(value))
+            value = 0
+        wraxi(self.reg_addr(self.reset_reg_offset), hex(value))
         self.get_reset()
 
     def reg_addr(self, offset):
@@ -398,6 +470,11 @@ if __name__=="__main__":
         d.print_status()
         
     print ""
+
+    # instantiate delay header extractor
+    delay_header_extractor = OSNTDelayHeaderExtractor()
+    delay_header_extractor.set_reset(False)
+    delay-header_extractor.set_enable(True)
 
     # instantiate pcap engine
     pcap_engine = OSNTGeneratorPcapEngine()
