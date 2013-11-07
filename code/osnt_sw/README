@@ -46,3 +46,11 @@ Monitor GUI:
 
 Generator
 ------------------------------------------------------------------------------------------------------
+0 - Install wxPython and scapy:
+    0.a sudo yum install wxPython
+    0.b sudo yum install scapy
+
+1 - Before opening the GUI, make and install the driver in driver_generator/
+
+2 - Launch the GUI
+    2.a sudo python generator_gui.py

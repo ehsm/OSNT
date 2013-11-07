@@ -471,6 +471,11 @@ if __name__=="__main__":
         
     print ""
 
+    # instantiate delay header extractor
+    delay_header_extractor = OSNTDelayHeaderExtractor()
+    delay_header_extractor.set_reset(False)
+    delay-header_extractor.set_enable(True)
+
     # instantiate pcap engine
     pcap_engine = OSNTGeneratorPcapEngine()
     pcap_engine.replay_cnt = [1, 2, 3, 4]
