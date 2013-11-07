@@ -1,6 +1,6 @@
 CFLAGS = -g 
 CC = gcc
-LDFLAGS = -lncurses -lm
+LDFLAGS = -lm
 
 all : osnt_mon
 

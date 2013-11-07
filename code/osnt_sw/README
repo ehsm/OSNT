@@ -26,10 +26,10 @@ Monitor user program:
 
 3 - Run the monitor app to record the received packets
 	2.a if you want to save the received packets in PCAP version run:
-		2.a.a LD_PRELOAD=/usr/local/lib/libpcap-nano.so.1.0.0 ./monitor_pcap - t pcap
+		2.a.a LD_PRELOAD=/usr/local/lib/libpcap-nano.so.1.0.0 ./monitor -t pcap
 		2.a.b packets will be saved in different PCAP files depending on the interface
 	2.b if you want to save the received packets in PCAPng version run:
-		2.b.a LD_PRELOAD=/usr/local/lib/libpcap-nano.so.1.0.0 ./monitor_pcap - t pcapng
+		2.b.a LD_PRELOAD=/usr/local/lib/libpcap-nano.so.1.0.0 ./monitor -t pcapng
 		2.b.b packets will be saved in a unique trace regardless the interface they are received (PCAPng format allows to store input interface informations)
 
 Monitor GUI:
