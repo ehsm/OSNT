@@ -154,7 +154,6 @@ class OSNTGeneratorPcapEngine:
 
         # reset
         self.set_reset(True)
-        self.set_reset(False)
 
         # read packets in and set memory boundary
         # TODO: check overflow
@@ -163,6 +162,11 @@ class OSNTGeneratorPcapEngine:
         self.mem_addr_high = [0, 0, 0, 0]
         self.enable = [False, False, False, False]
         self.begin_replay = [False, False, False, False]
+
+        self.set_enable()
+        self.set_begin_replay()
+        self.set_reset(False)
+
         for i in range(4):
             if ('nf'+str(i)) in pcaps:
                 self.enable[i] = True
