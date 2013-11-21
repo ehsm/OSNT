@@ -20,7 +20,7 @@ class MainWindow(wx.Frame):
 
         self.delay_header_extractor = OSNTDelayHeaderExtractor()
         self.delay_header_extractor.set_reset(False)
-        self.delay_header_extractor.set_enable(False)
+        self.delay_header_extractor.set_enable(True)
 
         self.gui_init()
         self.readings_init()

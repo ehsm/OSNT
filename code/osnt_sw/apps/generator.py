@@ -163,8 +163,11 @@ class OSNTGeneratorPcapEngine:
         self.enable = [False, False, False, False]
         self.begin_replay = [False, False, False, False]
 
+        self.set_mem_addr_low()
+        self.set_mem_addr_high()
         self.set_enable()
         self.set_begin_replay()
+
         self.set_reset(False)
 
         for i in range(4):
@@ -185,7 +188,13 @@ class OSNTGeneratorPcapEngine:
 
         self.set_mem_addr_low()
         self.set_mem_addr_high()
+        # set replay cnt
+        self.set_replay_cnt()
+        sleep(0.1)
+
         self.set_enable()
+        sleep(0.1)
+        
 
         # send packets
         for iface in pkts:
@@ -195,9 +204,7 @@ class OSNTGeneratorPcapEngine:
             for i in range(len(pkts[iface])):
                 pkt = DelayHeader(delay=delay[i])/pkts[iface][i]
                 sendp(pkt, iface=iface, verbose=False)
-
-        # set replay cnt
-        self.set_replay_cnt()
+        sleep(0.1)
 
         # set begin replay
         self.set_begin_replay()
