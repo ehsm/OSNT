@@ -170,10 +170,10 @@ class MainWindow(wx.Frame):
             self.replay_cnt_input[i].SetValue(self.pcap_engine.replay_cnt[i])
             self.mem_addr_low_txt[i].SetLabel(hex(self.pcap_engine.mem_addr_low[i]))
             self.mem_addr_high_txt[i].SetLabel(hex(self.pcap_engine.mem_addr_high[i]))
-            self.rate_txt[i].SetLabel(str(self.rate_limiters[i].rate))
+            self.rate_txt[i].SetLabel(self.rate_limiters[i].to_string())
             self.rate_limiter_enable_toggle[i].SetValue(self.rate_limiters[i].enable)
             self.rate_limiter_reset_toggle[i].SetValue(self.rate_limiters[i].reset)
-            self.delay_txt[i].SetLabel(str(self.delays[i].delay))
+            self.delay_txt[i].SetLabel(self.delays[i].to_string())
             self.delay_enable_toggle[i].SetValue(self.delays[i].enable)
             self.delay_reset_toggle[i].SetValue(self.delays[i].reset)
             self.use_reg_toggle[i].SetValue(self.delays[i].use_reg)
@@ -212,7 +212,7 @@ class MainWindow(wx.Frame):
         rate = spin_ctrl.GetValue()
         self.rate_limiters[iface].set_rate(rate)
         # This value is read back from hardware
-        self.rate_txt[iface].SetLabel(str(self.rate_limiters[iface].rate))
+        self.rate_txt[iface].SetLabel(self.rate_limiters[iface].to_string())
         self.log('Rate changed for port '+str(iface))
 
     def on_rate_limiter_enable(self, event):
@@ -239,7 +239,7 @@ class MainWindow(wx.Frame):
         delay = spin_ctrl.GetValue()
         self.delays[iface].set_delay(delay)
         # This value is read back from hardware
-        self.delay_txt[iface].SetLabel(str(self.delays[iface].delay))
+        self.delay_txt[iface].SetLabel(self.delays[iface].to_string())
         self.log('Delay value changed for port '+str(iface))
 
     def on_delay_enable(self, event):

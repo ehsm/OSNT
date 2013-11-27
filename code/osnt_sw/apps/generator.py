@@ -304,6 +304,20 @@ class OSNTRateLimiter:
         rate = rdaxi(self.reg_addr(self.rate_reg_offset))
         self.rate = int(rate, 16)
 
+    def to_string(self):
+        rate = float(1)/((1<<self.rate)+1)*10000000000
+        if rate >= 1000000000:
+            rate = rate/1000000000
+            return '{0:.2f}'.format(rate)+'Gbps'
+        elif rate >= 1000000:
+            rate = rate/1000000
+            return '{0:.2f}'.format(rate)+'Mbps'
+        elif rate >= 1000:
+            rate = rate/1000
+            return '{0:.2f}'.format(rate)+'Kbps'
+        else:
+            return '{0:.2f}'.format(rate)+'bps'
+
     # rate is an interger value
     def set_rate(self, rate):
         wraxi(self.reg_addr(self.rate_reg_offset), hex(rate))
@@ -404,6 +418,9 @@ class OSNTDelay:
     def get_delay(self):
         delay = rdaxi(self.reg_addr(self.delay_reg_offset))
         self.delay = int(delay, 16)
+
+    def to_string(self):
+        return '{:,}'.format(int(self.delay*1000000000/DATAPATH_FREQUENCY))+'ns'
 
     # delay is an interger value
     def set_delay(self, delay):
