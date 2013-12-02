@@ -77,7 +77,7 @@ class MainWindow(wx.Frame):
             (wx.StaticText(rate_limiter_panel, label="Enable", style=wx.ALIGN_CENTER), 0, wx.EXPAND),
             (wx.StaticText(rate_limiter_panel, label="Reset", style=wx.ALIGN_CENTER), 0, wx.EXPAND)])
         for i in range(4):
-            self.rate_input[i] = wx.lib.intctrl.IntCtrl(rate_limiter_panel, value=0, min=0, max=(int('0xffffffff', 16)), name=str(i))
+            self.rate_input[i] = wx.Slider(rate_limiter_panel, value=0, minValue=0, maxValue=40, style=wx.SL_HORIZONTAL, name=str(i))
             self.rate_txt[i] = wx.StaticText(rate_limiter_panel, wx.ID_ANY, label='0', style=wx.ALIGN_CENTER)
             self.rate_limiter_enable_toggle[i] = wx.ToggleButton(rate_limiter_panel, wx.ID_ANY, label="Enable", style=wx.ALIGN_CENTER, name=str(i))
             self.rate_limiter_reset_toggle[i] = wx.ToggleButton(rate_limiter_panel, wx.ID_ANY, label="Reset", style=wx.ALIGN_CENTER, name=str(i))
@@ -128,7 +128,8 @@ class MainWindow(wx.Frame):
 
         # Setting up the menu.
         console_menu = wx.Menu()
-        start_replay_menu = console_menu.Append(wx.ID_ANY, "Start Replay", "Start Replay")
+        start_replay_menu = console_menu.Append(wx.ID_ANY, "Replay", "Start Replaying")
+        stop_replay_menu = console_menu.Append(wx.ID_ANY, 'Stop', 'Stop Replaying')
    
         # Creating the menubar.
         menuBar = wx.MenuBar()
@@ -136,10 +137,11 @@ class MainWindow(wx.Frame):
         self.SetMenuBar(menuBar)  # Adding the MenuBar to the Frame content.
 
         self.Bind(wx.EVT_MENU, self.on_start_replay, start_replay_menu)
+        self.Bind(wx.EVT_MENU, self.on_stop_replay, stop_replay_menu)
         for i in range(4):
             self.Bind(wx.EVT_BUTTON, self.on_select_pcap_file, self.pcap_file_btn[i])
             self.Bind(wx.EVT_TEXT, self.on_replay_cnt_change, self.replay_cnt_input[i])
-            self.Bind(wx.EVT_TEXT, self.on_rate_change, self.rate_input[i])
+            self.Bind(wx.EVT_SCROLL, self.on_rate_change, self.rate_input[i])
             self.Bind(wx.EVT_TOGGLEBUTTON, self.on_rate_limiter_enable, self.rate_limiter_enable_toggle[i])
             self.Bind(wx.EVT_TOGGLEBUTTON, self.on_rate_limiter_reset, self.rate_limiter_reset_toggle[i])
             self.Bind(wx.EVT_TOGGLEBUTTON, self.on_delay_use_reg, self.use_reg_toggle[i])
@@ -190,13 +192,20 @@ class MainWindow(wx.Frame):
             self.mem_addr_high_txt[i].SetLabel(hex(self.pcap_engine.mem_addr_high[i]))
         self.log('Started replaying.')
 
+    def on_stop_replay(self, event):
+        self.pcap_engine.stop_replay()
+        self.log('Stopped replaying.')
+
     def on_select_pcap_file(self, event):
         button = event.GetEventObject()
         iface = int(button.GetName())
         dlg = wx.FileDialog(self, "Choose a file", "", "", "*.cap", wx.OPEN)
         if dlg.ShowModal() == wx.ID_OK:
-           self.pcaps['nf'+str(iface)] = os.path.join(dlg.GetDirectory(), dlg.GetFilename())
-        self.pcap_file_btn[iface].SetLabel(dlg.GetFilename())
+            self.pcaps['nf'+str(iface)] = os.path.join(dlg.GetDirectory(), dlg.GetFilename())
+            self.pcap_file_btn[iface].SetLabel(dlg.GetFilename())
+        else:
+            self.pcaps.pop('nf'+str(iface), 0)
+            self.pcap_file_btn[iface].SetLabel('Select Pcap File')
         self.log('Selected Pcap file for port '+str(iface))
 
     def on_replay_cnt_change(self, event):
@@ -207,9 +216,9 @@ class MainWindow(wx.Frame):
         self.log('Replay count changed for port '+str(iface))
 
     def on_rate_change(self, event):
-        spin_ctrl = event.GetEventObject()
-        iface = int(spin_ctrl.GetName())
-        rate = spin_ctrl.GetValue()
+        slider = event.GetEventObject()
+        iface = int(slider.GetName())
+        rate = slider.GetValue()
         self.rate_limiters[iface].set_rate(rate)
         # This value is read back from hardware
         self.rate_txt[iface].SetLabel(self.rate_limiters[iface].to_string())

@@ -209,6 +209,10 @@ class OSNTGeneratorPcapEngine:
         # set begin replay
         self.set_begin_replay()
 
+    def stop_replay(self):
+        self.begin_replay = [False, False, False, False]
+        self.set_begin_replay()
+
     def get_mem_addr_low(self):
         for i in range(4):
             value = rdaxi(self.reg_addr(self.mem_addr_low_reg_offsets[i]))
