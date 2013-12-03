@@ -470,7 +470,6 @@ int main ( int argc, char **argv )
     }	
 
     while(1){
-	usleep(100);
         rx_int = *(((uint64_t*)rx_dne) + rx_dne_head/8);
         if( ((rx_int >> 48) & 0xffff) != 0xffff ){
 
