@@ -2,6 +2,13 @@ import os
 from scapy import *
 from scapy.all import *
 from subprocess import Popen, PIPE
+import argparse
+
+parser = argparse.ArgumentParser()
+parser.add_argument('number', type=int)
+parser.add_argument('length', type=int)
+parser.add_argument('filename')
+args = parser.parse_args()
 
 #base timestamp of all engines is 1
 class CBR_Engine:
@@ -80,21 +87,25 @@ class Pcap_Replay:
         self.iface = iface
 
     def replay(self):
-        proc = Popen("sudo tcpreplay -i "+self.iface+' '+self.iface+'.cap', stdout=PIPE, shell=True)
+        proc = Popen("sudo tcpreplay -i "+self.iface+' nf3_delay.cap', stdout=PIPE, shell=True)
         print proc.stdout.read()
 
 if __name__=="__main__":
+    """
     #CBR engine
-    cbr = CBR_Engine('cbr', 100, 20)
-    cbr.generate(10)
+    cbr = CBR_Engine('cbr', 100, 1500)
+    cbr.generate(30)
     #Poisson engine
-    poisson = Poisson_Engine('poisson', 100, 20)
-    poisson.generate(10)
+    poisson = Poisson_Engine('poisson', 100, 1500)
+    poisson.generate(30)
     #Arbiter for port eth4
-    arbiter = Port_Arbiter('eth4', ['cbr', 'poisson'])
+    arbiter = Port_Arbiter('nf3', ['cbr', 'poisson'])
     arbiter.merge_queues()
     #Rate limiter for port eth4
-    rate_limiter = Rate_Limiter('eth4', 256)
+    rate_limiter = Rate_Limiter('nf3', 10000000000000000000000)
     #Start replaying on port eth4
-    replayer = Pcap_Replay('eth4')
+    replayer = Pcap_Replay('nf3')
     replayer.replay()
+    """
+    cbr = CBR_Engine(args.filename, 100, args.length)
+    cbr.generate(args.number)
