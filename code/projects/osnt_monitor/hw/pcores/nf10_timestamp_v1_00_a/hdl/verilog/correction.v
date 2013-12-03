@@ -45,15 +45,16 @@ module correction
 	  parameter DDS_WIDTH = 32)
    	(
     	// input
-    		input [TIMESTAMP_WIDTH-1:0]      time_pps,
-    		input                            pps_valid,
+    		input [TIMESTAMP_WIDTH-1:0]     time_pps,
+    		input                           pps_valid,
+		input				correction_mode,
 
     	// output
-    		output reg [31:0]                dds_rate,
+    		output reg [DDS_WIDTH-1:0]	dds,
 
     	// misc
-    		input                            reset,
-    		input                            clk
+    		input                           reset,
+    		input                           clk
     	);
           
   
@@ -67,7 +68,7 @@ module correction
 
 	reg [NUM_STATES-1:0]     state,state_next;
 	reg [TIMESTAMP_WIDTH-1:0]time_prev_pps,time_prev_pps_next;
-     	reg [DDS_WIDTH-1:0]      dds_rate_next;
+     	reg [DDS_WIDTH-1:0]      dds_rate,dds_rate_next;
      	reg [TIMESTAMP_WIDTH-1:0]error_signed,error_signed_next;
  
     
@@ -82,7 +83,7 @@ module correction
         	WAIT_FIRST_PPS: begin
         		if(pps_valid) begin
                 		time_prev_pps_next  = time_pps;
-                		state_next = WAIT_PPS;
+				state_next = WAIT_PPS;
            		end
         	end
 
@@ -94,11 +95,15 @@ module correction
         	end
 
         	UPDATE_DDS: begin
-        		if(error_signed[63:32])
-               			dds_rate_next = dds_rate - (error_signed[31:0]>>CORRECTION_WEIGHT);
-	    		else
-               			dds_rate_next = dds_rate + ((~error_signed[31:0])>>CORRECTION_WEIGHT);
-            		state_next = WAIT_PPS;
+			if(error_signed[TIMESTAMP_WIDTH-1])
+				state_next = WAIT_FIRST_PPS;
+			else begin
+				state_next = WAIT_PPS;
+        			if(error_signed[TIMESTAMP_WIDTH-2:32])
+               				dds_rate_next = dds_rate - (error_signed[31:0]>>CORRECTION_WEIGHT);
+	    			else
+               				dds_rate_next = dds_rate + ((~error_signed[31:0])>>CORRECTION_WEIGHT);
+			end
          	end
        		endcase
 	end
@@ -107,6 +112,7 @@ module correction
    	always @(posedge clk) begin
         	if(reset) begin
 	     		dds_rate    	<= DDS_RATE_DEFAULT;
+			dds		<= DDS_RATE_DEFAULT;
              		error_signed	<= 0;
              		time_prev_pps	<= 0;
              		state       	<= WAIT_FIRST_PPS;
@@ -114,8 +120,10 @@ module correction
 		else begin
              		error_signed	<= error_signed_next;
              		time_prev_pps 	<= time_prev_pps_next;
-             		dds_rate  	<= dds_rate_next;
-             		state 		<= state_next;
+			state		<= state_next;
+			dds_rate	<= dds_rate_next;
+			if(correction_mode)
+				dds	<= dds_rate;
         	end
    	end
 

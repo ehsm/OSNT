@@ -40,6 +40,7 @@ NET Peripheral_aresetn TIG;
 
 NET RESET             LOC = AL24  |  IOSTANDARD=LVCMOS33  | PULLUP | TIG;
 NET CLK               LOC = AN25  |  IOSTANDARD=LVCMOS33;
+NET nf10_timestamp_0_PPS_RX_pin LOC = AU19       | IOSTANDARD=LVCMOS33;
 NET MDC               LOC = AK23   | IOSTANDARD = LVCMOS33;
 NET MDIO              LOC = AL20   | IOSTANDARD = LVCMOS33;
 NET PHY_RST_N         LOC = AR20   | IOSTANDARD = LVCMOS33  | PULLUP;       # external pullup

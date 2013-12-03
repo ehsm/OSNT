@@ -45,12 +45,15 @@ module stamp_counter
 	(
     
 		output [TIMESTAMP_WIDTH-1:0]	stamp_counter,
+		output reg			gps_connected,
 
     		input [1:0]          	        restart_time,
     		input [TIMESTAMP_WIDTH-1:0]     ntp_timestamp,
 
+		input				correction_mode,
+		input				pps_rx,
+
     		input                           axi_aclk,
-    		input                           clk_correction,
     		input                           axi_resetn
  	);
 
@@ -58,87 +61,92 @@ module stamp_counter
 
         localparam PPS = 27'h5F5E100;
         localparam OVERFLOW = 32'hffffffff;
+	localparam CNT_INIT = 32'h1312d000;
         localparam DDS_WIDTH = 32;
 
    	reg [TIMESTAMP_WIDTH-6:0]	temp;
+	wire[TIMESTAMP_WIDTH-1:0]	stamp_cnt;
 
-   	reg [TIMESTAMP_WIDTH-1:0]	time_pps;
-   	reg                             pps_valid;
+        wire                            pps_valid;
+        reg                             pps_rx_d1;
+        reg                             pps_rx_d2;
+        reg                             pps_rx_d3;
 
    	reg [DDS_WIDTH-1:0]             accumulator;
-   	reg [26:0]                      counter_pps;
-
-   	wire [TIMESTAMP_WIDTH-1:0]      time_pps_w;
-   	wire                            pps_valid_w;
+	reg [31:0]			counter;
    
-   	wire [DDS_WIDTH-1:0]            dds_rate;
-	reg [DDS_WIDTH-1:0]		dds_sync,dds_aclk;	 
- 
-
+        wire [DDS_WIDTH-1:0]            dds_rate;
  
    	assign stamp_counter = {temp,5'b0};
-   	assign time_pps_w = time_pps;
-   	assign pps_valid_w = pps_valid;
+	assign stamp_cnt = {temp,5'b0};
+  	assign pps_valid = !pps_rx_d2 & pps_rx_d3;
 
 
+        correction
+        #(
+                .TIMESTAMP_WIDTH(TIMESTAMP_WIDTH),
+                .DDS_WIDTH(DDS_WIDTH))
+        correction
+        (
+        // input
+                .time_pps      	(stamp_cnt),
+                .pps_valid     	(pps_valid),
+		.correction_mode(correction_mode),
+        // output
+                .dds      	(dds_rate),
+        // misc
+                .reset         	(~axi_resetn),
+                .clk           	(axi_aclk)
+        );
 
-	correction
-	#(
-   		.TIMESTAMP_WIDTH(TIMESTAMP_WIDTH),
-		.DDS_WIDTH(DDS_WIDTH)) 
-	correction
-	(
-	// input
-        	.time_pps      (time_pps_w),
-        	.pps_valid     (pps_valid_w),
-     	// output
-     		.dds_rate       (dds_rate),
-     	// misc
-     		.reset		(~axi_resetn),
-        	.clk		(clk_correction)
-     	);
 
-	always @(posedge clk_correction) begin
-     		if (~axi_resetn) begin
-            		time_pps <= 0;
-            		counter_pps <= 0;
-      		end
-      		else begin
-			if(counter_pps==PPS) begin
-				counter_pps <= 0;
-				pps_valid   <= 1;
-				time_pps    <= stamp_counter;
+        always @(posedge axi_aclk) begin
+                if (~axi_resetn) begin
+                        pps_rx_d1  <= 0;
+                	pps_rx_d2  <= 0;
+                	pps_rx_d3  <= 0;
+			counter		<= CNT_INIT;
+			gps_connected	<= 0;
+                end
+                else begin
+			pps_rx_d1 <= pps_rx;
+                	pps_rx_d2 <= pps_rx_d1;
+                	pps_rx_d3 <= pps_rx_d2;
+			if(pps_valid) begin
+				counter		<= CNT_INIT;
+				gps_connected	<= 1;
 			end
 			else begin
-				counter_pps <= counter_pps + 1;
-            			pps_valid <= 0;
-      			end
-   		end
-	end   
+				if(!counter)
+					gps_connected <= 0;
+				else begin
+					gps_connected <= 1;
+					counter	<= counter - 1;
+				end
+			end  
+		end
+	end
+
 
 	always @(posedge axi_aclk) begin
         	if(~axi_resetn) begin
              		temp     <= 0;
              		accumulator <= 0;
-			dds_sync <= 0;
-			dds_aclk <= 0;
         	end
 		else begin
-			dds_sync <= dds_rate;
-                	dds_aclk <= dds_sync;
 			if(restart_time[0])
              			temp<= ntp_timestamp[TIMESTAMP_WIDTH-1:5];
 			else if (restart_time[1])
 	     			temp<= 0;
         		else begin
-             			if(OVERFLOW-accumulator<dds_aclk)
+             			if(OVERFLOW-accumulator<dds_rate)
                   			temp <= temp + 1;
-              			accumulator <= accumulator + dds_aclk;
+              			accumulator <= accumulator + dds_rate;
 			end
 		end
         end
 
-endmodule // stap_counter
+endmodule // stamp_counter
 
 
 
