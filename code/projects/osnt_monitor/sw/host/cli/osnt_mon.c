@@ -1,7 +1,7 @@
 /* ****************************************************************************
- * $Id: cli.c 2012-05-05 16:09 Gianni Antichi $
+ * $Id: cli.c 2013-12-03 16:09 Gianni Antichi $
  *
- * Module: monitoring.c
+ * Module: osnt_mon.c
  * Project: Monitoring CLI
  * Description: Manage the Monitoring System
  *
@@ -83,12 +83,21 @@ void prompt(void) {
       reset_time();
       break;
     case 10:
-      author();
+      en_gps_correction();
       break;
     case 11:
+      dis_gps_correction();
+       break;
+    case 12:
+      check_gps_signal();
+      break;
+    case 13:
+      author();
+      break;
+    case 14:
       help();
       break;
-    case 12:
+    case 15:
       quit();
       break;
     default:
@@ -99,21 +108,24 @@ void prompt(void) {
 
 void help(void) {
   printf("Commands:\n");
-  printf("  list_rules    - Lists entries in the Filter table\n");
-  printf("  set_rules     - Set an entry in the Filter table\n");
-  printf("  clear_rules   - Clear a Filter table entry\n");
-  printf("  load_rules    - Load Filter table entries from a file\n");
+  printf("  list_rules         - Lists entries in the Filter table\n");
+  printf("  set_rules          - Set an entry in the Filter table\n");
+  printf("  clear_rules        - Clear a Filter table entry\n");
+  printf("  load_rules         - Load Filter table entries from a file\n");
 
-  printf("  check_stats   - Display per-port statistics\n");
-  printf("  reset_stats   - Reset per-port statistics\n");
-  printf("  enable_cut    - Enable the cut/hash feature\n");
-  printf("  disable_cut   - Disable the cut/hash feature\n");
-  printf("  set_ntp       - Initialize the HW stamp counter with the NTP value\n");
-  printf("  reset_time    - Reset HW time\n");
+  printf("  check_stats        - Display per-port statistics\n");
+  printf("  reset_stats        - Reset per-port statistics\n");
+  printf("  enable_cut         - Enable the cut/hash feature\n");
+  printf("  disable_cut        - Disable the cut/hash feature\n");
+  printf("  set_ntp            - Initialize the HW stamp counter with the NTP value\n");
+  printf("  reset_time         - Reset HW time\n");
+  printf("  en_gps_correction  - Enable GPS correction\n");
+  printf("  dis_gps_correction - Disable GPS correction\n");
+  printf("  check_gps_signal   - Check GPS connectivity\n");
 
-  printf("  author        - Display Author and Version\n");
-  printf("  help          - Displays this list\n");
-  printf("  quit          - Exit this program\n");
+  printf("  author             - Display Author and Version\n");
+  printf("  help               - Displays this list\n");
+  printf("  quit               - Exit this program\n");
 }
 
 void quit(void) {
@@ -412,8 +424,6 @@ void enable_cut(void){
 
   scanf("%i", &bytes);
 
-  
-//  words = ceil((double)((double)bytes/BYTE_DATA_WIDTH))-1;
   if(bytes>BYTE_DATA_WIDTH){
   	words = ceil((double)((double)bytes/BYTE_DATA_WIDTH))-2;
   	offset = BYTE_DATA_WIDTH-(bytes%BYTE_DATA_WIDTH);
@@ -462,6 +472,61 @@ void set_ntp(void){
 
 }
 
+void en_gps_correction(void){
+  int err;
+
+  if(check_gps_signal()) {
+	err=writeReg(nf10,OSNT_MON_EN_GPS_CORRECTION, 1);
+  	if(err) printf("0x%08x: ERROR\n", OSNT_MON_EN_GPS_CORRECTION);
+	printf("GPS correction enabled.\n");
+  }
+  else 
+	printf("ERROR: cannot enable GPS correction. The signal is bad or not present.\n");
+}
+
+void dis_gps_correction(void){
+  int err;
+
+  err=writeReg(nf10,OSNT_MON_EN_GPS_CORRECTION, 0);
+  if(err) printf("0x%08x: ERROR\n", OSNT_MON_EN_GPS_CORRECTION);
+
+  printf("GPS correction disabled.\n");
+
+}
+
+
+int check_gps_signal(void){
+  int err;
+  uint32_t gps_connected;
+  unsigned char counter = 0;
+  int i;
+
+  printf("signal status");
+  for(i=0;i<3;i++){
+	printf(".");
+	err=readReg(nf10,OSNT_MON_GPS_SIGNAL,&gps_connected);
+  	if(err) printf("0x%08x: ERROR\n", OSNT_MON_GPS_SIGNAL);
+	if(gps_connected) counter++;
+	sleep(1);
+  }
+
+  if(counter==3){
+	printf("OK!\n");
+	return 1;
+  }
+  else if (counter==2 || counter==1){
+	printf("bad signal :(\n");
+	return 0;
+  }
+  else {
+	printf("NO signal\n");
+	return 0;
+  }
+
+}
+
+
+
 
 void reset_time(void){
   int err;
@@ -498,12 +563,18 @@ int parse(char *word) {
     return 8;
   if (!strcmp(word, "reset_time"))
     return 9;
-  if (!strcmp(word, "author"))
+  if (!strcmp(word, "en_gps_correction"))
     return 10;
-  if (!strcmp(word, "help"))
+  if (!strcmp(word, "dis_gps_correction"))
     return 11;
-  if (!strcmp(word, "quit"))
+  if (!strcmp(word, "check_gps_signal"))
     return 12;
+  if (!strcmp(word, "author"))
+    return 13;
+  if (!strcmp(word, "help"))
+    return 14;
+  if (!strcmp(word, "quit"))
+    return 15;
   return -1;
 }
 

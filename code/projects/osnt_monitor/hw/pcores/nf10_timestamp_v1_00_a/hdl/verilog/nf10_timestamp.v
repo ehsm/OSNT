@@ -76,8 +76,8 @@ module nf10_timestamp
   output                                    S_AXI_BVALID,
   output                                    S_AXI_AWREADY,
  
-  // CLK Correction
-  input					    CLK_CORRECTION,
+  // PPS input
+  input					    PPS_RX,
  
   // Timestamp
   output     [TIMESTAMP_WIDTH-1 : 0]        STAMP_COUNTER
@@ -86,7 +86,8 @@ module nf10_timestamp
 
   // -- Internal Parameters
   
-  localparam NUM_RW_REGS       = 3;
+  localparam NUM_RW_REGS       = 4;
+  localparam NUM_RO_REGS       = 1;
 
   // -- Signals
 
@@ -103,8 +104,10 @@ module nf10_timestamp
   wire                                            IP2Bus_Error;
   
   wire     [NUM_RW_REGS*C_S_AXI_DATA_WIDTH-1 : 0] rw_regs;
-  wire [NUM_RW_REGS*C_S_AXI_DATA_WIDTH-1:0]       rw_defaults;
+  wire 	   [NUM_RW_REGS*C_S_AXI_DATA_WIDTH-1 : 0] rw_defaults;
+  wire     [NUM_RO_REGS*C_S_AXI_DATA_WIDTH-1 : 0] ro_regs;
 
+  wire						  gps_connected;
   wire	   [1:0]				  restart_time;
   wire     [TIMESTAMP_WIDTH-1:0]                  ntp_timestamp;
  
@@ -158,7 +161,8 @@ module nf10_timestamp
   (
     .C_S_AXI_DATA_WIDTH (C_S_AXI_DATA_WIDTH),          
     .C_S_AXI_ADDR_WIDTH (C_S_AXI_ADDR_WIDTH),   
-    .NUM_RW_REGS        (NUM_RW_REGS)
+    .NUM_RW_REGS        (NUM_RW_REGS),
+    .NUM_RO_REGS	(NUM_RO_REGS)
   ) ipif_regs_inst
   (   
     .bus2ip_clk     ( Bus2IP_Clk     ),
@@ -174,15 +178,19 @@ module nf10_timestamp
     .ip2bus_error   ( IP2Bus_Error   ),
 	
     .rw_regs        ( rw_regs ),
-    .rw_defaults   ( rw_defaults )
+    .rw_defaults    ( rw_defaults ),
+    .ro_regs        ( ro_regs )
+
   );
   
   // -- Register assignments
   
   assign rw_defaults  = 0;
   assign restart_time = rw_regs[1+C_S_AXI_DATA_WIDTH*0:C_S_AXI_DATA_WIDTH*0];
-  assign ntp_timestamp= rw_regs[(TIMESTAMP_WIDTH+C_S_AXI_DATA_WIDTH*1)-1:C_S_AXI_DATA_WIDTH*1];
+  assign correction_mode = rw_regs[C_S_AXI_DATA_WIDTH];
+  assign ntp_timestamp= rw_regs[(TIMESTAMP_WIDTH+C_S_AXI_DATA_WIDTH*2)-1:C_S_AXI_DATA_WIDTH*2];
   
+  assign ro_regs = gps_connected;
   
   // -- Stamp Counter Module
   stamp_counter #
@@ -193,11 +201,14 @@ module nf10_timestamp
     // Global Ports
     .axi_aclk      (S_AXI_ACLK),
     .axi_resetn    (S_AXI_ARESETN),
-    .clk_correction(CLK_CORRECTION),
+    .pps_rx	   (PPS_RX),
+    .correction_mode(correction_mode),
 
     .restart_time(restart_time),
     .ntp_timestamp(ntp_timestamp),
-    .stamp_counter(STAMP_COUNTER)
+    .stamp_counter(STAMP_COUNTER),
+
+    .gps_connected(gps_connected)
   );
  
 
