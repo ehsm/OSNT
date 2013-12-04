@@ -53,7 +53,7 @@ class MainWindow(wx.Frame):
             (wx.StaticText(stats_panel, label="UDP Cnt", style=wx.ALIGN_CENTER), 0, wx.EXPAND),
             (wx.StaticText(stats_panel, label="TCP Cnt", style=wx.ALIGN_CENTER), 0, wx.EXPAND),
             (wx.StaticText(stats_panel, label="Pkts/s", style=wx.ALIGN_CENTER), 0, wx.EXPAND),
-            (wx.StaticText(stats_panel, label="Bytes/s", style=wx.ALIGN_CENTER), 0, wx.EXPAND)])
+            (wx.StaticText(stats_panel, label="Bits/s", style=wx.ALIGN_CENTER), 0, wx.EXPAND)])
         for i in range(4):
             self.pkt_cnt_txt[i] = wx.StaticText(stats_panel, wx.ID_ANY, label="", style=wx.ALIGN_CENTER)
             self.byte_cnt_txt[i] = wx.StaticText(stats_panel, wx.ID_ANY, label="", style=wx.ALIGN_CENTER)
@@ -252,7 +252,7 @@ class MainWindow(wx.Frame):
             else:
                 byte_cnt = byte_cnt_new + ((1<<32) - byte_cnt_old);
 
-            self.byteps_txt[i].SetLabel(translateRate(byte_cnt/time_elapsed))
+            self.byteps_txt[i].SetLabel(translateRate(8*byte_cnt/time_elapsed))
 
             self.pkt_cnt_txt[i].SetLabel(str(int(self.osnt_monitor_stats.pkt_cnt[i], 16)))
             self.byte_cnt_txt[i].SetLabel(str(int(self.osnt_monitor_stats.byte_cnt[i], 16)))
