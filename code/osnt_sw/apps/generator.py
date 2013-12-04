@@ -316,7 +316,8 @@ class OSNTRateLimiter:
         self.rate = int(rate, 16)
 
     def to_string(self):
-        rate = float(1)/((1<<self.rate)+1)*10000000000
+        rate = float(1)/((1<<self.rate)+1)*40960000000
+        rate = min(10000000000, rate)
         if rate >= 1000000000:
             rate = rate/1000000000
             return '{0:.2f}'.format(rate)+'Gbps'
