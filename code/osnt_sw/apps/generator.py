@@ -4,7 +4,8 @@ from time import sleep
 from scapy import *
 from scapy.all import *
 from math import ceil
-from packet_generator_nic import Poisson_Engine
+#from packet_generator_nic import Poisson_Engine
+from subprocess import Popen, PIPE
 
 DATAPATH_FREQUENCY = 160000000
 PCAP_ENGINE_BASE_ADDR = "0x76000000"
@@ -123,14 +124,14 @@ class OSNTGeneratorPcapEngine:
         self.mem_addr_low = [0, 0, 0, 0]
         self.mem_addr_high = [0, 0, 0, 0]
         self.enable = [False, False, False, False]
-
+        
         self.get_reset()
         self.get_begin_replay()
         self.get_replay_cnt()
         self.get_mem_addr_low()
         self.get_mem_addr_high()
         self.get_enable()
-
+        
     def get_reset(self):
         value = rdaxi(self.reg_addr(self.reset_reg_offset))
         value = int(value, 16)
@@ -201,8 +202,14 @@ class OSNTGeneratorPcapEngine:
             time = [pkt.time for pkt in pkts[iface]]
             delay = [int((time[i+1]-time[i])*DATAPATH_FREQUENCY) for i in range(len(time)-1)]
             delay = [0] + delay
+            """
+            pkts_delay = [pkts[iface][i] for i in range(len(pkts[iface]))]
+            wrpcap(iface+'_delay.cap', pkts_delay)
+            proc = Popen('sudo tcpreplay -i '+iface+' '+iface+'_delay.cap', stdout=PIPE, shell=True)
+            print proc.stdout.read()
+            """
             for i in range(len(pkts[iface])):
-                pkt = DelayHeader(delay=delay[i])/pkts[iface][i]
+                pkt = pkts[iface][i]
                 sendp(pkt, iface=iface, verbose=False)
         sleep(0.1)
 
@@ -461,7 +468,7 @@ if __name__=="__main__":
     delays = {}
     poissonEngines = {}
     pcaps = {}
-
+    """
     # instantiate rate limiters and delay modules for 4 interfaces
     for i in range(4):
         # interface
@@ -471,23 +478,23 @@ if __name__=="__main__":
         # add delay module for that interface
         delays.update({iface : OSNTDelay(iface)})
         # generate *poisson engine* for that interface. This means 1000 pkts/second, 1500B packets
-        poissonEngines.update({iface : Poisson_Engine(iface, 1000, 1500)})
+        #poissonEngines.update({iface : Poisson_Engine(iface, 1000, 1500)})
         # generate some number of packets
-        poissonEngines[iface].generate(2)
+        #poissonEngines[iface].generate(2)
         # correlate generated packets with iterface
-        pcaps.update({iface : iface+'.cap'})
-
+        #pcaps.update({iface : iface+'.cap'})
+    """
     # here actually we are discarding the generated poission packets, just add custom pcap files here
     pcaps = {'nf0' : 'nf0.cap'#,
              #'nf1' : 'nf1.cap',
              #'nf2' : 'nf2.cap',
              #'nf3' : 'nf3.cap'
             }
-
+    """
     # configure rate limiters
     for iface, rl in rateLimiters.iteritems():
         rl.set_rate(0)
-        rl.set_enable(True)
+        rl.set_enable(False)
         rl.set_reset(False)
         rl.print_status()
         
@@ -506,10 +513,11 @@ if __name__=="__main__":
     # instantiate delay header extractor
     delay_header_extractor = OSNTDelayHeaderExtractor()
     delay_header_extractor.set_reset(False)
-    delay-header_extractor.set_enable(True)
-
+    delay_header_extractor.set_enable(True)
+    """
     # instantiate pcap engine
     pcap_engine = OSNTGeneratorPcapEngine()
+    #sleep(1)
     pcap_engine.replay_cnt = [1, 2, 3, 4]
-    pcap_engine.load_pcap(pcaps)
+    #pcap_engine.load_pcap(pcaps)
 
