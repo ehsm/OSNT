@@ -1,0 +1,14 @@
+##############################################################################
+### Filename:          nf10_timestamp
+### Description:       Peripheral Analysis Order
+### Date:              Thu Sep 27 11:35:11 2012
+###############################################################################
+
+
+
+lib proc_common_v3_00_a  all
+lib axi_lite_ipif_v1_01_a  all
+lib nf10_proc_common_v1_00_a  all
+lib nf10_timestamp_v1_00_a stamp_counter.v verilog
+lib nf10_timestamp_v1_00_a correction.v verilog
+lib nf10_timestamp_v1_00_a nf10_timestamp.v verilog
