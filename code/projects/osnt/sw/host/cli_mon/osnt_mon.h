@@ -57,8 +57,10 @@
 #define OSNT_MON_CUTTER_BYTES                           0x77a0000c
 
 #define OSNT_MON_SYNC_TIME                           	0x78a00000
-#define OSNT_MON_NTP_TIME_LOW                           0x78a00004
-#define OSNT_MON_NTP_TIME_HIGH                          0x78a00008
+#define OSNT_MON_EN_GPS_CORRECTION                   	0x78a00004
+#define OSNT_MON_NTP_TIME_LOW                           0x78a00008
+#define OSNT_MON_NTP_TIME_HIGH                          0x78a0000c
+#define OSNT_MON_GPS_SIGNAL                          	0x78a00010
 
 
 void prompt     (void);
@@ -76,8 +78,12 @@ void check_stats(void);
 void reset_stats(void);
 void enable_cut (void);
 void disable_cut(void);
+
 void set_ntp	(void);
 void reset_time (void);
+void en_gps_correction(void);
+void dis_gps_correction(void);
+int  check_gps_signal(void);
 
 void author     (void);
 void quit	(void);
