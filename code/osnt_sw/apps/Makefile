@@ -43,5 +43,9 @@ all:
 	gcc -march=core2 -o rdaxi rdaxi.c
 	gcc -march=core2 -o wraxi wraxi.c
 	gcc -march=core2 -L/usr/local/lib/ -lpcap-nano -o monitor monitor.c
-clean:
-	rm -rf stats rdaxi wraxi monitor *.pcap *.pcapng
+
+pcapclean:
+	rm -rf *.pcap *.pcapclean
+
+clean: pcapclean
+	rm -rf stats rdaxi wraxi monitor
