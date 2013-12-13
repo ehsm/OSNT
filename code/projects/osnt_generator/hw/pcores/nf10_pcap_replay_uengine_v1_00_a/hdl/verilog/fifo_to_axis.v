@@ -44,7 +44,7 @@ module fifo_to_axis
     //Master AXI Stream Data Width
     parameter C_M_AXIS_DATA_WIDTH  = 256,
     parameter C_M_AXIS_TUSER_WIDTH = 128,
-    parameter FIFO_DATA_WIDTH      = 32
+    parameter FIFO_DATA_WIDTH      = 144
 )
 (
     // Global Ports
@@ -55,9 +55,8 @@ module fifo_to_axis
     // FIFO Ports
     input                                           fifo_wr_en,
     input [FIFO_DATA_WIDTH-1:0]                     fifo_din,
-    input [FIFO_DATA_WIDTH/8-1:0]                   fifo_din_strb,
     output                                          fifo_full,
-    output                                          fifo_almost_full,
+    output                                          fifo_prog_full,		
 
     // AXI Stream Ports
     output reg [C_M_AXIS_DATA_WIDTH-1:0]            m_axis_tdata,
@@ -83,10 +82,16 @@ module fifo_to_axis
   endfunction
 
   // -- Internal Parameters
-  parameter RD_TUSER_BITS = 0;
-  parameter RD_PKT_BITS   = 1;
+  localparam RD_TUSER_BITS = 0;
+  localparam RD_PKT_BITS   = 1;
+	
+	localparam C_M_AXIS_PACKED_DATA_WIDTH = C_M_AXIS_DATA_WIDTH+C_M_AXIS_DATA_WIDTH/8; 
 
   // -- Signals
+	genvar																		i;
+	
+	reg																				sw_rst_r;
+	
   reg                                       state;
   reg                                       next_state;
 
@@ -94,25 +99,39 @@ module fifo_to_axis
   wire   [C_M_AXIS_DATA_WIDTH-1:0]          fifo_dout;
   wire   [C_M_AXIS_DATA_WIDTH/8-1:0]        fifo_dout_strb;
   wire                                      fifo_empty;
-  wire                                      fifo_almost_empty;
+	wire   [C_M_AXIS_PACKED_DATA_WIDTH-1:0]   fifo_dout_packed;
 
   reg    [C_M_AXIS_TUSER_WIDTH-1:0]         axis_tuser_c;
   reg    [C_M_AXIS_TUSER_WIDTH-1:0]         axis_tuser_r;
+  
+  wire [(C_M_AXIS_DATA_WIDTH/8):0]  axis_tstrb_c;
+	
+	// -- Assignments
+	generate
+		for (i=0; i<C_M_AXIS_DATA_WIDTH/8; i=i+1) begin: _unpack_data
+			assign {fifo_dout_strb[i], fifo_dout[8*(i+1)-1:8*i]} = fifo_dout_packed[9*(i+1)-1:9*i]; 
+		end
+  endgenerate
+	
+	always @ (posedge axi_aclk) begin
+		sw_rst_r <= sw_rst;
+	end
+
+	assign axis_tstrb_c = (fifo_dout_strb<<1)-1;
 
   // -- Modules and Logic
-  xil_async_fifo #(.DOUT_WIDTH(C_M_AXIS_DATA_WIDTH+C_M_AXIS_DATA_WIDTH/8), .DIN_WIDTH(FIFO_DATA_WIDTH+FIFO_DATA_WIDTH/8), .DEPTH(16))
+  xil_async_fifo #(.DOUT_WIDTH(C_M_AXIS_PACKED_DATA_WIDTH), .DIN_WIDTH(FIFO_DATA_WIDTH))
     async_fifo_inst
-      ( .din          ({fifo_din_strb, fifo_din}),
+      ( .din          (fifo_din),
         .wr_en        (fifo_wr_en),
         .rd_en        (fifo_rd_en),
-        .dout         ({fifo_dout_strb, fifo_dout}),
+        .dout         (fifo_dout_packed),
         .full         (fifo_full),
-        .almost_full  (fifo_almost_full),
+				.prog_full		(fifo_prog_full),
         .empty        (fifo_empty),
-        .almost_empty (fifo_almost_empty)
-        .rst          (!axi_aresetn || sw_rst),
-        .wr_clk       (axi_aclk),
-        .rd_clk       (fifo_clk),
+        .rst          (!axi_aresetn || sw_rst_r),
+        .wr_clk       (fifo_clk),
+        .rd_clk       (axi_aclk)
       );
 
   // ---- AXI (Side) State Machine [Combinational]
@@ -121,7 +140,7 @@ module fifo_to_axis
     axis_tuser_c = axis_tuser_r;
 
     m_axis_tdata = fifo_dout;
-    m_axis_tstrb = fifo_dout_strb;
+    m_axis_tstrb = ~fifo_dout_strb;
     m_axis_tuser = axis_tuser_r;
     m_axis_tvalid = 0;
     m_axis_tlast = 0;
@@ -130,13 +149,15 @@ module fifo_to_axis
 
     case (state)
       RD_TUSER_BITS: begin
-        if (!fifo_empty) begin
-          axis_tuser_c = fifo_dout[C_M_AXIS_TUSER_WIDTH-1:0];
+        if (!fifo_empty) begin 
+					// Note: Assuming that TDATA_WIDTH > TUSER_WIDTH
+          axis_tuser_c = fifo_dout[C_M_AXIS_TUSER_WIDTH-1:0]; 
           fifo_rd_en = 1;
 
           next_state = RD_PKT_BITS;
         end
       end
+			
       RD_PKT_BITS: begin
         if (!fifo_empty) begin
           m_axis_tvalid = 1;
@@ -144,8 +165,9 @@ module fifo_to_axis
           if (m_axis_tready) begin
             fifo_rd_en = 1;
 
-            if (fifo_dout_strb != {(C_M_AXIS_DATA_WIDTH/8){1'b1}}) begin
+            if (fifo_dout_strb != {(C_M_AXIS_DATA_WIDTH/8){1'b0}}) begin
               m_axis_tlast = 1;
+              m_axis_tstrb = axis_tstrb_c[(C_M_AXIS_DATA_WIDTH/8)-1:0];
               next_state = RD_TUSER_BITS;
             end
           end
@@ -156,7 +178,7 @@ module fifo_to_axis
 
   // ---- Primary State Machine [Sequential]
   always @ (posedge axi_aclk) begin
-    if(!axi_aresetn || sw_rst) begin
+    if(!axi_aresetn || sw_rst_r) begin
       state <= RD_TUSER_BITS;
       axis_tuser_r <= {C_M_AXIS_TUSER_WIDTH{1'b0}};
     end
@@ -165,6 +187,6 @@ module fifo_to_axis
       axis_tuser_r <= axis_tuser_c;
     end
   end
-
+	
 endmodule
 

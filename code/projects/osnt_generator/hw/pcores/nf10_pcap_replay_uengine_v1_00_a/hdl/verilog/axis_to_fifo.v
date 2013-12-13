@@ -42,33 +42,35 @@
 module axis_to_fifo
 #(
     //Master AXI Stream Data Width
-    parameter C_S_AXIS_DATA_WIDTH  = 256,
-    parameter C_S_AXIS_TUSER_WIDTH = 128,
-    parameter FIFO_DATA_WIDTH      = 32
+    parameter C_S_AXIS_DATA_WIDTH  				= 256,
+    parameter C_S_AXIS_TUSER_WIDTH 				= 128, 
+    parameter FIFO_DATA_WIDTH      				= 144, // FIFO width is (1/(2*n) of AXIS width)
+		parameter NUM_QUEUES       		 				= 4,
+		parameter NUM_QUEUES_BITS 						= log2(NUM_QUEUES),
+		parameter DST_PORT_POS         				= 24
 )
 (
     // Global Ports
-    input                                           axi_aclk,
-    input                                           axi_aresetn,
-    input                                           fifo_clk,
+    input                                 axi_aclk,
+    input                                 axi_aresetn,
+    input                                 fifo_clk,
 
     // AXI Stream Ports
-    input [C_S_AXIS_DATA_WIDTH-1:0]                 s_axis_tdata,
-    input [((C_S_AXIS_DATA_WIDTH/8))-1:0]           s_axis_tstrb,
-    input [C_S_AXIS_TUSER_WIDTH-1:0]                s_axis_tuser,
-    input                                           s_axis_tvalid,
-    output reg                                      s_axis_tready,
-    input                                           s_axis_tlast,
+    input [C_S_AXIS_DATA_WIDTH-1:0]       s_axis_tdata,
+    input [(C_S_AXIS_DATA_WIDTH/8)-1:0]   s_axis_tstrb,
+    input [C_S_AXIS_TUSER_WIDTH-1:0]      s_axis_tuser,
+    input                                 s_axis_tvalid,
+    output reg                            s_axis_tready,
+    input                                 s_axis_tlast,
 
     // FIFO Ports
-    input                                           fifo_rd_en,
-    output [FIFO_DATA_WIDTH-1:0]                    fifo_dout,
-    output [FIFO_DATA_WIDTH/8-1:0]                  fifo_dout_strb,
-    output                                          fifo_empty,
-    output                                          fifo_almost_empty,
+    input                                 fifo_rd_en,
+    output [FIFO_DATA_WIDTH-1:0]          fifo_dout,
+		output [NUM_QUEUES_BITS-1:0]          fifo_dout_qid,
+    output                                fifo_empty,
 
     // Misc
-    input                                           sw_rst
+    input                                 sw_rst
 );
 
   // -- Local Functions
@@ -83,10 +85,16 @@ module axis_to_fifo
   endfunction
 
   // -- Internal Parameters
-  parameter WR_TUSER_BITS = 0;
-  parameter WR_PKT_BITS   = 1;
+  localparam WR_TUSER_BITS = 0;
+  localparam WR_PKT_BITS   = 1;
+	
+	localparam C_S_AXIS_PACKED_DATA_WIDTH = C_S_AXIS_DATA_WIDTH+C_S_AXIS_DATA_WIDTH/8; 
 
   // -- Signals
+	genvar																		i;
+	
+	reg																				sw_rst_r;
+	
   reg                                       state;
   reg                                       next_state;
 
@@ -102,9 +110,25 @@ module axis_to_fifo
   reg                                       fifo_wr_en;
   reg   [C_S_AXIS_DATA_WIDTH-1:0]           fifo_din;
   reg   [C_S_AXIS_DATA_WIDTH/8-1:0]         fifo_din_strb;
+  wire   [C_S_AXIS_DATA_WIDTH/8:0]         	fifo_din_strb_c;
+	wire  [C_S_AXIS_PACKED_DATA_WIDTH-1:0]    fifo_din_packed;
+  reg   [NUM_QUEUES_BITS-1:0]           		fifo_din_qid;
+	reg   [NUM_QUEUES_BITS-1:0]           		fifo_din_qid_r;
   wire                                      fifo_full;
-  wire                                      fifo_almost_full;
-
+	
+	// -- Assignments
+	generate
+		for (i=0; i<C_S_AXIS_DATA_WIDTH/8; i=i+1) begin: _pack_data
+			assign fifo_din_packed[9*(i+1)-1:9*i] = {fifo_din_strb[i], fifo_din[8*(i+1)-1:8*i]};
+		end
+  endgenerate
+	
+  always @ (posedge axi_aclk) begin
+    sw_rst_r <= sw_rst;
+  end
+  
+  assign fifo_din_strb_c = ((ififo_tstrb+1)>>1);
+	
   // -- Modules and Logic
   fallthrough_small_fifo #(.WIDTH(C_S_AXIS_DATA_WIDTH+C_S_AXIS_TUSER_WIDTH+C_S_AXIS_DATA_WIDTH/8+1), .MAX_DEPTH_BITS(2))
     input_fifo_inst
@@ -116,7 +140,7 @@ module axis_to_fifo
         .prog_full   (),
         .nearly_full (ififo_nearly_full),
         .empty       (ififo_empty),
-        .reset       (!axi_aresetn || sw_rst),
+        .reset       (!axi_aresetn || sw_rst_r),
         .clk         (axi_aclk)
       );
 
@@ -129,15 +153,23 @@ module axis_to_fifo
     ififo_rd_en = 0;
 
     fifo_din = ififo_tdata;
-    fifo_din_strb = ififo_tstrb;
+    fifo_din_strb = ~ififo_tstrb;
+	fifo_din_qid = fifo_din_qid_r;
     fifo_wr_en = 0;
 
     case (state)
-      WR_TUSER_BITS: begin
+      WR_TUSER_BITS: begin // Assuming TDATA_WIDTH > TUSER_WIDTH
         if (!ififo_empty && !fifo_full) begin
-          fifo_din = {128'b0, ififo_tuser};
-          fifo_din_strb = 32'b1;
-          fifo_wr_en = 1;
+          fifo_din = {{(C_S_AXIS_DATA_WIDTH-128){1'b0}}, ififo_tuser};
+          fifo_din_strb = {(C_S_AXIS_DATA_WIDTH/8){1'b0}};	
+					fifo_wr_en = 1;
+					
+					case ({ififo_tuser[DST_PORT_POS+6], ififo_tuser[DST_PORT_POS+4], ififo_tuser[DST_PORT_POS+2], ififo_tuser[DST_PORT_POS+0]})
+						'b0001: fifo_din_qid = 0;
+						'b0010: fifo_din_qid = 1;
+						'b0100: fifo_din_qid = 2;
+						'b1000: fifo_din_qid = 3;
+					endcase
 
           next_state = WR_PKT_BITS;
         end
@@ -147,8 +179,10 @@ module axis_to_fifo
           fifo_wr_en = 1;
           ififo_rd_en = 1;
 
-          if (ififo_tlast)
+          if (ififo_tlast) begin
+          	fifo_din_strb = fifo_din_strb_c[(C_S_AXIS_DATA_WIDTH/8)-1:0];
             next_state = WR_TUSER_BITS;
+          end
         end
       end
     endcase
@@ -156,28 +190,42 @@ module axis_to_fifo
 
   // ---- Primary State Machine [Sequential]
   always @ (posedge axi_aclk) begin
-    if(!axi_aresetn || sw_rst) begin
+    if(!axi_aresetn || sw_rst_r) begin
       state <= WR_TUSER_BITS;
+			fifo_din_qid_r <= {NUM_QUEUES_BITS{1'b0}};
     end
     else begin
       state <= next_state;
+			fifo_din_qid_r <= fifo_din_qid;
     end
   end
 
   // --- Async FIFO
-  xil_async_fifo #(.DIN_WIDTH(C_S_AXIS_DATA_WIDTH+C_S_AXIS_DATA_WIDTH/8), .DOUT_WIDTH(FIFO_DATA_WIDTH+FIFO_DATA_WIDTH/8), .DEPTH(16))
+  xil_async_fifo #(.DIN_WIDTH(C_S_AXIS_PACKED_DATA_WIDTH), .DOUT_WIDTH(FIFO_DATA_WIDTH))
     async_fifo_inst
-      ( .din          ({fifo_din_strb, fifo_din}),
+      ( .din          (fifo_din_packed),
         .wr_en        (fifo_wr_en),
         .rd_en        (fifo_rd_en),
-        .dout         ({fifo_dout_strb, fifo_dout}),
+        .dout         (fifo_dout),
         .full         (fifo_full),
-        .almost_full  (fifo_almost_full),
         .empty        (fifo_empty),
-        .almost_empty (fifo_almost_empty)
-        .rst          (!axi_aresetn || sw_rst),
+        .rst          (!axi_aresetn || sw_rst_r),
         .wr_clk       (axi_aclk),
-        .rd_clk       (fifo_clk),
+        .rd_clk       (fifo_clk)
+      );
+			
+  // --- Async QID FIFO
+  xil_async_fifo #(.DIN_WIDTH(2*NUM_QUEUES_BITS), .DOUT_WIDTH(NUM_QUEUES_BITS))
+    async_qid_fifo_inst
+      ( .din          ({2{fifo_din_qid}}),
+        .wr_en        (fifo_wr_en),
+        .rd_en        (fifo_rd_en),
+        .dout         (fifo_dout_qid),
+        .full         (),
+        .empty        (),
+        .rst          (!axi_aresetn || sw_rst_r),
+        .wr_clk       (axi_aclk),
+        .rd_clk       (fifo_clk)
       );
 
 endmodule

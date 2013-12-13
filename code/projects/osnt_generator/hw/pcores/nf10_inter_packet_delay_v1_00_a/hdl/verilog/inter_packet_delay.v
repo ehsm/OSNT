@@ -42,11 +42,12 @@
 module inter_packet_delay
 #(
     //Master AXI Stream Data Width
-    parameter C_M_AXIS_DATA_WIDTH  = 256,
-    parameter C_S_AXIS_DATA_WIDTH  = 256,
-    parameter C_M_AXIS_TUSER_WIDTH = 128,
-    parameter C_S_AXIS_TUSER_WIDTH = 128,
-    parameter C_S_AXI_DATA_WIDTH   = 32
+    parameter C_M_AXIS_DATA_WIDTH   = 256,
+    parameter C_S_AXIS_DATA_WIDTH   = 256,
+    parameter C_M_AXIS_TUSER_WIDTH  = 128,
+    parameter C_S_AXIS_TUSER_WIDTH  = 128,
+    parameter C_S_AXI_DATA_WIDTH    = 32,
+		parameter C_TUSER_TIMESTAMP_POS = 32
 )
 (
     // Global Ports
@@ -136,21 +137,28 @@ module inter_packet_delay
 
     delay_val_c = delay_val;
 
-    m_axis_tdata = s_axis_tdata;
-    m_axis_tstrb = s_axis_tstrb;
-    m_axis_tuser = s_axis_tuser;
+    m_axis_tdata  = {C_M_AXIS_DATA_WIDTH{1'b0}};
+    m_axis_tstrb  = {C_M_AXIS_DATA_WIDTH/8{1'b0}};
+    m_axis_tuser  = {C_M_AXIS_TUSER_WIDTH{1'b0}};
     m_axis_tvalid = 0;
     s_axis_tready = 0;
     m_axis_tlast = 0;
 
     if (!ipd_en) begin
+  	  m_axis_tdata  = s_axis_tdata;
+      m_axis_tstrb  = s_axis_tstrb;
+      m_axis_tuser  = s_axis_tuser;
       m_axis_tvalid = s_axis_tvalid;
       s_axis_tready = m_axis_tready;
-      m_axis_tlast = s_axis_tlast;
+      m_axis_tlast  = s_axis_tlast;
     end
     else begin
       s_axis_tready = !in_fifo_nearly_full;
       in_fifo_wr_en = s_axis_tready && s_axis_tvalid;
+	  
+	  	m_axis_tdata  = in_fifo_tdata;
+      m_axis_tstrb  = in_fifo_tstrb;
+      m_axis_tuser  = in_fifo_tuser;
 
       case (state)
         IN_PKT_HEADER: begin
@@ -158,16 +166,19 @@ module inter_packet_delay
             m_axis_tvalid = 1;
 
             if (m_axis_tready) begin
-	            // Get the delay value for the next packet
+	          	// Get the delay value for the next packet
               delay_val_c = timer_ticks + ((use_reg_val) ? delay_reg_val
-                                                         : in_fifo_tuser[63:32]); // check the offsets --- MS
+                                                         : in_fifo_tuser[C_TUSER_TIMESTAMP_POS+32-1:C_TUSER_TIMESTAMP_POS]); 
               in_fifo_rd_en = 1;
 
-              if (!m_axis_tlast)
-                next_state = IN_PKT_BODY;
+              if (!in_fifo_tlast)
+                next_state   = IN_PKT_BODY;
+			  			else
+		        		m_axis_tlast = 1;
             end
           end
         end
+		
         IN_PKT_BODY: begin
           if (!in_fifo_empty) begin
             m_axis_tvalid = 1;
@@ -175,8 +186,10 @@ module inter_packet_delay
             if (m_axis_tready) begin
               in_fifo_rd_en = 1;
 
-              if (m_axis_tlast)
+              if (in_fifo_tlast) begin
+			    			m_axis_tlast = 1;
                 next_state = IN_PKT_HEADER;
+			  			end
             end
           end
         end
@@ -187,16 +200,16 @@ module inter_packet_delay
   // ---- Primary State Machine [Sequential]
   always @ (posedge axi_aclk) begin
     if(!axi_aresetn || sw_rst) begin
-      state <= IN_PKT_HEADER;
+      state       <= IN_PKT_HEADER;
       timer_ticks <= {64{1'b0}};
-      delay_val <= {64{1'b0}};
+      delay_val   <= {64{1'b0}};
     end
     else begin
-      state <= next_state;
+      state       <= next_state;
       timer_ticks <= timer_ticks + 1;
-      delay_val <= delay_val_c;
+      delay_val   <= delay_val_c;
     end
-   end
+  end
 
 endmodule
 

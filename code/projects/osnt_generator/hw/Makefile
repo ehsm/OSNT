@@ -6,10 +6,10 @@
 #        Makefile
 #
 #  Project:
-#        reference_switch_lite
+#        reference_nic
 #
 #  Author:
-#        Gianni Anitchi, Muhammad Shahbaz
+#        Sam D'Amico
 #
 #  Description:
 #        This file is based on the standard Xilinx XPS Makefile
@@ -120,15 +120,15 @@ bits: $(SYSTEM_BIT)
 ace: $(SYSTEM_ACE)
 
 exporttosdk: $(SYSTEM_HW_HANDOFF_DEP)
-	appguru -hw $(SDK_EXPORT_DIR)/$(SYSTEM).xml -app empty_application $(PROJECT_SEARCHPATHOPT)../sw/ -od $(SDK_EXPORT_DIR)/../empty_application
-	@mkdir -p $(SDK_EXPORT_DIR)/../libs
-	libgen -mhs $(MHSFILE) -p $(DEVICE) $(PROJECT_SEARCHPATHOPT) $(PROJECT_SEARCHPATHOPT)../sw/ -lib -od $(SDK_EXPORT_DIR)/../libs $(SDK_EXPORT_DIR)/../empty_application/$(SYSTEM).mss
-	@mkdir -p $(SDK_EXPORT_DIR)/../../../host/include/
-	@cp -rf $(SDK_EXPORT_DIR)/../libs/microblaze_0/include/* $(SDK_EXPORT_DIR)/../../../host/include/
-	@cp -rf $(SDK_EXPORT_DIR)/../libs/microblaze_0/libsrc $(SDK_EXPORT_DIR)/../../../host/include/
-	@rm -rf $(SDK_EXPORT_DIR)/../empty_application
-	@rm -rf $(SDK_EXPORT_DIR)/../libs
-
+#	appguru -hw $(SDK_EXPORT_DIR)/$(SYSTEM).xml -app empty_application $(PROJECT_SEARCHPATHOPT)../sw/ -od $(SDK_EXPORT_DIR)/../empty_application
+#	@mkdir -p $(SDK_EXPORT_DIR)/../libs
+#	libgen -mhs $(MHSFILE) -p $(DEVICE) $(PROJECT_SEARCHPATHOPT) $(PROJECT_SEARCHPATHOPT)../sw/ -lib -od $(SDK_EXPORT_DIR)/../libs $(SDK_EXPORT_DIR)/../empty_application/$(SYSTEM).mss
+#	@mkdir -p $(SDK_EXPORT_DIR)/../../../host/include/
+#	@cp -rf $(SDK_EXPORT_DIR)/../libs/microblaze_0/include/* $(SDK_EXPORT_DIR)/../../../host/include/
+#	@cp -rf $(SDK_EXPORT_DIR)/../libs/microblaze_0/libsrc $(SDK_EXPORT_DIR)/../../../host/include/
+#	@rm -rf $(SDK_EXPORT_DIR)/../empty_application
+#	@rm -rf $(SDK_EXPORT_DIR)/../libs
+	
 netlist: $(POSTSYN_NETLIST)
 
 download: $(DOWNLOAD_BIT) dummy
@@ -184,14 +184,15 @@ bitsclean:
 	rm -f implementation/download.bit
 	rm -f __xps/$(SYSTEM)_routed
 
+## Shahbaz: to clean register system generated files
+regsclean:
+	rm -rf $(SDK_EXPORT_DIR)/../../../host/include/
+
 simclean:
 	rm -rf simulation
 	rm -rf *[0-9]_{stim,expected,log}.axi $(AXISIM_MHS)
 	rm -f simgen.log
 	rm -f __xps/ise/_xmsgs/simgen.xmsgs
-
-regsclean:
-	rm -rf $(SDK_EXPORT_DIR)/../../../host/include/
 
 #################################################################
 # BOOTLOOP ELF FILES
@@ -320,24 +321,12 @@ axi_model: __xps/simgen.opt $(BRAMINIT_ELF_SIM_FILES)
 	@echo "*********************************************"
 	@echo "Creating AXI simulation models..."
 	@echo "*********************************************"
-	nf10_sim_autosubst.py -i $(MHSFILE) -o $(AXISIM_MHS) 
+	nf10_sim_autosubst.py -i $(MHSFILE) -o $(AXISIM_MHS)
 	simgen $(SIMGEN_OPTIONS) -m behavioral $(AXISIM_MHS)
 
-xparam:  
-	psf2Edward -inp $(SYSTEM).xmp -exit_on_error -edwver 1.2 -xml $(SDK_EXPORT_DIR)/$(SYSTEM).xml $(GLOBAL_SEARCHPATHOPT)
-	appguru -hw $(SDK_EXPORT_DIR)/$(SYSTEM).xml -app empty_application $(PROJECT_SEARCHPATHOPT)../sw/ -od $(SDK_EXPORT_DIR)/../empty_application
-	@mkdir -p $(SDK_EXPORT_DIR)/../libs
-	libgen -mhs $(MHSFILE) -p $(DEVICE) $(PROJECT_SEARCHPATHOPT) $(PROJECT_SEARCHPATHOPT)../sw/ -lib -od $(SDK_EXPORT_DIR)/../libs $(SDK_EXPORT_DIR)/../empty_application/$(SYSTEM).mss
-	@mkdir -p $(SDK_EXPORT_DIR)/../../../host/include/
-	@cp -rf $(SDK_EXPORT_DIR)/../libs/microblaze_0/include/* $(SDK_EXPORT_DIR)/../../../host/include/
-	@cp -rf $(SDK_EXPORT_DIR)/../libs/microblaze_0/libsrc $(SDK_EXPORT_DIR)/../../../host/include/
-	@rm -rf $(SDK_EXPORT_DIR)/../empty_application
-	@rm -rf $(SDK_EXPORT_DIR)/../libs
-
-sim: axi_model xparam
+sim: axi_model
 	./make_pkts.py
 	cp nf10/system_axisim_tb.v simulation/behavioral
-	cp nf10/system_axisim_fuse.sh simulation/behavioral
 	cd simulation/behavioral && $(AXISIM_FUSE)
 	cd simulation/behavioral && $(AXISIM_CMD) -tclbatch ../../nf10/noninteractive_sim.tcl
 	nf10_sim_reconcile_axi_logs.py

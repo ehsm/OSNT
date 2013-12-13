@@ -46,7 +46,7 @@
   * of 10G/2, 10G/4, 10G/8 and so on ...
   */
 
-module rate_limiter_simple
+module rate_limiter
 #(
     //Master AXI Stream Data Width
     parameter C_M_AXIS_DATA_WIDTH  = 256,
@@ -116,7 +116,7 @@ module rate_limiter_simple
 
   // -- Modules and Logic
 
-  fallthrough_small_fifo #(.WIDTH(C_S_AXIS_DATA_WIDTH+C_S_AXIS_TUSER_WIDTH+C_S_AXIS_DATA_WIDTH/8+1), .MAX_DEPTH_BITS(2))
+  fallthrough_small_fifo #(.WIDTH(1+C_S_AXIS_TUSER_WIDTH+(C_S_AXIS_DATA_WIDTH/8)+C_S_AXIS_DATA_WIDTH), .MAX_DEPTH_BITS(2))
     input_fifo
       ( .din         ({s_axis_tlast, s_axis_tuser, s_axis_tstrb, s_axis_tdata}),
         .wr_en       (in_fifo_wr_en),
@@ -140,21 +140,28 @@ module rate_limiter_simple
 
     next_timer_ticks = timer_ticks;
 
-    m_axis_tdata = s_axis_tdata;
-    m_axis_tstrb = s_axis_tstrb;
-    m_axis_tuser = s_axis_tuser;
+    m_axis_tdata  = {C_M_AXIS_DATA_WIDTH{1'b0}};
+    m_axis_tstrb  = {C_M_AXIS_DATA_WIDTH/8{1'b0}};
+    m_axis_tuser  = {C_M_AXIS_TUSER_WIDTH{1'b0}};
     m_axis_tvalid = 0;
     s_axis_tready = 0;
-    m_axis_tlast = 0;
+    m_axis_tlast  = 0;
 
     if (!rate_lim_en) begin
+	  	m_axis_tdata  = s_axis_tdata;
+      m_axis_tstrb  = s_axis_tstrb;
+      m_axis_tuser  = s_axis_tuser;
       m_axis_tvalid = s_axis_tvalid;
       s_axis_tready = m_axis_tready;
-      m_axis_tlast = s_axis_tlast;
+      m_axis_tlast  = s_axis_tlast;
     end
     else begin
       s_axis_tready = !in_fifo_nearly_full;
       in_fifo_wr_en = s_axis_tready && s_axis_tvalid;
+	  
+	    m_axis_tdata  = in_fifo_tdata;
+      m_axis_tstrb  = in_fifo_tstrb;
+      m_axis_tuser  = in_fifo_tuser;
 
       case (state)
         WAIT_FOR_PKT: begin
@@ -164,9 +171,10 @@ module rate_limiter_simple
             if (m_axis_tready) begin
               in_fifo_rd_en = 1;
 
-              if (m_axis_tlast) begin
+              if (in_fifo_tlast) begin
+			    			m_axis_tlast     = 1;
                 next_timer_ticks = (timer_ticks + 1) << rate_in_bits;
-                next_state = WAIT_FOR_IPG;
+                next_state       = WAIT_FOR_IPG;
               end
               else begin
                 next_timer_ticks = timer_ticks + 1;
@@ -174,13 +182,14 @@ module rate_limiter_simple
             end
           end
         end
+		
         WAIT_FOR_IPG: begin
           if (timer_ticks > 1) begin
             next_timer_ticks = timer_ticks - 1;
           end
           else begin
             next_timer_ticks = 0;
-            next_state = WAIT_FOR_PKT;
+            next_state       = WAIT_FOR_PKT;
           end
         end
       endcase
@@ -190,11 +199,11 @@ module rate_limiter_simple
   // ---- Primary State Machine [Sequential]
   always @ (posedge axi_aclk) begin
     if(!axi_aresetn || sw_rst) begin
-      state <= WAIT_FOR_PKT;
-      timer_ticks <= {64{1'b0}};
+      state       <= WAIT_FOR_PKT;
+	  	timer_ticks <= {64{1'b0}};
     end
     else begin
-      state <= next_state;
+      state       <= next_state;
       timer_ticks <= next_timer_ticks;
     end
   end
