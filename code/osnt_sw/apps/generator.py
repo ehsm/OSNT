@@ -317,18 +317,20 @@ class OSNTRateLimiter:
 
     def to_string(self):
         rate = float(1)/((1<<self.rate)+1)*40960000000
-        rate = min(10000000000, rate)
+        rate = float(min(7620000000, rate))
+        percentage = float(rate)/76200000
+        percentage = '{0:.4f}'.format(percentage)+'%'
         if rate >= 1000000000:
             rate = rate/1000000000
-            return '{0:.2f}'.format(rate)+'Gbps'
+            return '{0:.2f}'.format(rate)+'Gbps '+percentage
         elif rate >= 1000000:
             rate = rate/1000000
-            return '{0:.2f}'.format(rate)+'Mbps'
+            return '{0:.2f}'.format(rate)+'Mbps '+percentage
         elif rate >= 1000:
             rate = rate/1000
-            return '{0:.2f}'.format(rate)+'Kbps'
+            return '{0:.2f}'.format(rate)+'Kbps '+percentage
         else:
-            return '{0:.2f}'.format(rate)+'bps'
+            return '{0:.2f}'.format(rate)+'bps '+percentage
 
     # rate is an interger value
     def set_rate(self, rate):
