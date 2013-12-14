@@ -113,35 +113,35 @@
  PORT pcie_top_0_pci_exp_7_rxn_pin = pcie_top_0_pci_exp_7_rxn, DIR = I
  PORT pcie_top_0_pci_exp_7_rxp_pin = pcie_top_0_pci_exp_7_rxp, DIR = I
  PORT pcie_top_0_pci_exp_0_txn_pin = pcie_top_0_pci_exp_0_txn, DIR = O
- PORT nf10_timestamp_0_PPS_RX_pin = nf10_timestamp_0_PPS_RX, DIR = I
- PORT nf10_pcap_replay_uengine_0_qdr_d_0_pin = nf10_pcap_replay_uengine_0_qdr_d_0, DIR = O, VEC = [35:0]
- PORT nf10_pcap_replay_uengine_0_qdr_q_0_pin = nf10_pcap_replay_uengine_0_qdr_q_0, DIR = I, VEC = [35:0]
- PORT nf10_pcap_replay_uengine_0_qdr_sa_0_pin = nf10_pcap_replay_uengine_0_qdr_sa_0, DIR = O, VEC = [18:0]
- PORT nf10_pcap_replay_uengine_0_qdr_w_n_0_pin = nf10_pcap_replay_uengine_0_qdr_w_n_0, DIR = O
- PORT nf10_pcap_replay_uengine_0_qdr_r_n_0_pin = nf10_pcap_replay_uengine_0_qdr_r_n_0, DIR = O
- PORT nf10_pcap_replay_uengine_0_qdr_bw_n_0_pin = nf10_pcap_replay_uengine_0_qdr_bw_n_0, DIR = O, VEC = [3:0]
- PORT nf10_pcap_replay_uengine_0_qdr_dll_off_n_0_pin = nf10_pcap_replay_uengine_0_qdr_dll_off_n_0, DIR = O
- PORT nf10_pcap_replay_uengine_0_qdr_cq_0_pin = nf10_pcap_replay_uengine_0_qdr_cq_0, DIR = I
- PORT nf10_pcap_replay_uengine_0_qdr_cq_n_0_pin = nf10_pcap_replay_uengine_0_qdr_cq_n_0, DIR = I
- PORT nf10_pcap_replay_uengine_0_qdr_c_n_0_pin = nf10_pcap_replay_uengine_0_qdr_c_n_0, DIR = O
- PORT nf10_pcap_replay_uengine_0_qdr_k_n_0_pin = nf10_pcap_replay_uengine_0_qdr_k_n_0, DIR = O
- PORT nf10_pcap_replay_uengine_0_qdr_c_0_pin = nf10_pcap_replay_uengine_0_qdr_c_0, DIR = O
- PORT nf10_pcap_replay_uengine_0_qdr_k_0_pin = nf10_pcap_replay_uengine_0_qdr_k_0, DIR = O
- PORT nf10_pcap_replay_uengine_0_qdr_masterbank_sel_0_pin = nf10_pcap_replay_uengine_0_qdr_masterbank_sel_0, DIR = I
- PORT nf10_pcap_replay_uengine_0_qdr_d_1_pin = nf10_pcap_replay_uengine_0_qdr_d_1, DIR = O, VEC = [35:0]
- PORT nf10_pcap_replay_uengine_0_qdr_q_1_pin = nf10_pcap_replay_uengine_0_qdr_q_1, DIR = I, VEC = [35:0]
- PORT nf10_pcap_replay_uengine_0_qdr_sa_1_pin = nf10_pcap_replay_uengine_0_qdr_sa_1, DIR = O, VEC = [18:0]
- PORT nf10_pcap_replay_uengine_0_qdr_w_n_1_pin = nf10_pcap_replay_uengine_0_qdr_w_n_1, DIR = O
- PORT nf10_pcap_replay_uengine_0_qdr_r_n_1_pin = nf10_pcap_replay_uengine_0_qdr_r_n_1, DIR = O
- PORT nf10_pcap_replay_uengine_0_qdr_bw_n_1_pin = nf10_pcap_replay_uengine_0_qdr_bw_n_1, DIR = O, VEC = [3:0]
- PORT nf10_pcap_replay_uengine_0_qdr_dll_off_n_1_pin = nf10_pcap_replay_uengine_0_qdr_dll_off_n_1, DIR = O
- PORT nf10_pcap_replay_uengine_0_qdr_cq_1_pin = nf10_pcap_replay_uengine_0_qdr_cq_1, DIR = I
- PORT nf10_pcap_replay_uengine_0_qdr_cq_n_1_pin = nf10_pcap_replay_uengine_0_qdr_cq_n_1, DIR = I
- PORT nf10_pcap_replay_uengine_0_qdr_c_n_1_pin = nf10_pcap_replay_uengine_0_qdr_c_n_1, DIR = O
- PORT nf10_pcap_replay_uengine_0_qdr_k_n_1_pin = nf10_pcap_replay_uengine_0_qdr_k_n_1, DIR = O
- PORT nf10_pcap_replay_uengine_0_qdr_c_1_pin = nf10_pcap_replay_uengine_0_qdr_c_1, DIR = O
- PORT nf10_pcap_replay_uengine_0_qdr_k_1_pin = nf10_pcap_replay_uengine_0_qdr_k_1, DIR = O
- PORT nf10_pcap_replay_uengine_0_qdr_masterbank_sel_1_pin = nf10_pcap_replay_uengine_0_qdr_masterbank_sel_1, DIR = I
+ PORT pps_rx_pin = nf10_timestamp_0_PPS_RX, DIR = I
+ PORT qdr_d_0 = nf10_pcap_replay_uengine_0_qdr_d_0, DIR = O, VEC = [35:0]
+ PORT qdr_q_0 = nf10_pcap_replay_uengine_0_qdr_q_0, DIR = I, VEC = [35:0]
+ PORT qdr_sa_0 = nf10_pcap_replay_uengine_0_qdr_sa_0, DIR = O, VEC = [18:0]
+ PORT qdr_w_n_0 = nf10_pcap_replay_uengine_0_qdr_w_n_0, DIR = O
+ PORT qdr_r_n_0 = nf10_pcap_replay_uengine_0_qdr_r_n_0, DIR = O
+ PORT qdr_bw_n_0 = nf10_pcap_replay_uengine_0_qdr_bw_n_0, DIR = O, VEC = [3:0]
+ PORT qdr_dll_off_n_0 = nf10_pcap_replay_uengine_0_qdr_dll_off_n_0, DIR = O
+ PORT qdr_cq_0 = nf10_pcap_replay_uengine_0_qdr_cq_0, DIR = I
+ PORT qdr_cq_n_0 = nf10_pcap_replay_uengine_0_qdr_cq_n_0, DIR = I
+ PORT qdr_c_n_0 = nf10_pcap_replay_uengine_0_qdr_c_n_0, DIR = O
+ PORT qdr_k_n_0 = nf10_pcap_replay_uengine_0_qdr_k_n_0, DIR = O
+ PORT qdr_c_0 = nf10_pcap_replay_uengine_0_qdr_c_0, DIR = O
+ PORT qdr_k_0 = nf10_pcap_replay_uengine_0_qdr_k_0, DIR = O
+ PORT qdr_masterbank_sel_0 = nf10_pcap_replay_uengine_0_qdr_masterbank_sel_0, DIR = I
+ PORT qdr_d_1 = nf10_pcap_replay_uengine_0_qdr_d_1, DIR = O, VEC = [35:0]
+ PORT qdr_q_1 = nf10_pcap_replay_uengine_0_qdr_q_1, DIR = I, VEC = [35:0]
+ PORT qdr_sa_1 = nf10_pcap_replay_uengine_0_qdr_sa_1, DIR = O, VEC = [18:0]
+ PORT qdr_w_n_1 = nf10_pcap_replay_uengine_0_qdr_w_n_1, DIR = O
+ PORT qdr_r_n_1 = nf10_pcap_replay_uengine_0_qdr_r_n_1, DIR = O
+ PORT qdr_bw_n_1 = nf10_pcap_replay_uengine_0_qdr_bw_n_1, DIR = O, VEC = [3:0]
+ PORT qdr_dll_off_n_1 = nf10_pcap_replay_uengine_0_qdr_dll_off_n_1, DIR = O
+ PORT qdr_cq_1 = nf10_pcap_replay_uengine_0_qdr_cq_1, DIR = I
+ PORT qdr_cq_n_1 = nf10_pcap_replay_uengine_0_qdr_cq_n_1, DIR = I
+ PORT qdr_c_n_1 = nf10_pcap_replay_uengine_0_qdr_c_n_1, DIR = O
+ PORT qdr_k_n_1 = nf10_pcap_replay_uengine_0_qdr_k_n_1, DIR = O
+ PORT qdr_c_1 = nf10_pcap_replay_uengine_0_qdr_c_1, DIR = O
+ PORT qdr_k_1 = nf10_pcap_replay_uengine_0_qdr_k_1, DIR = O
+ PORT qdr_masterbank_sel_1 = nf10_pcap_replay_uengine_0_qdr_masterbank_sel_1, DIR = I
 
 
 BEGIN axi_interconnect

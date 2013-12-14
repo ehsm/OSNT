@@ -40,7 +40,7 @@
  *
  */
 
-module nf10_input_arbiter
+module osnt_input_arbiter
 #(
     // Master AXI Stream Data Width
     parameter C_M_AXIS_DATA_WIDTH=256,

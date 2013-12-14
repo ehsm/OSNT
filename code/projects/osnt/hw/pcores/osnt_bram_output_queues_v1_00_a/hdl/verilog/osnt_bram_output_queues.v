@@ -98,6 +98,7 @@ module osnt_bram_output_queues
    localparam NUM_METADATA_STATES = 2;
    localparam WAIT_HEADER = 0;
    localparam WAIT_EOP = 1;
+   localparam NUM_QUEUES = 1;
 
    // ------------- Regs/ wires -----------
 
@@ -193,8 +194,6 @@ module osnt_bram_output_queues
          	metadata_state <= metadata_state_next;
       	end
       end
-   end
-   endgenerate
 
    // Per NetFPGA-10G AXI Spec
    localparam DST_POS = 24;
