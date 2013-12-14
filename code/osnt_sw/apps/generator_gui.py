@@ -234,8 +234,6 @@ class MainWindow(wx.Frame):
         self.log('Selected Pcap file for port '+str(iface))
         for iface in self.pkts_loaded:
             self.log('Loaded %d packets for %s.' % (self.pkts_loaded[iface], iface))
-            self.log(str(self.average_pkt_len[iface]))
-            self.log(str(self.average_word_cnt[iface]))
 
     def on_replay_cnt_change(self, event):
         spin_ctrl = event.GetEventObject()
