@@ -8,6 +8,7 @@ from math import ceil
 from subprocess import Popen, PIPE
 
 DATAPATH_FREQUENCY = 160000000
+MEM_HIGH_ADDR = 512*1024
 PCAP_ENGINE_BASE_ADDR = "0x76000000"
 INTER_PKT_DELAY_BASE_ADDR = {"nf0" : "0x76600000",
                              "nf1" : "0x76600010",
@@ -151,13 +152,31 @@ class OSNTGeneratorPcapEngine:
         wraxi(self.reg_addr(self.reset_reg_offset), hex(value))
         self.get_reset()
 
+    def clear(self):
+        # reset
+        self.set_reset(True)
+
+        self.mem_addr_low = [0, 0, 0, 0]
+        self.mem_addr_high = [0, 0, 0, 0]
+        self.enable = [False, False, False, False]
+        self.begin_replay = [False, False, False, False]
+        self.replay_cnt = [0, 0, 0, 0]
+
+        self.set_mem_addr_low()
+        self.set_mem_addr_high()
+        self.set_enable()
+        self.set_begin_replay()
+        self.set_replay_cnt()
+
+        self.set_reset(False)
+
     def load_pcap(self, pcaps):
 
         # reset
         self.set_reset(True)
 
         # read packets in and set memory boundary
-        # TODO: check overflow
+        # check overflow
         pkts = {}
         self.mem_addr_low = [0, 0, 0, 0]
         self.mem_addr_high = [0, 0, 0, 0]
@@ -171,15 +190,22 @@ class OSNTGeneratorPcapEngine:
 
         self.set_reset(False)
 
+        pkts_loaded = {}
         for i in range(4):
+            iface = 'nf'+str(i)
             if ('nf'+str(i)) in pcaps:
                 self.enable[i] = True
                 self.begin_replay[i] = True
-                mem_addr_high = 0
+                mem_addr_high = self.mem_addr_low[i]
                 pkts.update({'nf'+str(i): rdpcap(pcaps['nf'+str(i)])})
+                pkts_loaded[iface] = 0
                 for pkt in pkts['nf'+str(i)]:
-                    mem_addr_high = mem_addr_high + ceil(len(pkt)/float(32)) + 1
-                self.mem_addr_high[i] = self.mem_addr_low[i] + mem_addr_high
+                    mem_addr_high_nxt = mem_addr_high + ceil(len(pkt)/float(32)) + 1
+                    if mem_addr_high_nxt >= MEM_HIGH_ADDR:
+                        break
+                    pkts_loaded[iface] = pkts_loaded[iface] + 1
+                    mem_addr_high = mem_addr_high_nxt
+                self.mem_addr_high[i] = mem_addr_high
                 if i != 3:
                     self.mem_addr_low[i+1] = self.mem_addr_high[i]
             else:
@@ -189,32 +215,30 @@ class OSNTGeneratorPcapEngine:
 
         self.set_mem_addr_low()
         self.set_mem_addr_high()
-        # set replay cnt
-        self.set_replay_cnt()
         sleep(0.1)
 
         self.set_enable()
         sleep(0.1)
         
-
-        # send packets
+        average_pkt_len = {}
+        average_word_cnt = {}
+        # load packets
         for iface in pkts:
-            time = [pkt.time for pkt in pkts[iface]]
-            delay = [int((time[i+1]-time[i])*DATAPATH_FREQUENCY) for i in range(len(time)-1)]
-            delay = [0] + delay
-            """
-            pkts_delay = [pkts[iface][i] for i in range(len(pkts[iface]))]
-            wrpcap(iface+'_delay.cap', pkts_delay)
-            proc = Popen('sudo tcpreplay -i '+iface+' '+iface+'_delay.cap', stdout=PIPE, shell=True)
-            print proc.stdout.read()
-            """
-            for i in range(len(pkts[iface])):
+            #time = [pkt.time for pkt in pkts[iface]]
+            #delay = [int((time[i+1]-time[i])*DATAPATH_FREQUENCY) for i in range(len(time)-1)]
+            #delay = [0] + delay
+            average_pkt_len[iface] = 0
+            average_word_cnt[iface] = 0
+            for i in range(min(len(pkts[iface]), pkts_loaded[iface])):
                 pkt = pkts[iface][i]
+                average_pkt_len[iface] = average_pkt_len[iface] + len(pkt)
+                average_word_cnt[iface] = average_word_cnt[iface] + ceil(len(pkt)/32.0)
                 sendp(pkt, iface=iface, verbose=False)
+            average_pkt_len[iface] = float(average_pkt_len[iface])/len(pkts[iface])
+            average_word_cnt[iface] = float(average_word_cnt[iface])/len(pkts[iface])
         sleep(0.1)
 
-        # set begin replay
-        self.set_begin_replay()
+        return {'average_pkt_len':average_pkt_len, 'average_word_cnt':average_word_cnt, 'pkts_loaded':pkts_loaded}
 
     def stop_replay(self):
         self.begin_replay = [False, False, False, False]
@@ -315,10 +339,11 @@ class OSNTRateLimiter:
         rate = rdaxi(self.reg_addr(self.rate_reg_offset))
         self.rate = int(rate, 16)
 
-    def to_string(self):
-        rate = float(1)/((1<<self.rate)+1)*40960000000
-        rate = float(min(7620000000, rate))
-        percentage = float(rate)/76200000
+    def to_string(self, average_pkt_len, average_word_cnt):
+        rate = float(1)/((1<<self.rate)+1)*(average_pkt_len + 4)*8*DATAPATH_FREQUENCY/average_word_cnt
+        rate_max = float(10000000000)*(average_pkt_len*8+32)/(average_pkt_len*8+32+96+64)
+        rate = float(min(rate_max, rate))
+        percentage = float(rate)/rate_max*100
         percentage = '{0:.4f}'.format(percentage)+'%'
         if rate >= 1000000000:
             rate = rate/1000000000
@@ -368,6 +393,8 @@ class OSNTRateLimiter:
             value = 0
         wraxi(self.reg_addr(self.reset_reg_offset), hex(value))
         self.get_reset()
+        self.set_rate(0)
+        self.set_enable(False)
 
     def reg_addr(self, offset):
         return add_hex(self.module_base_addr, offset)
@@ -438,7 +465,7 @@ class OSNTDelay:
 
     # delay is an interger value
     def set_delay(self, delay):
-        wraxi(self.reg_addr(self.delay_reg_offset), hex(delay))
+        wraxi(self.reg_addr(self.delay_reg_offset), hex(delay*DATAPATH_FREQUENCY/1000000000))
         self.get_delay()
 
     def get_reset(self):
@@ -456,6 +483,9 @@ class OSNTDelay:
             value = 0
         wraxi(self.reg_addr(self.reset_reg_offset), hex(value))
         self.get_reset()
+        self.set_enable(False)
+        self.set_delay(0)
+        self.set_use_reg(False)
 
     def reg_addr(self, offset):
         return add_hex(self.module_base_addr, offset)
