@@ -240,9 +240,24 @@ class OSNTGeneratorPcapEngine:
 
         return {'average_pkt_len':average_pkt_len, 'average_word_cnt':average_word_cnt, 'pkts_loaded':pkts_loaded}
 
+    def run(self):
+        begin_replay = self.begin_replay
+        enable = self.enable
+        self.begin_replay = [False, False, False, False]
+        self.enable = [False, False, False, False]
+        self.set_enable()
+        self.set_begin_replay()
+        sleep(0.1)
+        self.begin_replay = begin_replay
+        self.enable = enable
+        self.set_enable()
+        self.set_begin_replay()
+
     def stop_replay(self):
+        begin_replay = self.begin_replay
         self.begin_replay = [False, False, False, False]
         self.set_begin_replay()
+        self.begin_replay = begin_replay
 
     def get_mem_addr_low(self):
         for i in range(4):

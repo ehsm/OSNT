@@ -200,7 +200,7 @@ class MainWindow(wx.Frame):
         self.logger.AppendText(str(datetime.datetime.now())+': '+text+'\n')
 
     def on_start_replay(self, event):
-        self.pcap_engine.set_begin_replay()
+        self.pcap_engine.run()
         self.log('Started replaying.')
 
     def on_stop_replay(self, event):
