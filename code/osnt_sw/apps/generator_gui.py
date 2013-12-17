@@ -186,7 +186,7 @@ class MainWindow(wx.Frame):
             self.rate_input[i].SetValue(self.rate_limiters[i].rate)
             self.rate_txt[i].SetLabel(self.rate_limiters[i].to_string(self.average_pkt_len[iface], self.average_word_cnt[iface]))
             self.rate_limiter_enable_toggle[i].SetValue(self.rate_limiters[i].enable)
-            self.delay_input[i].SetValue(self.delays[i].delay)
+            self.delay_input[i].SetValue(self.delays[i].delay*1000000000/160000000)
             self.delay_txt[i].SetLabel(self.delays[i].to_string())
             self.delay_enable_toggle[i].SetValue(self.delays[i].enable)
             self.use_reg_toggle[i].SetValue(self.delays[i].use_reg)
