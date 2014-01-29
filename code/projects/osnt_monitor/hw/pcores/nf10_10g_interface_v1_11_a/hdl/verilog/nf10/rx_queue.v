@@ -89,12 +89,7 @@ module rx_queue
    reg  [2:0] err_state, err_state_next;
    reg  err_tvalid;
 
-   reg rx_pkt_start;
-   reg rx_pkt_start_d1, rx_pkt_start_d2;
-   reg rx_pkt_start_sync_d1, rx_pkt_start_sync_d2;
-
-
-   assign pkt_start = rx_pkt_start_sync_d1 & ~rx_pkt_start_sync_d2;
+   reg rx_pkt;
 
    // Instantiate clock domain crossing FIFO
    FIFO36_72 #(
@@ -162,27 +157,20 @@ module rx_queue
 
 // clock domain crossing for the pkt_start puls
 
-     always @(posedge clk156 or posedge reset) begin
-         if(reset) begin
-        	rx_pkt_start_d1 <= 0;
-        	rx_pkt_start_d2 <= 0;
-         end
-         else begin
-                rx_pkt_start_d1 <= rx_pkt_start;
-    		rx_pkt_start_d2 <= rx_pkt_start_d1;
-         end
-     end
 
-     always @(posedge clk or posedge reset) begin
-         if(reset) begin
-         	rx_pkt_start_sync_d1 <= 0;
-        	rx_pkt_start_sync_d2 <= 0;
-         end
-         else begin
-		rx_pkt_start_sync_d1 <= rx_pkt_start_d2 | rx_pkt_start_d1;
-        	rx_pkt_start_sync_d2 <= rx_pkt_start_sync_d1;
-         end
-     end
+        sync_pulse
+        	sync_pulse
+        (
+         .clkA(clk156),
+         .rstA(reset),
+         .pulseA(rx_pkt),
+
+         .clkB(clk),
+         .rstB(reset),
+         .pulseB(pkt_start),
+
+         .pulseA_busy()
+         );
 
 // --------
 
@@ -190,7 +178,7 @@ module rx_queue
          state_next = state;
          fifo_wr_en = 1'b0;
          info_fifo_wr_en = 1'b0;
-	 rx_pkt_start = 1'b0;
+	 rx_pkt = 1'b0;
 
          case(state)
              IDLE: begin
@@ -198,7 +186,7 @@ module rx_queue
                      info_fifo_wr_en = 1'b1;
                      if(~fifo_almost_full) begin
                          fifo_wr_en = 1'b1;
-			 rx_pkt_start = 1'b1;
+			 rx_pkt	 = 1'b1;
                          state_next = WAIT_FOR_EOP;
                      end
                      else begin

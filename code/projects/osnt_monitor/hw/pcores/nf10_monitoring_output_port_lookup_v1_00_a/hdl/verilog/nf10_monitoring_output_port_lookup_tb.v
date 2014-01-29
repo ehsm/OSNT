@@ -43,7 +43,6 @@
 module testbench();
 
     reg clk, reset;
-    reg clk_correction;
     reg [255:0]  tdata[4:0];
     reg [4:0]  tlast;
     wire[4:0]  tready;
@@ -657,7 +656,6 @@ module testbench();
 
   initial begin
       clk   = 1'b0;
-      clk_correction = 1'b0;
       $display("[%t] : System Reset Asserted...", $realtime);
       reset = 1'b1;
       for (i = 0; i < 50; i = i + 1) begin
@@ -668,7 +666,6 @@ module testbench();
   end
 
   always #2.5  clk = ~clk;      // 200MHz
-  always #5    clk_correction = ~clk_correction;
 
   nf10_input_arbiter
     #(.C_M_AXIS_DATA_WIDTH(256),
@@ -803,7 +800,7 @@ module testbench();
     .S_AXI_BVALID(),
     .S_AXI_AWREADY(),
 
-    .CLK_CORRECTION(clk_correction),
+    .PPS_RX(),
     .STAMP_COUNTER(stamp_counter)
     );
 

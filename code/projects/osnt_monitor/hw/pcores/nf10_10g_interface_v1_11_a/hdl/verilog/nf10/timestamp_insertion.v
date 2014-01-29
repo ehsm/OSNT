@@ -69,10 +69,24 @@ module timestamp_insertion
  
 );
 
+  function integer log2;
+     input integer number;
+     begin
+        log2=0;
+        while(2**log2<number) begin
+           log2=log2+1;
+        end
+     end
+   endfunction // log2
+
+
 
   localparam TIMESTAMP = 32;
   localparam WAIT = 1;
   localparam SEND_PACKET = 2;
+  localparam MAX_PKT_RX_QUEUE = 66;
+  localparam IN_TIME_DEPTH_BIT = log2(MAX_PKT_RX_QUEUE);
+
  
   wire timestamp_fifo_nearly_full;
   wire timestamp_fifo_empty;
@@ -93,7 +107,7 @@ module timestamp_insertion
   assign s_axis_tready = !in_fifo_nearly_full;
 
 
-  fallthrough_small_fifo #(.WIDTH(C_M_AXIS_DATA_WIDTH+C_M_AXIS_TUSER_WIDTH+C_M_AXIS_DATA_WIDTH/8+1), .MAX_DEPTH_BITS(4))
+  fallthrough_small_fifo #(.WIDTH(C_M_AXIS_DATA_WIDTH+C_M_AXIS_TUSER_WIDTH+C_M_AXIS_DATA_WIDTH/8+1), .MAX_DEPTH_BITS(2))
       input_fifo
         (.din ({s_axis_tlast, s_axis_tuser, s_axis_tstrb, s_axis_tdata}),     // Data in
          .wr_en (s_axis_tvalid & ~in_fifo_nearly_full),               // Write enable
@@ -110,7 +124,7 @@ module timestamp_insertion
 
    fallthrough_small_fifo
       #( .WIDTH(TIMESTAMP_WIDTH),
-         .MAX_DEPTH_BITS(2)
+         .MAX_DEPTH_BITS(IN_TIME_DEPTH_BIT)
        ) timestamp_fifo
        (
        // Outputs
