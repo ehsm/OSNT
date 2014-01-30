@@ -57,8 +57,17 @@ NF10_SW_LIB_DIR_CONTRIB   = lib/sw/contrib/drivers
 SW_LIB_DIR_INSTANCES_CONTRIB := $(shell cd $(NF10_SW_LIB_DIR_CONTRIB) && find . -maxdepth 1 -type d)
 SW_LIB_DIR_INSTANCES_CONTRIB := $(basename $(patsubst ./%,%,$(SW_LIB_DIR_INSTANCES_CONTRIB)))
 
-cores: xilinx std contrib scripts
-clean: xilinxclean stdclean contribclean scriptsclean
+NF10_HW_LIB_DIR_OSNT   = lib/hw/osnt/pcores
+HW_LIB_DIR_INSTANCES_OSNT := $(shell cd $(NF10_HW_LIB_DIR_OSNT) && find . -maxdepth 1 -type d)
+HW_LIB_DIR_INSTANCES_OSNT := $(basename $(patsubst ./%,%,$(HW_LIB_DIR_INSTANCES_OSNT)))
+
+NF10_SW_LIB_DIR_OSNT   = lib/sw/osnt/drivers
+SW_LIB_DIR_INSTANCES_OSNT := $(shell cd $(NF10_SW_LIB_DIR_OSNT) && find . -maxdepth 1 -type d)
+SW_LIB_DIR_INSTANCES_OSNT := $(basename $(patsubst ./%,%,$(SW_LIB_DIR_INSTANCES_OSNT)))
+
+
+cores: xilinx std contrib osnt scripts
+clean: xilinxclean stdclean contribclean osntclean scriptsclean
 
 xilinx: check-env
 	for lib in $(HW_LIB_DIR_INSTANCES_XILINX) ; do \
@@ -139,6 +148,36 @@ contribclean:
 	done;
 	@echo "/////////////////////////////////////////";
 	@echo "//NF10 contributed cores cleaned.";
+	@echo "/////////////////////////////////////////";
+
+osnt:
+	for lib in $(HW_LIB_DIR_INSTANCES_OSNT) ; do \
+                if test -f $(NF10_HW_LIB_DIR_OSNT)/$$lib/Makefile; \
+                        then $(MAKE) -C $(NF10_HW_LIB_DIR_OSNT)/$$lib; \
+                fi; \
+        done;
+	for lib in $(SW_LIB_DIR_INSTANCES_OSNT) ; do \
+                if test -f $(NF10_SW_LIB_DIR_OSNT)/$$lib/Makefile; \
+                        then $(MAKE) -C $(NF10_SW_LIB_DIR_OSNT)/$$lib; \
+                fi; \
+        done;
+	@echo "/////////////////////////////////////////";
+	@echo "//OSNT cores installed.";
+	@echo "/////////////////////////////////////////";
+
+osntclean:
+	for lib in $(HW_LIB_DIR_INSTANCES_OSNT) ; do \
+                if test -f $(NF10_HW_LIB_DIR_OSNT)/$$lib/Makefile; \
+                        then $(MAKE) -C $(NF10_HW_LIB_DIR_OSNT)/$$lib clean; \
+                fi; \
+        done;
+	for lib in $(SW_LIB_DIR_INSTANCES_OSNT) ; do \
+                if test -f $(NF10_SW_LIB_DIR_OSNT)/$$lib/Makefile; \
+                        then $(MAKE) -C $(NF10_SW_LIB_DIR_OSNT)/$$lib clean; \
+                fi; \
+        done;
+	@echo "/////////////////////////////////////////";
+	@echo "//OSNT cores cleaned.";
 	@echo "/////////////////////////////////////////";
 
 scripts:
