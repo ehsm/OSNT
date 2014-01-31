@@ -113,7 +113,7 @@
  PORT pcie_top_0_pci_exp_7_rxn_pin = pcie_top_0_pci_exp_7_rxn, DIR = I
  PORT pcie_top_0_pci_exp_7_rxp_pin = pcie_top_0_pci_exp_7_rxp, DIR = I
  PORT pcie_top_0_pci_exp_0_txn_pin = pcie_top_0_pci_exp_0_txn, DIR = O
- PORT nf10_timestamp_0_PPS_RX_pin = nf10_timestamp_0_PPS_RX, DIR = I
+ PORT osnt_timestamp_0_PPS_RX_pin = osnt_timestamp_0_PPS_RX, DIR = I
 
 
 BEGIN axi_interconnect
@@ -247,7 +247,7 @@ BEGIN nf10_10g_interface
  PORT xaui_rx_l3_n = nf10_10g_interface_0_xaui_rx_l3_n
  PORT xaui_rx_l0_p = nf10_10g_interface_0_xaui_rx_l0_p
  PORT axi_resetn = Peripheral_aresetn
- PORT stamp_counter = nf10_timestamp_0_STAMP_COUNTER
+ PORT stamp_counter = osnt_timestamp_0_STAMP_COUNTER
 END
 
 BEGIN nf10_10g_interface
@@ -280,7 +280,7 @@ BEGIN nf10_10g_interface
  PORT refclk = refclk_B
  PORT axi_aclk = core_clk
  PORT axi_resetn = Peripheral_aresetn
- PORT stamp_counter = nf10_timestamp_0_STAMP_COUNTER
+ PORT stamp_counter = osnt_timestamp_0_STAMP_COUNTER
 END
 
 BEGIN nf10_10g_interface
@@ -313,7 +313,7 @@ BEGIN nf10_10g_interface
  PORT refclk = refclk_C
  PORT axi_aclk = core_clk
  PORT axi_resetn = Peripheral_aresetn
- PORT stamp_counter = nf10_timestamp_0_STAMP_COUNTER
+ PORT stamp_counter = osnt_timestamp_0_STAMP_COUNTER
 END
 
 BEGIN nf10_10g_interface
@@ -345,7 +345,7 @@ BEGIN nf10_10g_interface
  PORT refclk = refclk_D
  PORT axi_aclk = core_clk
  PORT axi_resetn = Peripheral_aresetn
- PORT stamp_counter = nf10_timestamp_0_STAMP_COUNTER
+ PORT stamp_counter = osnt_timestamp_0_STAMP_COUNTER
 END
 
 BEGIN diff_input_buf
@@ -499,27 +499,27 @@ BEGIN nf10_endianess_manager
  PARAMETER C_M_AXIS_TDATA_WIDTH = 256
  BUS_INTERFACE S_AXIS = nf10_input_arbiter_0_M_AXIS
  BUS_INTERFACE M_AXIS = nf10_endianess_manager_0_M_AXIS
- BUS_INTERFACE S_AXIS_INT = nf10_packet_cutter_0_M_AXIS
+ BUS_INTERFACE S_AXIS_INT = osnt_packet_cutter_0_M_AXIS
  BUS_INTERFACE M_AXIS_INT = nf10_endianess_manager_0_M_AXIS_INT
  PORT ARESETN = Peripheral_aresetn
  PORT ACLK = core_clk
 END
 
-BEGIN nf10_packet_cutter
- PARAMETER INSTANCE = nf10_packet_cutter_0
+BEGIN osnt_packet_cutter
+ PARAMETER INSTANCE = osnt_packet_cutter_0
  PARAMETER HW_VER = 1.00.a
  PARAMETER C_INTERCONNECT_S_AXI_IS_ACLK_ASYNC = 1
  PARAMETER C_BASEADDR = 0x77a00000
  PARAMETER C_HIGHADDR = 0x77a0ffff
  BUS_INTERFACE S_AXI = axi_interconnect_0
- BUS_INTERFACE M_AXIS = nf10_packet_cutter_0_M_AXIS
- BUS_INTERFACE S_AXIS = nf10_monitoring_output_port_lookup_0_M_AXIS
+ BUS_INTERFACE M_AXIS = osnt_packet_cutter_0_M_AXIS
+ BUS_INTERFACE S_AXIS = osnt_monitoring_output_port_lookup_0_M_AXIS
  PORT S_AXI_ACLK = core_clk
  PORT S_AXI_ARESETN = Peripheral_aresetn
 END
 
-BEGIN nf10_timestamp
- PARAMETER INSTANCE = nf10_timestamp_0
+BEGIN osnt_timestamp
+ PARAMETER INSTANCE = osnt_timestamp_0
  PARAMETER HW_VER = 1.00.a
  PARAMETER C_INTERCONNECT_S_AXI_IS_ACLK_ASYNC = 1
  PARAMETER C_BASEADDR = 0x78a00000
@@ -527,12 +527,12 @@ BEGIN nf10_timestamp
  BUS_INTERFACE S_AXI = axi_interconnect_0
  PORT S_AXI_ACLK = core_clk
  PORT S_AXI_ARESETN = Peripheral_aresetn
- PORT STAMP_COUNTER = nf10_timestamp_0_STAMP_COUNTER
- PORT PPS_RX = nf10_timestamp_0_PPS_RX
+ PORT STAMP_COUNTER = osnt_timestamp_0_STAMP_COUNTER
+ PORT PPS_RX = osnt_timestamp_0_PPS_RX
 END
 
-BEGIN nf10_monitoring_output_port_lookup
- PARAMETER INSTANCE = nf10_monitoring_output_port_lookup_0
+BEGIN osnt_monitoring_output_port_lookup
+ PARAMETER INSTANCE = osnt_monitoring_output_port_lookup_0
  PARAMETER HW_VER = 1.00.a
  PARAMETER C_INTERCONNECT_S_AXI_IS_ACLK_ASYNC = 1
  PARAMETER C_BAR0_BASEADDR = 0x72220000
@@ -541,9 +541,9 @@ BEGIN nf10_monitoring_output_port_lookup
  PARAMETER C_BAR1_HIGHADDR = 0x7220ffff
  BUS_INTERFACE S_AXI = axi_interconnect_0
  BUS_INTERFACE S_AXIS = nf10_endianess_manager_0_M_AXIS_INT
- BUS_INTERFACE M_AXIS = nf10_monitoring_output_port_lookup_0_M_AXIS
+ BUS_INTERFACE M_AXIS = osnt_monitoring_output_port_lookup_0_M_AXIS
  PORT S_AXI_ACLK = core_clk
  PORT S_AXI_ARESETN = Peripheral_aresetn
- PORT STAMP_COUNTER = nf10_timestamp_0_STAMP_COUNTER
+ PORT STAMP_COUNTER = osnt_timestamp_0_STAMP_COUNTER
 END
 

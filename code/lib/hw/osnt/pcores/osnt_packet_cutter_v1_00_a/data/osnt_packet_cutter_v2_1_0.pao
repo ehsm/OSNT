@@ -1,0 +1,13 @@
+##############################################################################
+### Filename:          osnt_packet_cutter
+### Description:       Peripheral Analysis Order
+### Date:              Tue Oct 02 10:40:04 2012
+###############################################################################
+
+
+
+lib proc_common_v3_00_a  all
+lib axi_lite_ipif_v1_01_a  all
+lib nf10_proc_common_v1_00_a  all
+lib osnt_packet_cutter_v1_00_a packet_cutter.v verilog
+lib osnt_packet_cutter_v1_00_a osnt_packet_cutter.v verilog
