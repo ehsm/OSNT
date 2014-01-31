@@ -42,7 +42,7 @@
  */
 `timescale 1ns / 1ps
 
-module dma
+module osnt_dma
 #(
     // Master AXI Stream Data Width
   parameter                              C_M_AXIS_DATA_WIDTH = 32,

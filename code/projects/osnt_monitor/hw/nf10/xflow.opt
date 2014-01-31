@@ -6,10 +6,10 @@
 #        xflow.opt
 #
 #  Project:
-#        osnt_monitor
+#        reference_switch
 #
 #  Author:
-#        Gianni Antichi
+#        Muhammad Shahbaz
 #
 #  Description:
 #        Xflow option file that utilizes multi-core CPU
@@ -59,13 +59,19 @@ End Program ngdbuild
 # Type "map -h <arch>" for a detailed list of map command line options
 #
 Program map
+#-mt 4;                   # James: Use 4 cores if possible
 -o <design>_map.ncd;     # Output Mapped ncd file
 -w;			 # Overwrite output files.
+#-pr b;                   # Pack internal FF/latches into IOBs
+#-fp <design>.mfp;       # Floorplan file
 -xe n;
 -ol high;
+#-cm speed;
 -t 6;
 -register_duplication on;
 -logic_opt on;
+#-timing;
+#-detail;
 <inputdir><design>.ngd;  # Input NGD file
 <inputdir><design>.pcf;  # Physical constraints file
 END Program map
@@ -76,8 +82,10 @@ END Program map
 # Type "trce -h" for a detailed list of trce command line options
 #
 Program post_map_trce
--e 3;                        # Produce error report limited to 3 items per constraint
--xml <design>_map.twx;       # Output XML version of the timing report
+-e 3;                 # Produce error report limited to 3 items per constraint
+#-o <design>_map.twr;  # Output trace report file
+-xml <design>_map.twx;     # Output XML version of the timing report
+#-tsi <design>_map.tsi; # Produce Timing Specification Interaction report
 <inputdir><design>_map.ncd;  # Input mapped ncd
 <inputdir><design>.pcf;      # Physical constraints file
 END Program post_map_trce
@@ -88,7 +96,9 @@ END Program post_map_trce
 # Type "par -h" for a detailed list of par command line options
 #
 Program par
--ol high;                    # Overall effort level
+#-mt 4;                       # James: Use 4 cores if possible
+#-w;                 # Overwrite existing placed and routed ncd
+-ol high;              # Overall effort level
 -xe n;
 <inputdir><design>_map.ncd;  # Input mapped NCD file
 <design>.ncd;                # Output placed and routed NCD
@@ -101,8 +111,10 @@ END Program par
 # Type "trce -h" for a detailed list of trce command line options
 #
 Program post_par_trce
--e 100;                   # Produce error report limited to 3 items per constraint
--xml <design>.twx;        # Output XML version of the timing report
+-e 100;                 # Produce error report limited to 3 items per constraint
+#-o <design>.twr;     # Output trace report file
+-xml <design>.twx;    # Output XML version of the timing report
+#-tsi <design>.tsi;  # Produce Timing Specification Interaction report
 <inputdir><design>.ncd;   # Input placed and routed ncd
 <inputdir><design>.pcf;   # Physical constraints file
 END Program post_par_trce
