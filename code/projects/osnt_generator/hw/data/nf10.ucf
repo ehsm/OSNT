@@ -516,10 +516,6 @@ INST "dma_0/dma_0/u_dma/u_iface/u_mem_tx_pkt/genblk10.low_mems[3].genblk1.u_ram_
 INST "dma_0/dma_0/u_dma/u_iface/u_mem_tx_pkt/genblk10.low_mems[2].genblk1.u_ram_lo/genblk1.u_bram/mem_mem_0_0/RAMB36_EXP" LOC = RAMB36_X2Y22;
 INST "dma_0/dma_0/u_dma/u_iface/u_mem_tx_pkt/genblk10.low_mems[1].genblk1.u_ram_lo/genblk1.u_bram/mem_mem_0_0/RAMB36_EXP" LOC = RAMB36_X2Y23;
 INST "dma_0/dma_0/u_dma/u_iface/u_mem_tx_pkt/genblk10.low_mems[0].genblk1.u_ram_lo/genblk1.u_bram/mem_mem_0_0/RAMB36_EXP" LOC = RAMB36_X2Y24;
-INST "dma_0/dma_0/u_dma/u_iface/u_mem_tx_pkt/genblk10.high_mems[3].genblk4.u_ram_hi/genblk1.u_bram/mem_mem_0_0/RAMB36_EXP" LOC = RAMB36_X1Y21;
-INST "dma_0/dma_0/u_dma/u_iface/u_mem_tx_pkt/genblk10.high_mems[2].genblk4.u_ram_hi/genblk1.u_bram/mem_mem_0_0/RAMB36_EXP" LOC = RAMB36_X1Y22;
-INST "dma_0/dma_0/u_dma/u_iface/u_mem_tx_pkt/genblk10.high_mems[1].genblk4.u_ram_hi/genblk1.u_bram/mem_mem_0_0/RAMB36_EXP" LOC = RAMB36_X1Y23;
-INST "dma_0/dma_0/u_dma/u_iface/u_mem_tx_pkt/genblk10.high_mems[0].genblk4.u_ram_hi/genblk1.u_bram/mem_mem_0_0/RAMB36_EXP" LOC = RAMB36_X1Y24;
 
 INST "dma_0/dma_0/u_dma/u_iface/u_mem_rx_pkt/genblk10.genblk4.u_ram_hi/genblk1.u_bram/mem_mem_0_0/RAMB36_EXP" LOC = RAMB36_X4Y23;
 INST "dma_0/dma_0/u_dma/u_iface/u_mem_rx_pkt/genblk10.genblk1.u_ram_lo/genblk1.u_bram/mem_mem_0_0/RAMB36_EXP" LOC = RAMB36_X5Y25;

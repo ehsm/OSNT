@@ -145,7 +145,7 @@
  PORT qdr_masterbank_sel_1 = nf10_pcap_replay_uengine_0_qdr_masterbank_sel_1, DIR = I
 
 
-BEGIN nf10_pcap_replay_uengine
+BEGIN osnt_pcap_replay_uengine
  PARAMETER INSTANCE = nf10_pcap_replay_uengine_0
  PARAMETER HW_VER = 1.00.a
  PARAMETER C_BASEADDR = 0x76000000
@@ -269,7 +269,7 @@ BEGIN microblaze
  PORT CLK = control_clk
 END
 
-BEGIN dma
+BEGIN osnt_dma
  PARAMETER INSTANCE = dma_0
  PARAMETER HW_VER = 1.10.a
  PARAMETER C_M_AXIS_DATA_WIDTH = 256
@@ -581,7 +581,7 @@ BEGIN nf10_mdio
  PORT PHY_rst_n = nf10_mdio_0_PHY_rst_n
 END
 
-BEGIN nf10_inter_packet_delay
+BEGIN osnt_inter_packet_delay
  PARAMETER INSTANCE = nf10_inter_packet_delay_0
  PARAMETER HW_VER = 1.00.a
  PARAMETER C_BASEADDR = 0x76600000
@@ -599,7 +599,7 @@ BEGIN nf10_inter_packet_delay
  PORT s_axi_aresetn = Peripheral_aresetn
 END
 
-BEGIN nf10_rate_limiter
+BEGIN osnt_rate_limiter
  PARAMETER INSTANCE = nf10_rate_limiter_0
  PARAMETER HW_VER = 1.00.a
  PARAMETER C_BASEADDR = 0x77e00000
@@ -617,7 +617,7 @@ BEGIN nf10_rate_limiter
  PORT s_axi_aresetn = Peripheral_aresetn
 END
 
-BEGIN nf10_extract_metadata
+BEGIN osnt_extract_metadata
  PARAMETER INSTANCE = nf10_extract_metadata_0
  PARAMETER HW_VER = 1.00.a
  PARAMETER C_BASEADDR = 0x76e00000
