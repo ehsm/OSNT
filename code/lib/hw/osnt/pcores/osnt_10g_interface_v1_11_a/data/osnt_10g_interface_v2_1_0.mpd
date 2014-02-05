@@ -3,10 +3,10 @@
 #  NetFPGA-10G http://www.netfpga.org
 #
 #  File:
-#        nf10_10g_interface_v2_1_0.mpd
+#        osnt_10g_interface_v2_1_0.mpd
 #
 #  Library:
-#        hw/std/pcores/nf10_10g_interface_v1_11_a
+#        hw/osnt/pcores/osnt_10g_interface_v1_11_a
 #
 #  Author:
 #        James Hongyi Zeng, Gianni Antichi
@@ -36,7 +36,7 @@
 #
 #
 
-BEGIN nf10_10g_interface
+BEGIN osnt_10g_interface
 
 ## Peripheral Options
 OPTION IPTYPE = PERIPHERAL

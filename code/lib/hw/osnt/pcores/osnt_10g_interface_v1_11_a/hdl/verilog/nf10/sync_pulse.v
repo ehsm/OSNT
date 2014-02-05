@@ -6,7 +6,7 @@
  *        sync_pulse.v
  *
  *  Library:
- *        hw/std/pcores/nf10_10g_interface_v1_11_a
+ *        hw/osnt/pcores/osnt_10g_interface_v1_11_a
  *
  *  Module:
  *        sync_pulse

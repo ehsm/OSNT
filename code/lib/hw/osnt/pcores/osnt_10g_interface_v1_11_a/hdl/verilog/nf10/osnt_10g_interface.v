@@ -3,10 +3,10 @@
  *  NetFPGA-10G http://www.netfpga.org
  *
  *  File:
- *        nf10_10g_interface.v
+ *        osnt_10g_interface.v
  *
  *  Library:
- *        hw/std/pcores/nf10_10g_interface_v1_11_a
+ *        hw/osnt/pcores/osnt_10g_interface_v1_11_a
  *
  *  Module:
  *        nf10_10g_interface
@@ -46,7 +46,7 @@
  *
  */
 
-module nf10_10g_interface
+module osnt_10g_interface
 #(
     // Master AXI Stream Data Width
     parameter C_M_AXIS_DATA_WIDTH=64,

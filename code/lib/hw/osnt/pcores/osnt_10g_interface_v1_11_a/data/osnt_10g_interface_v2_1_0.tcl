@@ -3,10 +3,10 @@
 #  NetFPGA-10G http://www.netfpga.org
 #
 #  File:
-#        nf10_10g_interface_v2_1_0.tcl
+#        osnt_10g_interface_v2_1_0.tcl
 #
 #  Library:
-#        hw/std/pcores/nf10_10g_interface_v1_10_a
+#        hw/osnt/pcores/nf10_10g_interface_v1_11_a
 #
 #  Module:
 #        TCL script for 10G interface
@@ -41,7 +41,7 @@
 
 proc core_generate { handle } {
 
-    puts "nf10_10g_interface: Core generation of XAUI and 10G MAC"
+    puts "osnt_10g_interface: Core generation of XAUI and 10G MAC"
     puts [pwd]
     set pcore_dir  [xget_hw_pcore_dir $handle]
 
