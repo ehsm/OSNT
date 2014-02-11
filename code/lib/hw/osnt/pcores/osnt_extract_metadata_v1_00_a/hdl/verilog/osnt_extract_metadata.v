@@ -6,7 +6,7 @@
  *        osnt_extract_metadata.v
  *
  *  Library:
- *        /pcores/osnt_extract_metadata_v1_00_a
+ *        osnt/pcores/osnt_extract_metadata_v1_00_a
  *
  *  Module:
  *        nf10_extract_metadata
