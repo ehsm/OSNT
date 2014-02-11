@@ -6,7 +6,7 @@
  *        qdrii_infrastructure.v
  *
  *  Library:
- *        hw/std/pcores/nf10_pcap_replay_uengine_v1_00_a
+ *        hw/osnt/pcores/nf10_pcap_replay_uengine_v1_00_a
  *
  *  Module:
  *        qdrii_infrastructure
