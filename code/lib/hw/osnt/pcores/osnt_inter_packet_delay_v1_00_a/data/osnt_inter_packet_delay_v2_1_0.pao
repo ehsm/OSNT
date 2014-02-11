@@ -6,7 +6,7 @@
 #        osnt_inter_packet_delay_v2_1_0.mpd
 #
 #  Library:
-#        hw/std/pcores/osnt_inter_packet_delay_v1_00_a
+#        hw/osnt/pcores/osnt_inter_packet_delay_v1_00_a
 #
 #  Author:
 #        Muhammad Shahbaz
