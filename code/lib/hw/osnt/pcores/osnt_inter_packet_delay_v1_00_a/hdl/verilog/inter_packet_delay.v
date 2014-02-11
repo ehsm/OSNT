@@ -6,7 +6,7 @@
  *        inter_packet_delay.v
  *
  *  Library:
- *        hw/contrib/pcores/nf10_inter_packet_delay_v1_00_a
+ *        hw/osnt/pcores/nf10_inter_packet_delay_v1_00_a
  *
  *  Module:
  *        inter_packet_delay
