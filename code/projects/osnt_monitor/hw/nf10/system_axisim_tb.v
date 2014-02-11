@@ -6,7 +6,7 @@
  *        system_axisim_tb.v
  *
  *  Project:
- *        reference_nic
+ *        osnt_monitor
  *
  *  Module:
  *        system_axisim_tb

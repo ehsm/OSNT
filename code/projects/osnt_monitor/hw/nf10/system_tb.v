@@ -6,7 +6,7 @@
  *        system_tb.v
  *
  *  Project:
- *        reference_nic
+ *        osnt_monitor
  *
  *  Module:
  *        system_tb
