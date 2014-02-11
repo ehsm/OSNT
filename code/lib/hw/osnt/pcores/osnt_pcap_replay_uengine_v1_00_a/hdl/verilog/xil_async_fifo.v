@@ -6,7 +6,7 @@
  *        xil_async_fifo.v
  *
  *  Library:
- *        hw/contrib/pcores/nf10_pcap_replay_uengine_v1_00_a
+ *        hw/osnt/pcores/nf10_pcap_replay_uengine_v1_00_a
  *
  *  Module:
  *        xil_async_fifo
