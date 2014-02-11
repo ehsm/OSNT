@@ -6,7 +6,7 @@
 #        Makefile
 #
 #  Project:
-#        osnt_monitor_16rules
+#        osnt
 #
 #  Author:
 #        Gianni Anitchi, Muhammad Shahbaz

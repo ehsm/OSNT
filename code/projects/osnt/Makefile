@@ -6,10 +6,10 @@
 #        Makefile
 #
 #  Project:
-#        osnt_monitor_16rules
+#        osnt
 #
 #  Author:
-#        Muahammad Shahbaz, Gianni Anitchi
+#        Gianni Anitchi
 #
 #  Description:
 #        make all : Make BRAM initialized bitfile to bitfiles/
@@ -47,7 +47,7 @@ all:
 	$(MAKE) -C $(HW) exporttosdk
 	$(MAKE) -C $(SW)
 	mkdir -p bitfiles
-	cp $(SW)/result/download.bit bitfiles/osnt_monitor.bit
+	cp $(SW)/result/download.bit bitfiles/osnt.bit
 
 clean:
 	$(MAKE) -C $(HW) clean
