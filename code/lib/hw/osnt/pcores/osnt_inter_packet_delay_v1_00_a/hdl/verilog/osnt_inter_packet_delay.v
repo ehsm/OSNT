@@ -6,7 +6,7 @@
  *        osnt_inter_packet_delay.v
  *
  *  Library:
- *        /pcores/osnt_inter_packet_delay_v1_00_a
+ *        osnt/pcores/osnt_inter_packet_delay_v1_00_a
  *
  *  Module:
  *        osnt_inter_packet_delay
