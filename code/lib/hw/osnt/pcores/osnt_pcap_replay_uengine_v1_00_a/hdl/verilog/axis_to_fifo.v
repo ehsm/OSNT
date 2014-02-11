@@ -6,7 +6,7 @@
  *        axis_to_fifo.v
  *
  *  Library:
- *        hw/contrib/pcores/nf10_pcap_replay_uengine_v1_00_a
+ *        hw/osnt/pcores/nf10_pcap_replay_uengine_v1_00_a
  *
  *  Module:
  *        axis_to_fifo
