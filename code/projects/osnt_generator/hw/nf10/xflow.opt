@@ -59,7 +59,7 @@ End Program ngdbuild
 # Type "map -h <arch>" for a detailed list of map command line options
 #
 Program map
--mt 4;                   # James: Use 4 cores if possible
+#-mt 4;                   # James: Use 4 cores if possible
 -o <design>_map.ncd;     # Output Mapped ncd file
 -w;			 # Overwrite output files.
 -pr b;                   # Pack internal FF/latches into IOBs
@@ -68,6 +68,7 @@ Program map
 -ol high;
 #-cm speed;
 -t 7;
+-equivalent_register_removal on;
 -register_duplication on;
 -logic_opt on;
 -timing;
