@@ -6,10 +6,10 @@
 #        Makefile
 #
 #  Project:
-#        nic
+#        osnt_generator
 #
 #  Author:
-#        Mario Flajslik
+#        Muhammad Shahbaz
 #
 #  Description:
 #        make all : Make BRAM initialized bitfile to bitfiles/

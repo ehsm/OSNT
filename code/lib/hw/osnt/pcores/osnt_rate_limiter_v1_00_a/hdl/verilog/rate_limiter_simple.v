@@ -6,7 +6,7 @@
  *        rate_limiter.v
  *
  *  Library:
- *        hw/contrib/pcores/nf10_rate_limiter_v1_00_a
+ *        hw/osnt/pcores/nf10_rate_limiter_v1_00_a
  *
  *  Module:
  *        rate_limiter_simple

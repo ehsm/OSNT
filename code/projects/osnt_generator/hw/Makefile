@@ -6,10 +6,10 @@
 #        Makefile
 #
 #  Project:
-#        reference_nic
+#        osnt_generator
 #
 #  Author:
-#        Sam D'Amico
+#        Muhammad Shahbaz
 #
 #  Description:
 #        This file is based on the standard Xilinx XPS Makefile

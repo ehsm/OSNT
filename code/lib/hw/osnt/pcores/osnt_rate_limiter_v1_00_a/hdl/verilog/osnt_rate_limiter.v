@@ -6,7 +6,7 @@
  *        osnt_rate_limiter.v
  *
  *  Library:
- *        /pcores/osnt_rate_limiter_v1_00_a
+ *        osnt/pcores/osnt_rate_limiter_v1_00_a
  *
  *  Module:
  *        osnt_rate_limiter
