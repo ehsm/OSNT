@@ -251,7 +251,7 @@ BEGIN clock_generator
  PORT CLKOUT4 = clock_generator_0_CLKOUT4
 END
 
-BEGIN nf10_10g_interface
+BEGIN osnt_10g_interface
  PARAMETER INSTANCE = nf10_10g_interface_0
  PARAMETER HW_VER = 1.11.a
  PARAMETER C_XAUI_REVERSE = 1
@@ -284,7 +284,7 @@ BEGIN nf10_10g_interface
  PORT stamp_counter = nf10_timestamp_0_STAMP_COUNTER
 END
 
-BEGIN nf10_10g_interface
+BEGIN osnt_10g_interface
  PARAMETER INSTANCE = nf10_10g_interface_1
  PARAMETER HW_VER = 1.11.a
  PARAMETER C_XAUI_REVERSE = 1
@@ -317,7 +317,7 @@ BEGIN nf10_10g_interface
  PORT stamp_counter = nf10_timestamp_0_STAMP_COUNTER
 END
 
-BEGIN nf10_10g_interface
+BEGIN osnt_10g_interface
  PARAMETER INSTANCE = nf10_10g_interface_2
  PARAMETER HW_VER = 1.11.a
  PARAMETER C_XAUI_REVERSE = 1
@@ -350,7 +350,7 @@ BEGIN nf10_10g_interface
  PORT stamp_counter = nf10_timestamp_0_STAMP_COUNTER
 END
 
-BEGIN nf10_10g_interface
+BEGIN osnt_10g_interface
  PARAMETER INSTANCE = nf10_10g_interface_3
  PARAMETER HW_VER = 1.11.a
  PARAMETER C_M_AXIS_DATA_WIDTH = 256
@@ -534,7 +534,7 @@ BEGIN nf10_endianess_manager
  PORT ACLK = core_clk
 END
 
-BEGIN nf10_packet_cutter
+BEGIN osnt_packet_cutter
  PARAMETER INSTANCE = nf10_packet_cutter_0
  PARAMETER HW_VER = 1.00.a
  PARAMETER C_INTERCONNECT_S_AXI_IS_ACLK_ASYNC = 1
@@ -547,7 +547,7 @@ BEGIN nf10_packet_cutter
  PORT S_AXI_ARESETN = Peripheral_aresetn
 END
 
-BEGIN nf10_timestamp
+BEGIN osnt_timestamp
  PARAMETER INSTANCE = nf10_timestamp_0
  PARAMETER HW_VER = 1.00.a
  PARAMETER C_INTERCONNECT_S_AXI_IS_ACLK_ASYNC = 1
@@ -560,7 +560,7 @@ BEGIN nf10_timestamp
  PORT PPS_RX = nf10_timestamp_0_PPS_RX
 END
 
-BEGIN nf10_monitoring_output_port_lookup
+BEGIN osnt_monitoring_output_port_lookup
  PARAMETER INSTANCE = nf10_monitoring_output_port_lookup_0
  PARAMETER HW_VER = 1.00.a
  PARAMETER C_INTERCONNECT_S_AXI_IS_ACLK_ASYNC = 1
@@ -576,7 +576,7 @@ BEGIN nf10_monitoring_output_port_lookup
  PORT STAMP_COUNTER = nf10_timestamp_0_STAMP_COUNTER
 END
 
-BEGIN nf10_extract_metadata
+BEGIN osnt_extract_metadata
  PARAMETER INSTANCE = nf10_extract_metadata_0
  PARAMETER HW_VER = 1.00.a
  PARAMETER C_BASEADDR = 0x76e00000
@@ -599,7 +599,7 @@ BEGIN nf10_nic_output_port_lookup
  PORT axi_aclk = core_clk
 END
 
-BEGIN nf10_pcap_replay_uengine
+BEGIN osnt_pcap_replay_uengine
  PARAMETER INSTANCE = nf10_pcap_replay_uengine_0
  PARAMETER HW_VER = 1.00.a
  PARAMETER C_BASEADDR = 0x76000000
@@ -646,7 +646,7 @@ BEGIN nf10_pcap_replay_uengine
  PORT qdr_clk_270 = clock_generator_0_CLKOUT3
 END
 
-BEGIN nf10_inter_packet_delay
+BEGIN osnt_inter_packet_delay
  PARAMETER INSTANCE = nf10_inter_packet_delay_0
  PARAMETER HW_VER = 1.00.a
  PARAMETER C_BASEADDR = 0x76600000
@@ -664,7 +664,7 @@ BEGIN nf10_inter_packet_delay
  PORT s_axi_aresetn = Peripheral_aresetn
 END
 
-BEGIN nf10_rate_limiter
+BEGIN osnt_rate_limiter
  PARAMETER INSTANCE = nf10_rate_limiter_0
  PARAMETER HW_VER = 1.00.a
  PARAMETER C_BASEADDR = 0x77e00000

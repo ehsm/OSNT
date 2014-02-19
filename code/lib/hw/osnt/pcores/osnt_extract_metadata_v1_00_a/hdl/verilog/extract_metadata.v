@@ -6,7 +6,7 @@
  *        extract_metadata.v
  *
  *  Library:
- *        hw/contrib/pcores/nf10_extract_metadata_v1_00_a
+ *        hw/osnt/pcores/nf10_extract_metadata_v1_00_a
  *
  *  Module:
  *        extract_metadata

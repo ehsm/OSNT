@@ -6,7 +6,7 @@
  *        osnt_pcap_replay_uengine.v
  *
  *  Library:
- *        /pcores/osnt_pcap_replay_uengine_v1_00_a
+ *        osnt/pcores/osnt_pcap_replay_uengine_v1_00_a
  *
  *  Module:
  *        nf10_pcap_replay_uengine

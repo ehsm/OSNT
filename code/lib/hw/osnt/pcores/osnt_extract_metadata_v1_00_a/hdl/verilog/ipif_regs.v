@@ -6,7 +6,7 @@
  *        ipif_regs.v
  *
  *  Library:
- *        std/pcores/nf10_pcap_replay_uengine_v1_00_a
+ *        osnt/pcores/nf10_pcap_replay_uengine_v1_00_a
  *
  *  Module:
  *        ipif_regs
