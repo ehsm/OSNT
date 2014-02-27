@@ -5,13 +5,11 @@
  *  File:
  *        dma_defs.vh
  *
- *  Library:
- *        hw/contrib/pcores/dma_v1_00_a
- *
  *  Module:
  *        dma
  *
  *  Author:
+ *        Yilong Geng
  *        Mario Flajslik
  *
  *  Description:

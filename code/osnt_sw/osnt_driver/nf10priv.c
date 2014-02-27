@@ -9,6 +9,7 @@
  *        nic
  *
  *  Author:
+ *        Yilong Geng
  *        Mario Flajslik
  *
  *  Description:
@@ -205,8 +206,6 @@ void work_handler(struct work_struct *w){
         
         // read the host completion buffers
         tx_int = *(((uint32_t*)card->host_tx_dne_ptr) + (card->host_tx_dne.rd_ptr)/4);
-        //rx_int = *(((uint64_t*)card->host_rx_dne_ptr) + (card->host_rx_dne.rd_ptr)/8);
-        //timestamp = *(((uint64_t*)card->host_rx_dne_ptr) + (card->host_rx_dne.rd_ptr)/8 + 1);
 
         if( (tx_int & 0xffff) == 1 ){
             irq_done = 0;
@@ -236,47 +235,6 @@ void work_handler(struct work_struct *w){
 
             }
         }
-        /*
-        if( ((rx_int >> 48) & 0xffff) != 0xffff ){
-            irq_done = 0;
-                
-            // manage host completion buffer
-            addr = card->host_rx_dne.rd_ptr;
-            card->host_rx_dne.rd_ptr = (addr + 64) & card->host_rx_dne.mask;
-            *(((uint64_t*)card->cfg_addr)+45) = card->host_rx_dne.rd_ptr;
-            index = addr / 64;
-            
-            // invalidate host rx completion buffer
-            *(((uint64_t*)card->host_rx_dne_ptr) + index * 8) = 0xffffffffffffffffULL;
-
-            // read data from the completion buffer
-            len = rx_int & 0xffff;
-            port_encoded = (rx_int >> 16) & 0xffff;
-            
-            if(port_encoded & 0x0200)
-                port = 0;
-            else if(port_encoded & 0x0800)
-                port = 1;
-            else if(port_encoded & 0x2000)
-                port = 2;
-            else if(port_encoded & 0x8000)
-                port = 3;
-            else 
-                port = -1;
-
-    
-
-            printk(KERN_INFO "len: %d\n", len);
-            printk(KERN_INFO "port_encoded: %x\n", port_encoded);
-            printk(KERN_INFO "timestamp: %x\n", timestamp);
-            print_hex_dump(KERN_INFO, "", DUMP_PREFIX_NONE, 16, 1, (void*)(card->rx_buff_ptr+card->rx_buff_head), len, true);
-
-            card->rx_buff_head = ((card->rx_buff_head + ((len-1)/64 + 1)*64) & card->rx_buff_mask);
-            *(((uint64_t*)card->cfg_addr)+43) = card->rx_buff_head;
-            card->mem_rx_pkt.rd_ptr = ((card->mem_rx_pkt.rd_ptr + ((len-1)/64 + 1)*64) & card->rx_pkt_mask);
-            *(((uint64_t*)card->cfg_addr)+46) = card->mem_rx_pkt.rd_ptr;
-
-        }*/
 
         work_counter++;
 
