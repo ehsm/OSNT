@@ -172,13 +172,8 @@ void work_handler(struct work_struct *w){
     struct nf10_card * card = ((struct my_work_t *)w)->card;
     int irq_done = 0;
     uint32_t tx_int;
-    uint64_t rx_int;
-    uint64_t timestamp;
     uint64_t addr;
     uint64_t index;
-    uint64_t len;
-    int port = -1;
-    uint64_t port_encoded;
     unsigned long flags;
 #ifdef LOOPBACK_MODE
     struct iphdr *iph;
