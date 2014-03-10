@@ -579,6 +579,7 @@ END
 BEGIN osnt_extract_metadata
  PARAMETER INSTANCE = nf10_extract_metadata_0
  PARAMETER HW_VER = 1.00.a
+ PARAMETER C_INTERCONNECT_S_AXI_IS_ACLK_ASYNC = 1
  PARAMETER C_BASEADDR = 0x76e00000
  PARAMETER C_HIGHADDR = 0x76e0ffff
  BUS_INTERFACE S_AXI = axi_interconnect_0
@@ -602,6 +603,7 @@ END
 BEGIN osnt_pcap_replay_uengine
  PARAMETER INSTANCE = nf10_pcap_replay_uengine_0
  PARAMETER HW_VER = 1.00.a
+ PARAMETER C_INTERCONNECT_S_AXI_IS_ACLK_ASYNC = 1
  PARAMETER C_BASEADDR = 0x76000000
  PARAMETER C_HIGHADDR = 0x7600ffff
  BUS_INTERFACE S_AXI = axi_interconnect_0
@@ -649,6 +651,7 @@ END
 BEGIN osnt_inter_packet_delay
  PARAMETER INSTANCE = nf10_inter_packet_delay_0
  PARAMETER HW_VER = 1.00.a
+ PARAMETER C_INTERCONNECT_S_AXI_IS_ACLK_ASYNC = 1
  PARAMETER C_BASEADDR = 0x76600000
  PARAMETER C_HIGHADDR = 0x7660ffff
  BUS_INTERFACE S_AXI = axi_interconnect_0
@@ -667,6 +670,7 @@ END
 BEGIN osnt_rate_limiter
  PARAMETER INSTANCE = nf10_rate_limiter_0
  PARAMETER HW_VER = 1.00.a
+ PARAMETER C_INTERCONNECT_S_AXI_IS_ACLK_ASYNC = 1
  PARAMETER C_BASEADDR = 0x77e00000
  PARAMETER C_HIGHADDR = 0x77e0ffff
  BUS_INTERFACE S_AXI = axi_interconnect_0
@@ -678,6 +682,7 @@ BEGIN osnt_rate_limiter
  BUS_INTERFACE M_AXIS_1 = nf10_rate_limiter_0_M_AXIS_1
  BUS_INTERFACE M_AXIS_2 = nf10_rate_limiter_0_M_AXIS_2
  BUS_INTERFACE M_AXIS_3 = nf10_rate_limiter_0_M_AXIS_3
- PORT s_axi_aclk = control_clk
+ PORT s_axi_aclk = core_clk
+ PORT s_axi_aresetn = Peripheral_aresetn
 END
 
