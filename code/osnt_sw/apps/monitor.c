@@ -65,7 +65,6 @@ pcap_dumper_t *nf0,*nf1,*nf2,*nf3;
 uint64_t rx_dne_head = 0;
 uint64_t rx_pkt_head = 0;
 uint64_t rx_buff_head = 0;
-uint64_t pkt_count = 0;
 
 char *rx_dne = NULL;
 char *rx_buff = NULL;
@@ -77,7 +76,6 @@ void sig_handler_pcapng(int signo){
     uint64_t v;
 
     if (signo == SIGINT){
-        printf("%d packets received\n", pkt_count);
         ioctl(cmd_file, NF10_IOCTL_CMD_STOP_DMA, v);
         close(cmd_file);
         close(rx_dne_file);
@@ -92,7 +90,6 @@ void sig_handler_pcap(int signo){
     uint64_t v;
 
     if (signo == SIGINT){
-        printf("%d packets received\n", pkt_count);
         ioctl(cmd_file, NF10_IOCTL_CMD_STOP_DMA, v);
         close(cmd_file);
         close(rx_dne_file);
@@ -505,8 +502,6 @@ int main ( int argc, char **argv )
     while(1){
         rx_int = *(((uint64_t*)rx_dne) + rx_dne_head/8);
         if( ((rx_int >> 48) & 0xffff) != 0xffff ){
-
-            pkt_count++;
 
             timestamp = *(((uint64_t*)rx_dne) + (rx_dne_head)/8 + 1);
             len = rx_int & 0xffff;
