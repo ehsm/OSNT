@@ -48,7 +48,7 @@ Monitor user program:
 1 - Run make in apps directory to get the user application "monitor".
 
 2 - Before running the user application please
-	2.a make and install the driver in driver_monitor
+	2.a make and install the driver in osnt_driver
 	2.b mount the debug filesystem
 		2.b.a sudo mount -t debugfs nodev /sys/kernel/debug
 
@@ -78,7 +78,7 @@ Generator
     0.a sudo yum install wxPython
     0.b sudo yum install scapy
 
-1 - Before opening the GUI, make and install the driver in driver_generator/
+1 - Before opening the GUI, make and install the driver in osnt_driver/
 
 2 - Launch the GUI
     2.a sudo python generator_gui.py
