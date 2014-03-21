@@ -27,11 +27,11 @@
 #
 #
 
-Welcome to the NetFPGA-10G base package.
+Welcome to the OSNT base package.
 
 Before using this code, please check the release notes at:
 
-https://github.com/NetFPGA/NetFPGA-10G-live/wiki/Release-Notes
+https://github.com/NetFPGA/OSNT/wiki/Release-Notes
 
 For documentation on its content and use, as well as general
 information on the NetFPGA-10G platform, please visit the
@@ -42,6 +42,6 @@ https://github.com/NetFPGA/NetFPGA-10G-live/wiki/NetFPGA-10G-Platform-Documentat
 The wiki additionally contains a useful "Getting Started Guide"
 for new users, which can be found here:
 
-https://github.com/NetFPGA/NetFPGA-10G-live/wiki/Getting-Started-Guide
+https://github.com/NetFPGA/OSNT/wiki/Getting-Started-Guide
 
 Have fun!
