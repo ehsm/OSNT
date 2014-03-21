@@ -1,0 +1,3 @@
+export OSNT_ROOT=${HOME}/OSNT/code
+export OSNT_DESIGN_DIR=${NF_ROOT}/projects/osnt
+export OSNT_WORK_DIR=/tmp/${USER}

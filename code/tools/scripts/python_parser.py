@@ -1,19 +1,26 @@
+#!/usr/bin/python
+
 ################################################################################
 #
 #  NetFPGA-10G http://www.netfpga.org
 #
 #  File:
-#        Makefile
+#        xparam2regdefines.py
+#
+#  Project:
+#        
+#
+#  Module:
+#        
 #
 #  Author:
-#        David J. Miller
+#        Neelakandan Manihatty Bojan
 #
 #  Description:
-#        Prepare environment for in-place execution of python scripts.
+#        This is used to convert xparameters.h to reg_defines.h
 #
 #  Copyright notice:
-#        Copyright (C) 2010, 2011 The Board of Trustees of The Leland Stanford
-#                                 Junior University
+#        Copyright (C) 2013 University of Cambridge
 #
 #  Licence:
 #        This file is part of the NetFPGA 10G development base package.
@@ -32,14 +39,24 @@
 #        http://www.gnu.org/licenses/.
 #
 #
+import re
 
-link:
-	./link-py-interpreter.sh
+input_file = open("reg_defines.h", "r")
+output_file = open("reg_defines.py", "w")
+output_file.write("#!/usr/bin/python")
+for line in input_file:
+    match_defines = re.match(r'\s*#define ([a-zA-Z_0-9]+) (.*)', line)
+    match_comments = re.match(r'\s*[/\*][\s*\*](.*)', line)
+ 	
+    if match_defines:
+        newline1= "\ndef %s():\n    return %s" % (match_defines.group(1),match_defines.group(2))
+	output_file.write(newline1)
+
+    elif match_comments:
+	newline2= "\n# %s" % (match_comments.group(1))
+        output_file.write(newline2)
+
+    else:
+        output_file.write(line)
 
 
-clean:
-	rm -f ./python-nf
-	rm -f *.pyc
-
-
-.PHONY: link clean

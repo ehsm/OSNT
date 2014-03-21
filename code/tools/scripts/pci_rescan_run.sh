@@ -1,19 +1,26 @@
+#!/bin/bash
+
 ################################################################################
 #
 #  NetFPGA-10G http://www.netfpga.org
 #
 #  File:
-#        Makefile
+#        pcie_rescan_run.sh
+#
+#  Project:
+#        
+#
+#  Module:
+#        
 #
 #  Author:
-#        David J. Miller
+#        Jong HAN
 #
 #  Description:
-#        Prepare environment for in-place execution of python scripts.
+#        
 #
 #  Copyright notice:
-#        Copyright (C) 2010, 2011 The Board of Trustees of The Leland Stanford
-#                                 Junior University
+#        Copyright (C) 2013 University of Cambridge
 #
 #  Licence:
 #        This file is part of the NetFPGA 10G development base package.
@@ -33,13 +40,24 @@
 #
 #
 
-link:
-	./link-py-interpreter.sh
+PcieBusPath=/sys/bus/pci/devices
+PcieDeviceList=`ls /sys/bus/pci/devices/`
+
+for BusNo in $PcieDeviceList
+do	
+	VenderId=`cat $PcieBusPath/$BusNo/device`
+	if [ "$VenderId" = "0x4244" ]; then
+		echo 1 > /sys/bus/pci/devices/$BusNo/remove
+		sleep 1
+		echo 1 > /sys/bus/pci/rescan
+		echo
+		echo "Completed rescan PCIe information !"
+		echo "Load nf10.ko kernerl driver!"
+		echo
+		exit 1
+	fi
+done
+
+echo "Check programming FPGA or Reboot machine !"
 
 
-clean:
-	rm -f ./python-nf
-	rm -f *.pyc
-
-
-.PHONY: link clean
