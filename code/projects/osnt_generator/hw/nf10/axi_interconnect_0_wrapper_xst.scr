@@ -6,13 +6,13 @@
 #        axi_interconnect_0_wrapper_xst.scr
 #
 #  Project:
-#        nic
+#        osnt_generator
 #
 #  Module:
 #        axi_interconnect.scr
 #
 #  Author:
-#        Mario Flajslik
+#        Muhammad Shahbaz
 #
 #  Description:
 #        scr file to walkaround axi_interconnect - Virtex-5 issue
