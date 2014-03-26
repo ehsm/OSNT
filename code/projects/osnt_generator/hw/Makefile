@@ -9,7 +9,12 @@
 #        osnt_generator
 #
 #  Author:
-#        Muhammad Shahbaz
+#        Gianni Anitchi, Muhammad Shahbaz
+#        Jong Hun Han
+#	 Neelakandan Manihatty Bojan
+#
+#			Modified by Jong Han 06/05/2013
+#			Added Parital synthesis and PCIe programming option.
 #
 #  Description:
 #        This file is based on the standard Xilinx XPS Makefile
@@ -81,6 +86,9 @@ NF10_NGC_FILES := implementation/axi_interconnect_0_wrapper.ngc
 
 NF10_SCR_FILES := nf10/axi_interconnect_0_wrapper_xst.scr
 
+# Programming PCIE
+NF10_PROGPCIE = pciecopy exporttosdk
+
 #################################################################
 # PHONY TARGETS
 #################################################################
@@ -119,16 +127,55 @@ bits: $(SYSTEM_BIT)
 
 ace: $(SYSTEM_ACE)
 
-exporttosdk: $(SYSTEM_HW_HANDOFF_DEP)
-#	appguru -hw $(SDK_EXPORT_DIR)/$(SYSTEM).xml -app empty_application $(PROJECT_SEARCHPATHOPT)../sw/ -od $(SDK_EXPORT_DIR)/../empty_application
-#	@mkdir -p $(SDK_EXPORT_DIR)/../libs
-#	libgen -mhs $(MHSFILE) -p $(DEVICE) $(PROJECT_SEARCHPATHOPT) $(PROJECT_SEARCHPATHOPT)../sw/ -lib -od $(SDK_EXPORT_DIR)/../libs $(SDK_EXPORT_DIR)/../empty_application/$(SYSTEM).mss
-#	@mkdir -p $(SDK_EXPORT_DIR)/../../../host/include/
-#	@cp -rf $(SDK_EXPORT_DIR)/../libs/microblaze_0/include/* $(SDK_EXPORT_DIR)/../../../host/include/
-#	@cp -rf $(SDK_EXPORT_DIR)/../libs/microblaze_0/libsrc $(SDK_EXPORT_DIR)/../../../host/include/
-#	@rm -rf $(SDK_EXPORT_DIR)/../empty_application
-#	@rm -rf $(SDK_EXPORT_DIR)/../libs
+#################################################################
+# PCIE PROGRAMMING IMPLEMENTAION
+#################################################################
+progpcie: $(NF10_PROGPCIE)
+	cp -f ./data/nf10.ucf.org ./data/nf10.ucf
+	rm -f ./data/nf10.ucf.org
+	cp -f ./system.mhs.org ./system.mhs
+	rm -f ./system.mhs.org
 	
+pciecopy: 
+	if [ ! -e ./data/nf10.ucf.org ]; then cp -f ./data/nf10.ucf ./data/nf10.ucf.org; \
+	else cp -f ./data/nf10.ucf.org ./data/nf10.ucf; fi
+	if [ ! -e ./system.mhs.org ]; then cp -f ./system.mhs ./system.mhs.org; \
+	else cp -f ./system.mhs.org ./system.mhs; fi
+	cat ./nf10/nf10.ucf.pcie >> ./data/nf10.ucf
+	cat ./nf10/system.mhs.pcie >> ./system.mhs
+#################################################################
+
+
+#################################################################
+# PARTIAL SYNTHESIS. This must be run after make for completing 
+# implementation.
+#################################################################
+partial:
+	@if [ "$(MODULE)" = "nf10_10g_interface" ]; then \
+	for num in 0 1 2 3; do cd ./synthesis; xst -ifn $(MODULE)_$${num}_wrapper_xst.scr; cd ./../; \
+	cd ./implementation/$(MODULE)_$${num}_wrapper; ngcbuild -p xc5vtx240tff1759-2 -intstyle silent -i -sd .. $(MODULE)_$${num}_wrapper.ngc ../$(MODULE)_$${num}_wrapper; cd ../../; done; cd ../../; \
+	else \
+	cd ./synthesis; xst -ifn $(MODULE)_wrapper_xst.scr; cd ./../; \
+	cd ./implementation/$(MODULE)_wrapper; ngcbuild -p xc5vtx240tff1759-2 -intstyle silent -i -sd .. $(MODULE)_wrapper.ngc ../$(MODULE)_wrapper; cd ../../; \
+	fi
+
+$(MODULE):
+	xflow -wd implementation -p xc5vtx240tff1759-2 -implement xflow.opt system.ngc 
+	@cp -f nf10/bitgen.ut implementation/bitgen.ut
+	cd implementation ; bitgen -w -f bitgen.ut $(SYSTEM) ; cd ..
+	cd ../sw/embedded ; data2mem -bm SDK_Workspace/hw/system_bd.bmm -bt SDK_Workspace/hw/system.bit -bd result/hello_world_0.elf tag microblaze_0 -o b result/download.bit
+#################################################################
+
+exporttosdk: $(SYSTEM_HW_HANDOFF_DEP)
+	appguru -hw $(SDK_EXPORT_DIR)/$(SYSTEM).xml -app empty_application $(PROJECT_SEARCHPATHOPT)../sw/ -od $(SDK_EXPORT_DIR)/../empty_application
+	@mkdir -p $(SDK_EXPORT_DIR)/../libs
+	libgen -mhs $(MHSFILE) -p $(DEVICE) $(PROJECT_SEARCHPATHOPT) $(PROJECT_SEARCHPATHOPT)../sw/ -lib -od $(SDK_EXPORT_DIR)/../libs $(SDK_EXPORT_DIR)/../empty_application/$(SYSTEM).mss
+	@mkdir -p $(SDK_EXPORT_DIR)/../../../host/include/
+	@cp -rf $(SDK_EXPORT_DIR)/../libs/microblaze_0/include/* $(SDK_EXPORT_DIR)/../../../host/include/
+	@cp -rf $(SDK_EXPORT_DIR)/../libs/microblaze_0/libsrc $(SDK_EXPORT_DIR)/../../../host/include/
+	@rm -rf $(SDK_EXPORT_DIR)/../empty_application
+	@rm -rf $(SDK_EXPORT_DIR)/../libs
+
 netlist: $(POSTSYN_NETLIST)
 
 download: $(DOWNLOAD_BIT) dummy
@@ -184,17 +231,43 @@ bitsclean:
 	rm -f implementation/download.bit
 	rm -f __xps/$(SYSTEM)_routed
 
-## Shahbaz: to clean register system generated files
-regsclean:
-	rm -rf $(SDK_EXPORT_DIR)/../../../host/include/
-
 simclean:
 	rm -rf simulation
 	rm -rf *[0-9]_{stim,expected,log}.axi $(AXISIM_MHS)
 	rm -f simgen.log
-	rm -f __xps/ise/_xmsgs/simgen.xmsgs
+	rm -rf __xps
+	rm -f *.axi
+	rm -f portconfig.sim
+	rm -f seed
+	rm -rf bootloops
+	rm -rf etc
+	rm -f *.opt
+	rm -f *.log
+	rm -f *.make
+	rm -rf ../test/nf10
+	rm -rf ../test/pcores
+	rm -f ../test/Makefile
+	rm -f ../test/*.mhs
+	rm -f ../test/system.xmp
+	rm -rf ../test/data
+	rm -f ../test/*.make
+	rm -f ../test/*.opt
+	rm -f ../test/*.log
+	rm -rf ../test/bootloops
+	rm -rf ../test/etc
+	rm -rf ../test/simulation
+	rm -rf ../test/__xps
+	rm -f ../test/*.axi
+	rm -f ../test/seed
+	rm -f ../test/*.sim
 
-#################################################################
+regsclean:
+	rm -rf $(SDK_EXPORT_DIR)/../../../host/include/
+	rm -f $(SDK_EXPORT_DIR)/../../../host/reg_defines.h
+	rm -f ../lib/Python/reg_defines_*.*
+
+
+#######m#########################################################
 # BOOTLOOP ELF FILES
 #################################################################
 
@@ -321,22 +394,41 @@ axi_model: __xps/simgen.opt $(BRAMINIT_ELF_SIM_FILES)
 	@echo "*********************************************"
 	@echo "Creating AXI simulation models..."
 	@echo "*********************************************"
-	nf10_sim_autosubst.py -i $(MHSFILE) -o $(AXISIM_MHS)
+	$(NF_ROOT)/tools/scripts/nf10_sim_autosubst.py -i $(MHSFILE) -o $(AXISIM_MHS) 
 	simgen $(SIMGEN_OPTIONS) -m behavioral $(AXISIM_MHS)
 
-sim: axi_model
-	./make_pkts.py
+regs:  
+	psf2Edward -inp $(SYSTEM).xmp -exit_on_error -edwver 1.2 -xml $(SDK_EXPORT_DIR)/$(SYSTEM).xml $(GLOBAL_SEARCHPATHOPT)
+	appguru -hw $(SDK_EXPORT_DIR)/$(SYSTEM).xml -app empty_application $(PROJECT_SEARCHPATHOPT)../sw/ -od $(SDK_EXPORT_DIR)/../empty_application
+	@mkdir -p $(SDK_EXPORT_DIR)/../libs
+	libgen -mhs $(MHSFILE) -p $(DEVICE) $(PROJECT_SEARCHPATHOPT) $(PROJECT_SEARCHPATHOPT)../sw/ -lib -od $(SDK_EXPORT_DIR)/../libs $(SDK_EXPORT_DIR)/../empty_application/$(SYSTEM).mss
+	@mkdir -p $(SDK_EXPORT_DIR)/../../../host/include/
+	@cp -rf $(SDK_EXPORT_DIR)/../libs/microblaze_0/include/* $(SDK_EXPORT_DIR)/../../../host/include/
+	@cp -rf $(SDK_EXPORT_DIR)/../libs/microblaze_0/libsrc $(SDK_EXPORT_DIR)/../../../host/include/
+	@rm -rf $(SDK_EXPORT_DIR)/../empty_application
+	@rm -rf $(SDK_EXPORT_DIR)/../libs
+	cd ../sw/host/include/  && cp ../../../../../tools/scripts/xparam2regdefines.py . && python xparam2regdefines.py
+	cd ../sw/host/include/  && rm -f xparam2regdefines.py && mv reg_defines.h ../
+	cd ../sw/host && cp ../../../../tools/scripts/python_parser.py . && python python_parser.py
+	cd ../sw/host && rm -f python_parser.py 
+
+sim: axi_model regs
+	./../test/$(TESTNAME)/run.py
 	cp nf10/system_axisim_tb.v simulation/behavioral
+	cp nf10/system_axisim_fuse.sh simulation/behavioral
 	cd simulation/behavioral && $(AXISIM_FUSE)
 	cd simulation/behavioral && $(AXISIM_CMD) -tclbatch ../../nf10/noninteractive_sim.tcl
-	nf10_sim_reconcile_axi_logs.py
+	$(NF_ROOT)/tools/scripts/nf10_sim_reconcile_axi_logs.py
+	$(NF_ROOT)/tools/scripts/nf10_sim_registers_axi_logs.py
 
-simgui: axi_model
-	./make_pkts.py
+simgui: axi_model regs
+	./../test/$(TESTNAME)/run.py
 	cp nf10/system_axisim_tb.v simulation/behavioral
+	cp nf10/system_axisim_fuse.sh simulation/behavioral
 	cd simulation/behavioral && $(AXISIM_FUSE)
 	cd simulation/behavioral && $(AXISIM_CMD) -gui -tclbatch system_axisim_setup.tcl
-	nf10_sim_reconcile_axi_logs.py
+	$(NF_ROOT)/tools/scripts/nf10_sim_reconcile_axi_logs.py
+	$(NF_ROOT)/tools/scripts/nf10_sim_registers_axi_logs.py
 
 system_incl.make:
 	@echo exit|xps -nw system.xmp
