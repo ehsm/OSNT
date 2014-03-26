@@ -8,7 +8,7 @@
 #        make_pkts.py
 #
 #  Project:
-#        nic
+#        osnt_generator
 #
 #  Module:
 #        mkpkts_example.py
