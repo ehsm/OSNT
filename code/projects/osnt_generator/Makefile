@@ -44,10 +44,10 @@ HW = hw
 SW = sw/embedded/
 
 all:
-	$(MAKE) -C $(HW) exporttosdk
+	$(MAKE) -C $(HW) bits
 	$(MAKE) -C $(SW)
 	mkdir -p bitfiles
-	cp $(SW)/result/download.bit bitfiles/reference_nic.bit
+	cp $(SW)/result/download.bit bitfiles/osnt_generator.bit
 
 clean:
 	$(MAKE) -C $(HW) clean
